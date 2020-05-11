@@ -244,3 +244,11 @@ def prep_data(pid, view=False):
             img[mask] = 0
             cv2.imshow("Modified Frame: " + frame, img)
             cv2.waitKey(0)
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('ProjectID', type=str, help='Project to analyze')
+    parser.add_argument('-v', '--view', action='store_true', help='View modiefied dataset')
+    args = parser.parse_args()
+    prep_data(args.ProjectID, args.view)
