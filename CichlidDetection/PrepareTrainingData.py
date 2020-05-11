@@ -28,18 +28,18 @@ def initialising():
 		raise Exception('Cant find master McGrath directory in rclone remote')
 
 	annotated_data_path = '__AnnotatedData/BoxedFish/BoxedFish.csv'
-	
+
 	image_data_path = '__AnnotatedData/BoxedFish/BoxedImages/{}'.format(imgfile_name) # Add .format{}; include argument to accept project ID
-	
+
 	remoteDir = cloudMasterDir + '{}'.format(args.ProjectID)
 	remote_files = subprocess.run(['rclone', 'lsf', remoteDir], capture_output = True, encoding = 'utf-8')
 
 	if 'videoCropPoints.npy' and 'videoCrop.npy' in remote_files.stdout.split():
 		video_points_data_path = '{}/videoCropPoints.npy'.format(args.ProjectID)
-		video_crop_data_path = '{}/videoCrop.npy'.format(args.ProjectID) 
+		video_crop_data_path = '{}/videoCrop.npy'.format(args.ProjectID)
 	else:
-		video_points_data_path = '{}/MasterAnalysisFiles/VideoPoints.npy'.format(args.ProjectID) 
-		video_crop_data_path = '{}/MasterAnalysisFiles/VideoCrop.npy'.format(args.ProjectID) 
+		video_points_data_path = '{}/MasterAnalysisFiles/VideoPoints.npy'.format(args.ProjectID)
+		video_crop_data_path = '{}/MasterAnalysisFiles/VideoCrop.npy'.format(args.ProjectID)
 
 	localDir = os.getenv('HOME') + '/' + 'Desktop/McGrathLab/'
 	if not os.path.exists(localDir):
@@ -188,66 +188,58 @@ def plotImage(data):
 	plt.title(frame)
 	plt.show()
 '''
-# --------------------------------- Argument Parsing ---------------------------------#
-parser = argparse.ArgumentParser()
-parser.add_argument('ProjectID', type = str, help = 'Project to analyze')
-parser.add_argument('-v', '--view', action='store_true', help = 'View modiefied dataset')
-args = parser.parse_args()
-
-imgfile_name = args.ProjectID + '.tar'
-
-# --------------------------------- Downloading The Data ---------------------------------#
-
-cloud_master_directory, annotated_data_path, image_file_path, video_points_file_path, video_crop_file_path, local_directory = initialising()
-localDir, ann_file, img_file, vp_file, vc_file = download(cloud_master_directory, annotated_data_path, image_file_path, video_points_file_path, video_crop_file_path, local_directory, imgfile_name)
-print("Download complete for {}!".format(args.ProjectID))
-
-# --------------------------------- Iterating Through Annotations ---------------------------------#
-
-# video points array:
-vp_array = np.load(vp_file)
 
 
-# Video crop coordinates
-x_vp = tuple(vp_array[0])
-y_vp = tuple(vp_array[1])
-w_vp = tuple(vp_array[2])
-h_vp = tuple(vp_array[3])
+def prep_data(pid, view=False):
+	# --------------------------------- Downloading The Data ---------------------------------#
+	imgfile_name = '{}.tar'.format(pid)
+	cloud_master_directory, annotated_data_path, image_file_path, video_points_file_path, video_crop_file_path, local_directory = initialising()
+	localDir, ann_file, img_file, vp_file, vc_file = download(cloud_master_directory, annotated_data_path, image_file_path, video_points_file_path, video_crop_file_path, local_directory, imgfile_name)
+	print("Download complete for {}!".format(pid))
 
-projectID = image_file_path.split('/')[3].split('.')[0]
+	# --------------------------------- Iterating Through Annotations ---------------------------------#
 
-# Read in BoxFile.csv file
-df = pd.read_csv(localDir + '/' + ann_file)
-df = df[df['ProjectID'] == args.ProjectID]
-df = df[df['CorrectAnnotation'] == 'Yes']
-df = df.fillna('')
-df = df[df['Box'] != ''] 
-df['Box']=[eval(i) for i in df['Box']]
-pd.set_option('display.max_rows', None)
-df['Area'] = df['Box'].apply(area)
+	# video points array:
+	vp_array = np.load(vp_file)
 
-#  Iterate through the annotations and identify annotations that fall within the video crop
-df['WithinCrop'] = df['Area'].apply(determine)
-df = df[df['WithinCrop'] == 'Yes']
-# print(df)
-export_CorrectAnn_csv = df.to_csv(r'CorrectAnnotations.csv', index = None, header=True)
-framefiles = list(df.groupby('Framefile').count().index)
-print('Number of annotated frames that lie within the video crop: ', len(framefiles))
-if args.view:
-	for frame in framefiles:
-		#df_row = df[df['Framefile'] == frame]
-		#df_row[['Framefile', 'Box']].apply(plotImage, axis=1)
-		img_dir = img_file.split('.')[0]
-		if img_dir not in os.listdir():
-			tf = tarfile.open(img_file)
-			tf.extractall()
-		image_frame = img_dir+'/'+frame
-		img = cv2.imread(image_frame)
-		mask = np.load(vc_file)
-		mask = np.logical_not(mask)
-		img[mask] = 0
-		cv2.imshow("Modified Frame: " + frame, img)
-		cv2.waitKey(0)
+	# Video crop coordinates
+	x_vp = tuple(vp_array[0])
+	y_vp = tuple(vp_array[1])
+	w_vp = tuple(vp_array[2])
+	h_vp = tuple(vp_array[3])
+
+	# Read in BoxFile.csv file
+	df = pd.read_csv(localDir + '/' + ann_file)
+	df = df[df['ProjectID'] == pid]
+	df = df[df['CorrectAnnotation'] == 'Yes']
+	df = df.fillna('')
+	df = df[df['Box'] != '']
+	df['Box']=[eval(i) for i in df['Box']]
+	pd.set_option('display.max_rows', None)
+	df['Area'] = df['Box'].apply(area)
+
+	#  Iterate through the annotations and identify annotations that fall within the video crop
+	df['WithinCrop'] = df['Area'].apply(determine)
+	df = df[df['WithinCrop'] == 'Yes']
+	# print(df)
+	export_CorrectAnn_csv = df.to_csv(r'CorrectAnnotations.csv', index = None, header=True)
+	framefiles = list(df.groupby('Framefile').count().index)
+	print('Number of annotated frames that lie within the video crop: ', len(framefiles))
+	if view:
+		for frame in framefiles:
+			#df_row = df[df['Framefile'] == frame]
+			#df_row[['Framefile', 'Box']].apply(plotImage, axis=1)
+			img_dir = img_file.split('.')[0]
+			if img_dir not in os.listdir():
+				tf = tarfile.open(img_file)
+				tf.extractall()
+			image_frame = img_dir+'/'+frame
+			img = cv2.imread(image_frame)
+			mask = np.load(vc_file)
+			mask = np.logical_not(mask)
+			img[mask] = 0
+			cv2.imshow("Modified Frame: " + frame, img)
+			cv2.waitKey(0)
 
 
 
