@@ -32,12 +32,14 @@ class FileManager:
         :return local_path: the full path the to the newly downloaded file (or directory, if the file was a tarfile)
         """
         destination = self.project_dir if destination is None else destination
-        run(['rclone', 'copy', source, destination])
         local_path = os.path.join(destination, os.path.basename(source))
+        if not os.path.exists(local_path):
+            run(['rclone', 'copy', source, destination])
+            assert os.path.exists(local_path), "download failed\nsource: {}\ndestination: {}".format(source, destination)
         if os.path.splitext(local_path)[1] == '.tar':
-            run(['tar', '-xvf', local_path, '-C', os.path.splitext(local_path)[0]])
+            if not os.path.exists(os.path.splitext(local_path)[0]):
+                run(['tar', '-xvf', local_path, '-C', os.path.dirname(local_path)])
             local_path = os.path.splitext(local_path)[0]
-        assert os.path.exists(local_path), "download failed\nsource: {}\ndestination: {}".format(source, destination)
         return local_path
 
     def locate_cloud_files(self):
@@ -56,12 +58,12 @@ class FileManager:
 
         # track down the project-specific files with multiple possible names / locations
         remote_files = run(['rclone', 'lsf', os.path.join(base, self.pid)])
-        if 'videoCropPoints.npy' and 'videoCrop.npy' in remote_files.stdout.split():
+        if 'videoCropPoints.npy' and 'videoCrop.npy' in remote_files.split():
             cloud_files.update({'video_points_numpy': os.path.join(base, self.pid, 'videoCropPoints.npy')})
             cloud_files.update({'video_crop_numpy': os.path.join(base, self.pid, 'videoCrop.npy')})
         else:
             cloud_files.update({'video_points_numpy': os.path.join(base, self.pid, 'MasterAnalysisFiles', 'VideoPoints.npy')})
-            cloud_files.update({'video_crop_numpy': os.path.join(base, self.pid, 'MasterAnalysisFiles' 'VideoCrop.npy')})
+            cloud_files.update({'video_crop_numpy': os.path.join(base, self.pid, 'MasterAnalysisFiles', 'VideoCrop.npy')})
 
         return cloud_files
 
