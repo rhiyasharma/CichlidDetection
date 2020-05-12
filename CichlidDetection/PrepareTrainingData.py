@@ -18,7 +18,7 @@ import cv2
 
 
 def initialising():
-	rcloneRemote = 'cichlidVideo'
+	rcloneRemote = 'd'
 	output = subprocess.run(['rclone', 'lsf', rcloneRemote + ':'], capture_output = True, encoding = 'utf-8')
 	if 'McGrath/' in output.stdout.split():
 		cloudMasterDir = rcloneRemote + ':McGrath/Apps/CichlidPiData/'
