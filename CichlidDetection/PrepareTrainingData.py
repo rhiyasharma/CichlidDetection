@@ -17,7 +17,6 @@ import cv2
 # 'CorrectAnnotations.csv' will be created that contains all the annotations that fall within the video crop
 # Add '-v' or '--view' flag to view modified dataset
 
-
 def initialising(pid):
     rcloneRemote = 'cichlidVideo'
     output = subprocess.run(['rclone', 'lsf', rcloneRemote + ':'], capture_output=True, encoding='utf-8')
@@ -249,6 +248,6 @@ def prep_data(pid, view=False):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('ProjectID', type=str, help='Project to analyze')
-    parser.add_argument('-v', '--view', action='store_true', help='View modiefied dataset')
+    parser.add_argument('-v', '--view', action='store_true', help='View modified dataset')
     args = parser.parse_args()
     prep_data(args.ProjectID, args.view)
