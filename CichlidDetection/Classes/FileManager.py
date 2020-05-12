@@ -10,7 +10,7 @@ class FileManager:
 
     def initialize_project_directory(self):
         """create a local project directory if it does not already exist
-        :return project_dir: the absolute local path to the project direcotry that was created
+        :return project_dir: the absolute local path to the project directory that was created
         """
         project_dir = os.path.join(os.getenv('HOME'), 'scratch', 'CichlidDetection', self.pid)
         make_dir(project_dir)
