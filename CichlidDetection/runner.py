@@ -5,4 +5,4 @@ from CichlidDetection.Classes.DataPrepper import DataPrepper
 # calling 'python -m CichlidDetection.runner'
 
 dataprepper = DataPrepper('MC6_5')
-dataprepper.prep()
+dataprepper.YOLO_prep()

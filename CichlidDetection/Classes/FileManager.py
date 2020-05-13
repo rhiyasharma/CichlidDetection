@@ -1,4 +1,4 @@
-import os
+import os, shutil
 from CichlidDetection.Utilities.SystemUtilities import run, make_dir
 
 
@@ -28,6 +28,8 @@ class FileManager:
         # the image folder is initially has the same name as the project folder. Change it to images
         src = self.local_files['image_folder']
         dst = os.path.join(os.path.split(src)[0], 'images')
+        if os.path.exists(dst):
+            shutil.rmtree(dst)
         os.rename(src, dst)
         self.local_files.update({'image_folder': dst})
 
