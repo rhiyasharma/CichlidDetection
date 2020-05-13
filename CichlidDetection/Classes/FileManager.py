@@ -3,9 +3,11 @@ from CichlidDetection.Utilities.SystemUtilities import run, make_dir
 
 
 class FileManager:
+    """class for setting up local directories, downloading required files, and keeping track of local file paths"""
 
     def __init__(self, pid):
         self.pid = pid
+        self.local_files = {}
         self.project_dir = self.initialize_project_directory()
 
     def initialize_project_directory(self):
@@ -14,19 +16,18 @@ class FileManager:
         """
         project_dir = os.path.join(os.getenv('HOME'), 'scratch', 'CichlidDetection', self.pid)
         make_dir(project_dir)
+        self.local_files.update({'project_directory': project_dir})
         return project_dir
 
     def download_all(self):
-        """downloads all files necessary to run PrepareTrainingData.py
-        :return local_files: dictionary of local file paths indexed by brief file descriptors"""
+        """downloads all files necessary to run PrepareTrainingData.py"""
         cloud_files = self.locate_cloud_files()
-        local_files = {}
         for name, file in cloud_files.items():
-            local_files.update({name: self.download(file)})
-        return local_files
+            self.download(name, file)
 
-    def download(self, source, destination=None):
-        """use rclone to download a file, and untar if it is a .tar file
+    def download(self, name, source, destination=None):
+        """use rclone to download a file, and untar if it is a .tar file. Automatically adds file path to self.local_files
+        :param name: brief descriptor of the file, to be used for easy access to the file path using the self.local_files dict
         :param source: full path to a dropbox file, including the remote
         :param destination: full path to the local destination directory. Defaults to self.project_dir
         :return local_path: the full path the to the newly downloaded file (or directory, if the file was a tarfile)
@@ -40,6 +41,7 @@ class FileManager:
             if not os.path.exists(os.path.splitext(local_path)[0]):
                 run(['tar', '-xvf', local_path, '-C', os.path.dirname(local_path)])
             local_path = os.path.splitext(local_path)[0]
+        self.local_files.update({name: local_path})
         return local_path
 
     def locate_cloud_files(self):
