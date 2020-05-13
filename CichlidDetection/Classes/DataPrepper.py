@@ -1,6 +1,7 @@
 import os
 import cv2
 from CichlidDetection.Classes.FileManager import FileManager
+from CichlidDetection.Utilities.SystemUtilities import make_dir
 from shapely.geometry import Polygon
 import numpy as np
 import pandas as pd
@@ -37,7 +38,7 @@ class DataPrepper:
         df['Box'] = df['Box'].apply(eval)
         poly_vp = Polygon([list(row) for row in list(np.load(self.fm.local_files['video_points_numpy']))])
         df['Area'] = df['Box'].apply(lambda box: area(poly_vp, box))
-        df = df.dropna(subset=['Area']).reset_index()
+        df = df.dropna(subset=['Area']).reset_index(drop=True)
 
         self.fm.local_files.update({'correct_annotations_csv': os.path.join(self.fm.project_dir, 'CorrectAnnotations.csv')})
         df.to_csv(self.fm.local_files['correct_annotations_csv'])
@@ -57,7 +58,29 @@ class DataPrepper:
             cv2.destroyAllWindows()
 
     def generate_darknet_labels(self):
-        df = self.prep()
+
+        # create a folder for the label files
+        label_folder = make_dir(os.path.join(self.fm.local_files['project_directory'], 'labels'))
+        self.fm.local_files.update({'label_folder': label_folder})
+
+        # define a function that takes a row of CorrectAnnotations.csv and derives the annotation information expected
+        # by darknet
+        def custom_apply(row):
+            fname = row['Framefile'].replace('.jpg', '.txt')
+            label = 0 if row['Sex'] == 'm' else 1
+            w = row['Box'][2]
+            h = row['Box'][3]
+            x_center = row['Box'][0] + (w/2)
+            y_center = row['Box'][1] + (h/2)
+            return [fname, label, x_center, y_center, w, h]
+
+        # apply the custom_apply function to the dataframe, and use the resulting dataframe to iteratively create
+        # a txt label file for each image
+        df = self.prep().apply(custom_apply, result_type='expand', axis=1).set_index(0)
+        for f in df.index.unique():
+            dest = os.path.join(self.fm.local_files['label_folder'], f)
+            df.loc[f].to_csv(dest, sep=' ', header=False, index=False)
+
 
 
 

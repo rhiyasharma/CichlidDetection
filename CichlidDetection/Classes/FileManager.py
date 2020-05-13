@@ -25,6 +25,12 @@ class FileManager:
         for name, file in cloud_files.items():
             self.download(name, file)
 
+        # the image folder is initially has the same name as the project folder. Change it to images
+        src = self.local_files['image_folder']
+        dst = os.path.join(os.path.split(src)[0], 'images')
+        os.rename(src, dst)
+        self.local_files.update({'image_folder': dst})
+
     def download(self, name, source, destination=None):
         """use rclone to download a file, and untar if it is a .tar file. Automatically adds file path to self.local_files
         :param name: brief descriptor of the file, to be used for easy access to the file path using the self.local_files dict

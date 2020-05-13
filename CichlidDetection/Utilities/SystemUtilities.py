@@ -4,11 +4,12 @@ import os, subprocess
 def make_dir(path):
     """recursively create the directory specified by path if it does not exist
     :param path: path to the directory that will be created
+    :return path: returns the input argument unchanged
     """
     if not os.path.exists(path):
         os.makedirs(path)
     assert os.path.exists(path), "failed to create {}".format(path)
-
+    return path
 
 def run(command, fault_tolerant=False):
     """use the subprocess.run function to run a command
