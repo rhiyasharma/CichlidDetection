@@ -1,7 +1,6 @@
-import os
+import os, shutil
 import cv2
 from CichlidDetection.Classes.FileManager import FileManager
-from CichlidDetection.Utilities.SystemUtilities import make_dir
 from shapely.geometry import Polygon
 import numpy as np
 import pandas as pd
@@ -59,6 +58,7 @@ class DataPrepper:
             cv2.destroyAllWindows()
 
     def YOLO_prep(self):
+        self._generate_image_folder()
         self._generate_darknet_labels()
         self._generate_train_test_lists()
         self._generate_namefile()
@@ -72,8 +72,7 @@ class DataPrepper:
         test_img_size = (test_img_size[1], test_img_size[0])
 
         # create a folder for the label files
-        label_folder = make_dir(os.path.join(self.fm.local_files['project_directory'], 'labels'))
-        self.fm.local_files.update({'label_folder': label_folder})
+        label_folder = self.fm.make_dir('label_folder', os.path.join(self.fm.local_files['project_directory'], 'labels'))
 
         # define a function that takes a row of CorrectAnnotations.csv and derives the annotation information expected
         # by darknet
@@ -110,9 +109,15 @@ class DataPrepper:
             f.writelines('{}\n'.format(sex) for sex in ['male', 'female'])
 
     def _generate_datafile(self):
-        fields = ['classes', 'train', 'valid', 'name']
+        fields = ['classes', 'train', 'valid', 'names']
         values = [2] + [self.fm.local_files[key] for key in ['train_list', 'test_list', 'name_file']]
         self.fm.local_files.update({'data_file': os.path.join(self.fm.project_dir, 'CichlidDetection.data')})
         with open(self.fm.local_files['data_file'], 'w') as f:
             f.writelines('{}={}\n'.format(f, v) for (f, v) in list(zip(fields, values)))
+
+    def _generate_image_folder(self):
+        good_files = pd.read_csv(self.fm.local_files['correct_annotations_csv'])['Framefile'].to_list()
+        self.fm.make_dir('image_folder', os.path.join(self.fm.project_dir, 'images'))
+        for file in good_files:
+            shutil.copy(os.path.join(self.fm.local_files['all_image_folder'], file), self.fm.local_files['image_folder'])
 

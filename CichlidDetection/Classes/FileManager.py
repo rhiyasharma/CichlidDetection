@@ -15,8 +15,7 @@ class FileManager:
         :return project_dir: the absolute local path to the project directory that was created
         """
         project_dir = os.path.join(os.getenv('HOME'), 'scratch', 'CichlidDetection', self.pid)
-        make_dir(project_dir)
-        self.local_files.update({'project_directory': project_dir})
+        self.make_dir('project_directory', project_dir)
         return project_dir
 
     def download_all(self):
@@ -24,14 +23,6 @@ class FileManager:
         cloud_files = self.locate_cloud_files()
         for name, file in cloud_files.items():
             self.download(name, file)
-
-        # the image folder is initially has the same name as the project folder. Change it to images
-        src = self.local_files['image_folder']
-        dst = os.path.join(os.path.split(src)[0], 'images')
-        if os.path.exists(dst):
-            shutil.rmtree(dst)
-        os.rename(src, dst)
-        self.local_files.update({'image_folder': dst})
 
     def download(self, name, source, destination=None):
         """use rclone to download a file, and untar if it is a .tar file. Automatically adds file path to self.local_files
@@ -64,7 +55,7 @@ class FileManager:
 
         # start the cloud_files dictionary with the easy to find files
         cloud_files = {'boxed_fish_csv': os.path.join(base, '__AnnotatedData/BoxedFish/BoxedFish.csv')}
-        cloud_files.update({'image_folder': os.path.join(base, '__AnnotatedData/BoxedFish/BoxedImages/{}.tar'.format(self.pid))})
+        cloud_files.update({'all_image_folder': os.path.join(base, '__AnnotatedData/BoxedFish/BoxedImages/{}.tar'.format(self.pid))})
 
         # track down the project-specific files with multiple possible names / locations
         remote_files = run(['rclone', 'lsf', os.path.join(base, self.pid)])
@@ -77,6 +68,9 @@ class FileManager:
 
         return cloud_files
 
+    def make_dir(self, name, path):
+        self.local_files.update({name: make_dir(path)})
+        return path
 
 
 

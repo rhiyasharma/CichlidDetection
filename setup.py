@@ -14,7 +14,7 @@ setup(name='CichlidDetection',
       license='MIT',
       packages=['CichlidDetection'],
       install_requires=['pandas', 'numpy', 'matplotlib', 'seaborn', 'shapely', 'pillow', 'opencv', 'pytorch',
-                        'torchvision', 'scikit-learn'],
+                        'torchvision', 'scikit-learn', 'tqdm', 'tensorboard'],
       include_package_data=True,
       zip_safe=False
       )
