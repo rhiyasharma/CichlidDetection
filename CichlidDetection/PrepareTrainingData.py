@@ -9,6 +9,7 @@ from matplotlib import rcParams
 import numpy as np
 import matplotlib.image as mpimg
 import cv2
+import pdb
 
 # 'command+Q' to shut the window; left arrow to display all modified image frames windows
 # Run the script using the command: python3 prepareTrainingData.py <ProjectID>
@@ -17,7 +18,7 @@ import cv2
 # Add '-v' or '--view' flag to view modified dataset
 
 
-def initialising():
+def initialising(imgfile_name):
 	rcloneRemote = 'd'
 	output = subprocess.run(['rclone', 'lsf', rcloneRemote + ':'], capture_output = True, encoding = 'utf-8')
 	if 'McGrath/' in output.stdout.split():
@@ -193,7 +194,7 @@ def plotImage(data):
 def prep_data(pid, view=False):
 	# --------------------------------- Downloading The Data ---------------------------------#
 	imgfile_name = '{}.tar'.format(pid)
-	cloud_master_directory, annotated_data_path, image_file_path, video_points_file_path, video_crop_file_path, local_directory = initialising()
+	cloud_master_directory, annotated_data_path, image_file_path, video_points_file_path, video_crop_file_path, local_directory = initialising(imgfile_name)
 	localDir, ann_file, img_file, vp_file, vc_file = download(cloud_master_directory, annotated_data_path, image_file_path, video_points_file_path, video_crop_file_path, local_directory, imgfile_name)
 	print("Download complete for {}!".format(pid))
 
@@ -241,7 +242,7 @@ def prep_data(pid, view=False):
 			cv2.imshow("Modified Frame: " + frame, img)
 			cv2.waitKey(0)
 
-
+prep_data('MC6_5', view=False)
 
 
 
