@@ -24,10 +24,10 @@ class DataPrepper:
     """class to handle the download and initial preparation of data required for training
     :param pid: short for ProjectID. The name of the project to be analyzed, for example, 'MC6_5'
     """
-    def __init__(self, pid):
+    def __init__(self, fm):
         """initializes the DataPrepper for a particular pid, and downloads the required files from dropbox"""
-        self.pid = pid
-        self.fm = FileManager(pid)
+        self.fm = fm
+        self.pid = self.fm.pid
         self.fm.download_all()
 
     def prep_annotations(self):
