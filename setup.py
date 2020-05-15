@@ -13,7 +13,8 @@ setup(name='CichlidDetection',
       url='https://github.com/ptmcgrat/CichlidDetection',
       license='MIT',
       packages=['CichlidDetection'],
-      install_requires=['pandas', 'numpy', 'matplotlib', 'seaborn', 'shapely', 'pillow', 'opencv', 'pytest'],
+      install_requires=['pandas', 'numpy', 'matplotlib', 'seaborn', 'shapely', 'pillow', 'opencv', 'pytorch',
+                        'torchvision', 'scikit-learn'],
       include_package_data=True,
       zip_safe=False
       )
