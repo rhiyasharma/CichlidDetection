@@ -1,5 +1,5 @@
 import os, shutil
-from CichlidDetection.Utilities.SystemUtilities import run, make_dir
+from Utilities.SystemUtilities import run, make_dir
 
 
 class FileManager:
@@ -58,7 +58,7 @@ class FileManager:
         identically to the dictionary returned by download_all"""
 
         # establish the correct path to the CichlidPiData directory
-        remote = 'cichlidVideo:'
+        remote = 'd:'
         root_dir = [r for r in run(['rclone', 'lsf', remote]).split() if 'McGrath' in r][0]
         base = os.path.join(remote + root_dir, 'Apps', 'CichlidPiData')
 
