@@ -1,5 +1,6 @@
 import os, shutil
 import cv2
+
 from CichlidDetection.Classes.FileManager import FileManager
 from shapely.geometry import Polygon
 import numpy as np
@@ -114,6 +115,14 @@ class DataPrepper:
         self.fm.local_files.update({'data_file': os.path.join(self.fm.project_dir, 'CichlidDetection.data')})
         with open(self.fm.local_files['data_file'], 'w') as f:
             f.writelines('{}={}\n'.format(f, v) for (f, v) in list(zip(fields, values)))
+            
+            
+            
+    def FRCNN_prep(self):
+        self._generate_darknet_labels()
+        self._generate_train_test_lists()
+        self._generate_namefile()
+        self._generate_datafile()
 
     def _generate_image_folder(self):
         good_files = pd.read_csv(self.fm.local_files['correct_annotations_csv'])['Framefile'].to_list()
