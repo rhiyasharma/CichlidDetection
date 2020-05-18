@@ -14,7 +14,7 @@ class FileManager:
         """create a local project directory if it does not already exist
         :return project_dir: the absolute local path to the project directory that was created
         """
-        project_dir = os.path.join(os.getenv('HOME'), 'scratch', 'CichlidDetection', self.pid)
+        project_dir = os.path.join(os.getenv('HOME'), 'scratch_new', 'CichlidDetection', self.pid)
         make_dir(project_dir)
         self.local_files.update({'project_directory': project_dir})
         return project_dir
@@ -67,18 +67,33 @@ class FileManager:
         cloud_files.update({'image_folder': os.path.join(base, '__AnnotatedData/BoxedFish/BoxedImages/{}.tar'.format(self.pid))})
 
         # track down the project-specific files with multiple possible names / locations
-        remote_files = run(['rclone', 'lsf', os.path.join(base, self.pid)])
-        if 'videoCropPoints.npy' and 'videoCrop.npy' in remote_files.split():
-            cloud_files.update({'video_points_numpy': os.path.join(base, self.pid, 'videoCropPoints.npy')})
-            cloud_files.update({'video_crop_numpy': os.path.join(base, self.pid, 'videoCrop.npy')})
-        else:
-            cloud_files.update({'video_points_numpy': os.path.join(base, self.pid, 'MasterAnalysisFiles', 'VideoPoints.npy')})
-            cloud_files.update({'video_crop_numpy': os.path.join(base, self.pid, 'MasterAnalysisFiles', 'VideoCrop.npy')})
-
+        try:
+            remote_files = run(['rclone', 'lsf', os.path.join(base, self.pid)])
+            if 'videoCropPoints.npy' and 'videoCrop.npy' in remote_files.split():
+                cloud_files.update({'video_points_numpy': os.path.join(base, self.pid, 'videoCropPoints.npy')})
+                cloud_files.update({'video_crop_numpy': os.path.join(base, self.pid, 'videoCrop.npy')})
+            else:
+                cloud_files.update({'video_points_numpy': os.path.join(base, self.pid, 'MasterAnalysisFiles', 'VideoPoints.npy')})
+                cloud_files.update({'video_crop_numpy': os.path.join(base, self.pid, 'MasterAnalysisFiles', 'VideoCrop.npy')})
+        except:
+            pass
         return cloud_files
 
 
+    def download_images(self):
+        """downloads all files necessary to run PrepareTrainingData.py"""
+        cloud_files = self.locate_cloud_files()
+        name = 'image_folder'
+        file = cloud_files[name]
+        self.download(name, file)
 
+        # the image folder is initially has the same name as the project folder. Change it to images
+        src = self.local_files['image_folder']
+        dst = os.path.join(os.path.split(src)[0], 'images')
+        if os.path.exists(dst):
+            shutil.rmtree(dst)
+        os.rename(src, dst)
+        self.local_files.update({'image_folder': dst})
 
 
 

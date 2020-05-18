@@ -7,6 +7,8 @@ import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split
 
+import pdb
+
 
 def area(poly_vp, box):
     """
@@ -117,10 +119,42 @@ class DataPrepper:
             f.writelines('{}={}\n'.format(f, v) for (f, v) in list(zip(fields, values)))
             
             
+class FRCNN_DataPrepper:
+    """class to handle download and initial preparation of data required for training for faster_RCNN network
+    """
+    def __init__(self):
+        """initializes the DataPrepper for a particular pid, and downloads the required files from dropbox"""
+        temp = FileManager('None')
+        cloud_files = temp.locate_cloud_files()
+        self.local_files = {}
+        self.local_files.update({'boxed_fish_csv_path':temp.download('boxed_fish_csv', cloud_files['boxed_fish_csv'])})
+        df = pd.read_csv(self.local_files['boxed_fish_csv_path'], index_col=0)
+        self.unique_pids = df.ProjectID.unique()
+#         for pid in self.unique_pids:
+#             fm = FileManager(pid)
+#             fm.download_images()
+        self.master_dir = '/'.join(self.local_files['boxed_fish_csv_path'].split('/')[:-2])
+        
+    
+    def generate_train_validation_lists(self,train_size = 0.8, random_state=29):
+        
+        df = pd.read_csv(self.local_files['boxed_fish_csv_path'])
+        self.local_files.update({'train_list': os.path.join(self.master_dir, 'train_list.txt'),
+                                    'test_list': os.path.join(self.master_dir, 'test_list.txt')})
+        df_subset = df[(df.Nfish != 0)&((df.Sex == 'm')|(df.Sex == 'f'))&(df.CorrectAnnotation=='Yes')]
+        df_subset = df_subset.groupby(['ProjectID', 'Framefile']).size()
+        indexs = df_subset.index
+        img_files = []
+        for project,frame in indexs:
+            key = os.path.join(project,'images',frame)
+            img_files.append(key)
+        
+        train_files, test_files = train_test_split(img_files, train_size=train_size, random_state=random_state)
+
+        with open(self.local_files['train_list'], 'w') as f:
+            f.writelines('{}\n'.format(f_) for f_ in train_files)
+        with open(self.local_files['test_list'], 'w') as f:
+            f.writelines('{}\n'.format(f_) for f_ in test_files)
             
-    def FRCNN_prep(self):
-        self._generate_darknet_labels()
-        self._generate_train_test_lists()
-        self._generate_namefile()
-        self._generate_datafile()
+        
 
