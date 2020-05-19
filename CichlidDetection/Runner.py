@@ -9,15 +9,15 @@ from CichlidDetection.Utilities.SystemUtilities import run
 class Runner:
     def __init__(self):
         self.fm = None
+        self.dp = None
         self.__location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
         pass
 
     def prep(self, pid):
-        fm = FileManager(pid)
-        dp = DataPrepper(fm)
-        dp.prep_annotations()
-        dp.YOLO_prep()
-        return fm
+        self.fm = FileManager(pid)
+        self.dp = DataPrepper(self.fm)
+        self.dp.prep_annotations()
+        self.dp.YOLO_prep()
 
     def train(self):
         if self.fm is None:
