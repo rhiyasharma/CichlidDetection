@@ -21,7 +21,7 @@
 *.json
 
 *.cfg
-!cfg/yolov3*.cfg
+!cfg/yolo*.cfg
 
 storage.googleapis.com
 runs/*
