@@ -9,4 +9,4 @@ echo "Started on `/bin/hostname`"
 module load anaconda3
 source activate CichlidDetection
 cd ${MODEL_DIR}
-python3 train.py --cfg yolo.cfg --data ${DATA_FILE} --nosave -- weights ''
+python3 train.py --cfg yolo.cfg --data ${DATA_FILE} --nosave --weights ''
