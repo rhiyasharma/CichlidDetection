@@ -48,8 +48,18 @@ class FileManager:
         :return cloud_files: a dictionary of source paths of the form expected by FileManager.download(), indexed
         identically to the dictionary returned by download_all"""
 
+        # establish the correct remote
+        possible_remotes = run(['rclone', 'listremotes']).split()
+        if len(possible_remotes) == 1:
+            remote = possible_remotes[0]
+        elif 'cichlidVideo:' in possible_remotes:
+            remote = 'cichlidVideo:'
+        elif 'd:' in possible_remotes:
+            remote = 'd:'
+        else:
+            raise Exception('unable to establish rclone remote')
+
         # establish the correct path to the CichlidPiData directory
-        remote = 'd:'
         root_dir = [r for r in run(['rclone', 'lsf', remote]).split() if 'McGrath' in r][0]
         base = os.path.join(remote + root_dir, 'Apps', 'CichlidPiData')
 
