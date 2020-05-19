@@ -1,5 +1,5 @@
 import os, shutil
-from Utilities.SystemUtilities import run, make_dir
+from CichlidDetection.Utilities.SystemUtilities import run, make_dir
 
 
 class FileManager:
