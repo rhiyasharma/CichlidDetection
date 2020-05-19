@@ -23,9 +23,9 @@ class Runner:
         if self.fm is None:
             print('No file manager detected. Run prep prior to training')
         else:
-            yolo_dir = os.path.join(self.__location__, 'Classes', 'Models', 'YOLO')
-            pbs_file = os.path.join(yolo_dir, 'train.pbs')
+            model_dir = os.path.join(self.__location__, 'Classes', 'Models', 'YOLO')
+            pbs_file = os.path.join(model_dir, 'train.pbs')
             data_file = self.fm.local_files['data_file']
-            cmd = ['qsub', '-wd', yolo_dir, '-v', 'DATA_FILE={}'.format(data_file), pbs_file]
+            cmd = ['qsub', '-v', 'DATA_FILE={},MODEL_DIR={}'.format(data_file, model_dir), pbs_file]
             run(cmd)
             print('training initiated. Use qstat to check job status')
