@@ -17,7 +17,7 @@ def run(command, fault_tolerant=False):
     :param fault_tolerant: if False (default) and the command fails to run, raise an exception and halt the script
     :return: output of subprocess.run() command
     """
-    output = subprocess.run(command, capture_output=True, encoding='utf-8')
+    output = subprocess.run(command, stdout=subprocess.PIPE, encoding='utf-8')
     if output.returncode != 0:
         if not fault_tolerant:
             print(output.stderr)
