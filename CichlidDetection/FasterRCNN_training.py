@@ -86,7 +86,7 @@ def main():
     dp = FRCNN_DataPrepper()
     
 #     dp.generate_train_validation_lists()
-    
+    pdb.set_trace()
     train_dataset = CicilidDataset(dp.master_dir, get_transform(train=True),'training')
     for i in range(train_dataset.__len__()):
         try:
