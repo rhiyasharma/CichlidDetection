@@ -130,9 +130,9 @@ class FRCNN_DataPrepper:
         self.local_files.update({'boxed_fish_csv_path':temp.download('boxed_fish_csv', cloud_files['boxed_fish_csv'])})
         df = pd.read_csv(self.local_files['boxed_fish_csv_path'], index_col=0)
         self.unique_pids = df.ProjectID.unique()
-#         for pid in self.unique_pids:
-#             fm = FileManager(pid)
-#             fm.download_images()
+        for pid in self.unique_pids:
+            fm = FileManager(pid)
+            fm.download_images()
         self.master_dir = '/'.join(self.local_files['boxed_fish_csv_path'].split('/')[:-2])
         
     
