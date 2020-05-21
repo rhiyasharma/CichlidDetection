@@ -85,25 +85,23 @@ def main():
     
     dp = FRCNN_DataPrepper()
 #     dp.download()
-    dp.generate_train_validation_lists()
-    
 #     dp.generate_train_validation_lists()
     pdb.set_trace()
     train_dataset = CicilidDataset(dp.master_dir, get_transform(train=True),'training')
-    for i in range(train_dataset.__len__()):
-        try:
-            train_dataset.__getitem__(i)
-        except:
-            pdb.set_trace()
-            train_dataset.__getitem__(i)
-            print(i)
-            print(train_dataset.imgs[i])
-            print(train_dataset.boxes[train_dataset.imgs[i]])
-            break
+#     for i in range(train_dataset.__len__()):
+#         try:
+#             train_dataset.__getitem__(i)
+#         except:
+#             pdb.set_trace()
+#             train_dataset.__getitem__(i)
+#             print(i)
+#             print(train_dataset.imgs[i])
+#             print(train_dataset.boxes[train_dataset.imgs[i]])
+#             break
     
     test_dataset = CicilidDataset(dp.master_dir, get_transform(train=False),'test')
     
-    model = torchvision.models.detection.fasterrcnn_resnet50_fpn(pretrained=True,num_classes=2,progress=True)
+    model = torchvision.models.detection.fasterrcnn_resnet50_fpn(num_classes=2)
     parameters = model.parameters()
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
     model.to(device)
