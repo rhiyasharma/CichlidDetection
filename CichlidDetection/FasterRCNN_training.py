@@ -84,6 +84,7 @@ def train_epoch(epoch, data_loader, model,  optimizer, epoch_logger, batch_logge
 def main():
     
     dp = FRCNN_DataPrepper()
+#     dp.download()
     
 #     dp.generate_train_validation_lists()
     pdb.set_trace()
