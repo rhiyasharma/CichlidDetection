@@ -1,11 +1,9 @@
 import os
 import numpy as np
-import torch
+import time
 from PIL import Image
 
 import pdb
-
-import torchvision
 
 from Utilities.utils import Logger,AverageMeter
 import Utilities.transforms as T
@@ -13,6 +11,8 @@ import Utilities.transforms as T
 from Classes.DataLoader.FasterRCNN_loader import CicilidDataset
 from Classes.DataPrepper import FRCNN_DataPrepper
 
+import torch
+import torchvision
 from torch.optim import lr_scheduler
 from torch import optim
 
