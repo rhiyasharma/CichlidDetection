@@ -25,7 +25,7 @@ def get_transform(train):
     return T.Compose(transforms)
     
 
-def train_epoch(epoch, data_loader, model,  optimizer, epoch_logger, batch_logger):
+def train_epoch(epoch, data_loader, model,  optimizer, epoch_logger, batch_logger,device):
     print('train at epoch {}'.format(epoch))
     model.train()
 
@@ -33,13 +33,13 @@ def train_epoch(epoch, data_loader, model,  optimizer, epoch_logger, batch_logge
     data_time = AverageMeter()
     losses = AverageMeter()
     end_time = time.time()
-    for i,sth in enumerate(data_loader):
-        print(i)
-    
-    
     
     for i, (images,targets) in enumerate(data_loader):
         data_time.update(time.time() - end_time)
+        images = list(image.to(device) for image in images)
+        targets = [{k: v.to(device) for k, v in t.items()} for t in targets]
+        
+        
         if not opt.no_cuda:
             targets = targets.cuda(async=True)
         inputs = Variable(inputs)
@@ -147,7 +147,7 @@ def main():
     for epoch in range(num_epochs):
         # train for one epoch, printing every 10 iterations
 #         train_one_epoch(model, optimizer, train_loader, device, epoch, print_freq=10)
-        train_epoch(epoch, train_loader, model, optimizer,train_logger, train_batch_logger)
+        train_epoch(epoch, train_loader, model, optimizer,train_logger, train_batch_logger,device)
         # update the learning rate
         lr_scheduler.step()
         # evaluate on the test dataset
