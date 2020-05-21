@@ -38,3 +38,5 @@ class Logger(object):
         self.logger.writerow(write_values)
         self.log_file.flush()
         
+def collate_fn(batch):
+    return tuple(zip(*batch))
