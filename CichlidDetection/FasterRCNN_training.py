@@ -138,7 +138,7 @@ def main():
     for epoch in range(num_epochs):
         # train for one epoch, printing every 10 iterations
 #         train_one_epoch(model, optimizer, train_loader, device, epoch, print_freq=10)
-        train_epoch(epoch, train_loader, model, optimizer,epoch_logger, batch_logger)
+        train_epoch(epoch, train_loader, model, optimizer,train_logger, train_batch_logger)
         # update the learning rate
         lr_scheduler.step()
         # evaluate on the test dataset
