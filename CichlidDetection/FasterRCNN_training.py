@@ -114,10 +114,10 @@ def main():
 
 # define training and validation data loaders
     train_loader = torch.utils.data.DataLoader(
-        train_dataset, batch_size=10, shuffle=True, num_workers=4)
+        train_dataset, batch_size=10, shuffle=True, num_workers=1)
 
     test_loader = torch.utils.data.DataLoader(
-        test_dataset, batch_size=10, shuffle=False, num_workers=4)
+        test_dataset, batch_size=10, shuffle=False, num_workers=1)
 
     optimizer = optim.SGD(parameters, lr=0.005,
                                 momentum=0.9, weight_decay=0.0005)
