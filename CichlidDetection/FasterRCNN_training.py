@@ -33,6 +33,11 @@ def train_epoch(epoch, data_loader, model,  optimizer, epoch_logger, batch_logge
     data_time = AverageMeter()
     losses = AverageMeter()
     end_time = time.time()
+    for i,sth in enumerate(data_loader):
+        print(i)
+    
+    
+    
     for i, (images,targets) in enumerate(data_loader):
         data_time.update(time.time() - end_time)
         if not opt.no_cuda:
