@@ -137,7 +137,7 @@ def main():
     pdb.set_trace()
     for epoch in range(num_epochs):
         # train for one epoch, printing every 10 iterations
-        train_one_epoch(model, optimizer, train_loader, device, epoch, print_freq=10)
+#         train_one_epoch(model, optimizer, train_loader, device, epoch, print_freq=10)
         train_epoch(epoch, train_loader, model, optimizer,epoch_logger, batch_logger)
         # update the learning rate
         lr_scheduler.step()
