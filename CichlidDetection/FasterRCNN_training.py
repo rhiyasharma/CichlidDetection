@@ -86,7 +86,7 @@ def main():
     dp = FRCNN_DataPrepper()
 #     dp.download()
 #     dp.generate_train_validation_lists()
-    pdb.set_trace()
+    
     train_dataset = CicilidDataset(dp.master_dir, get_transform(train=True),'training')
 #     for i in range(train_dataset.__len__()):
 #         try:
@@ -134,7 +134,7 @@ def main():
     # let's train it for 10 epochs
     num_epochs = 10
     
-        
+    pdb.set_trace()
     for epoch in range(num_epochs):
         # train for one epoch, printing every 10 iterations
         train_one_epoch(model, optimizer, train_loader, device, epoch, print_freq=10)

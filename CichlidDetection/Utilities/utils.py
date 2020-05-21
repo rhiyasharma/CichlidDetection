@@ -1,3 +1,4 @@
+import csv
 class AverageMeter(object):
     """Computes and stores the average and current value"""
 
@@ -36,3 +37,4 @@ class Logger(object):
 
         self.logger.writerow(write_values)
         self.log_file.flush()
+        
