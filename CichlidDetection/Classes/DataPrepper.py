@@ -128,13 +128,14 @@ class FRCNN_DataPrepper:
         cloud_files = temp.locate_cloud_files()
         self.local_files = {}
         self.local_files.update({'boxed_fish_csv_path':temp.download('boxed_fish_csv', cloud_files['boxed_fish_csv'])})
+        self.master_dir = '/'.join(self.local_files['boxed_fish_csv_path'].split('/')[:-2])
+        
+    def download(self):
         df = pd.read_csv(self.local_files['boxed_fish_csv_path'], index_col=0)
         self.unique_pids = df.ProjectID.unique()
         for pid in self.unique_pids:
             fm = FileManager(pid)
             fm.download_images()
-        self.master_dir = '/'.join(self.local_files['boxed_fish_csv_path'].split('/')[:-2])
-        
     
     def generate_train_validation_lists(self,train_size = 0.8, random_state=29):
         
