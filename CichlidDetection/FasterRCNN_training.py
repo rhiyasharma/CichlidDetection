@@ -93,11 +93,15 @@ def main():
 #     dp.generate_train_validation_lists()
     
     train_dataset = CicilidDataset(dp.master_dir, get_transform(train=True),'training')
-    pdb.set_trace()
+#     pdb.set_trace()
+    default = 'torch.Size([3, 972, 1296])'
     for i in range(train_dataset.__len__()):
         try:
-            img = train_dataset.__getitem__(i)
-            print(img.shape)
+            img,boxes = train_dataset.__getitem__(i)
+            this_size = str(img.shape)
+            if this_size != default:
+                print(this_size)
+
         except:
             pdb.set_trace()
             train_dataset.__getitem__(i)
@@ -105,7 +109,7 @@ def main():
             print(train_dataset.imgs[i])
             print(train_dataset.boxes[train_dataset.imgs[i]])
             break
-    
+    break
     test_dataset = CicilidDataset(dp.master_dir, get_transform(train=False),'test')
     
     model = torchvision.models.detection.fasterrcnn_resnet50_fpn(num_classes=2)
