@@ -85,6 +85,7 @@ def main():
     
     dp = FRCNN_DataPrepper()
 #     dp.download()
+    dp.generate_train_validation_lists()
     
 #     dp.generate_train_validation_lists()
     pdb.set_trace()
