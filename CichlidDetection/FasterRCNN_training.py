@@ -45,13 +45,13 @@ def train_epoch(epoch, data_loader, model,  optimizer, epoch_logger, batch_logge
 #         inputs = Variable(inputs)
 #         targets = Variable(targets)
         loss_dict = model(images,targets)
-        losses = sum(loss for loss in loss_dict.values())
+        today_loss = sum(loss for loss in loss_dict.values())
         
 
-        losses.update(losses.item(), inputs.size(0))
+        losses.update(today_loss.item(), len(images))
 
         optimizer.zero_grad()
-        losses.backward()
+        today_loss.backward()
         optimizer.step()
 
         batch_time.update(time.time() - end_time)
@@ -81,10 +81,7 @@ def train_epoch(epoch, data_loader, model,  optimizer, epoch_logger, batch_logge
         'loss': losses.avg,
         'lr': optimizer.param_groups[0]['lr']
     })
-
-#     if epoch % opt.checkpoint == 0:
-#         save_file_path = os.path.join(opt.result_path,
-#                                       'save_{}.pth'.format(epoch))
+    return losses.avg
 
 def main():
     
@@ -147,9 +144,9 @@ def main():
     for epoch in range(num_epochs):
         # train for one epoch, printing every 10 iterations
 #         train_one_epoch(model, optimizer, train_loader, device, epoch, print_freq=10)
-        train_epoch(epoch, train_loader, model, optimizer,train_logger, train_batch_logger,device)
+        loss = train_epoch(epoch, train_loader, model, optimizer,train_logger, train_batch_logger,device)
         # update the learning rate
-        lr_scheduler.step()
+        lr_scheduler.step(loss)
         # evaluate on the test dataset
 #         evaluate(model, data_loader_test, device=device)
     print("Done!")
