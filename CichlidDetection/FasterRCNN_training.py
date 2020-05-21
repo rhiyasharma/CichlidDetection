@@ -138,9 +138,8 @@ def main():
     val_logger = Logger(
             os.path.join(dp.master_dir, 'val.log'), ['epoch', 'loss'])
     # let's train it for 10 epochs
-    num_epochs = 10
+    num_epochs = 20
     
-    pdb.set_trace()
     for epoch in range(num_epochs):
         # train for one epoch, printing every 10 iterations
 #         train_one_epoch(model, optimizer, train_loader, device, epoch, print_freq=10)
