@@ -109,7 +109,7 @@ def main():
             print(train_dataset.imgs[i])
             print(train_dataset.boxes[train_dataset.imgs[i]])
             break
-    break
+    return
     test_dataset = CicilidDataset(dp.master_dir, get_transform(train=False),'test')
     
     model = torchvision.models.detection.fasterrcnn_resnet50_fpn(num_classes=2)
