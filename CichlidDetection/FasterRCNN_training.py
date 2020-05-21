@@ -93,23 +93,21 @@ def main():
 #     dp.generate_train_validation_lists()
     
     train_dataset = CicilidDataset(dp.master_dir, get_transform(train=True),'training')
-#     pdb.set_trace()
-    default = 'torch.Size([3, 972, 1296])'
-    for i in range(train_dataset.__len__()):
-        try:
-            img,boxes = train_dataset.__getitem__(i)
-            this_size = str(img.shape)
-            if this_size != default:
-                print(this_size)
-
-        except:
-            pdb.set_trace()
-            train_dataset.__getitem__(i)
-            print(i)
-            print(train_dataset.imgs[i])
-            print(train_dataset.boxes[train_dataset.imgs[i]])
-            break
-    return
+    
+#     for i in range(train_dataset.__len__()):
+#         try:
+#             img,boxes = train_dataset.__getitem__(i)
+#             this_size = str(img.shape)
+#             if this_size != default:
+#                 print(this_size)
+# 
+#         except:
+#             pdb.set_trace()
+#             train_dataset.__getitem__(i)
+#             print(i)
+#             print(train_dataset.imgs[i])
+#             print(train_dataset.boxes[train_dataset.imgs[i]])
+#             break
     test_dataset = CicilidDataset(dp.master_dir, get_transform(train=False),'test')
     
     model = torchvision.models.detection.fasterrcnn_resnet50_fpn(num_classes=2)
@@ -145,7 +143,7 @@ def main():
     # let's train it for 10 epochs
     num_epochs = 10
     
-    
+    pdb.set_trace()
     for epoch in range(num_epochs):
         # train for one epoch, printing every 10 iterations
 #         train_one_epoch(model, optimizer, train_loader, device, epoch, print_freq=10)
