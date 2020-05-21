@@ -40,10 +40,10 @@ def train_epoch(epoch, data_loader, model,  optimizer, epoch_logger, batch_logge
         targets = [{k: v.to(device) for k, v in t.items()} for t in targets]
         
         
-        if not opt.no_cuda:
-            targets = targets.cuda(async=True)
-        inputs = Variable(inputs)
-        targets = Variable(targets)
+#         if not opt.no_cuda:
+#             targets = targets.cuda(async=True)
+#         inputs = Variable(inputs)
+#         targets = Variable(targets)
         loss_dict = model(images,targets)
         losses = sum(loss for loss in loss_dict.values())
         
