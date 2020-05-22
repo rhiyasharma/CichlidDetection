@@ -145,7 +145,7 @@ def main():
 #         train_one_epoch(model, optimizer, train_loader, device, epoch, print_freq=10)
         loss = train_epoch(epoch, train_loader, model, optimizer,train_logger, train_batch_logger,device)
         # update the learning rate
-        lr_scheduler.step(loss)
+        scheduler.step(loss)
         # evaluate on the test dataset
 #         evaluate(model, data_loader_test, device=device)
     print("Done!")
