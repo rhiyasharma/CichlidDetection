@@ -8,15 +8,19 @@ class FileManager:
     def __init__(self, pid):
         self.pid = pid
         self.local_files = {}
-        self.project_dir = self.initialize_project_directory()
+        self.initialize()
 
-    def initialize_project_directory(self):
-        """create a local project directory if it does not already exist
-        :return project_dir: the absolute local path to the project directory that was created
-        """
-        project_dir = os.path.join(os.getenv('HOME'), 'scratch', 'CichlidDetection', self.pid)
-        self.make_dir('project_directory', project_dir)
-        return project_dir
+    def initialize(self):
+        """create a required local directories if they do not already exist"""
+        data_dir = os.path.join(os.getenv('HOME'), 'scratch', 'CichlidDetection')
+        project_dir = os.path.join(data_dir, self.pid)
+        training_dir = os.path.join(data_dir, 'training')
+        image_dir = os.path.join(training_dir, 'images')
+        label_dir = os.path.join(training_dir, 'labels')
+        self.make_dir('project_dir', project_dir)
+        self.make_dir('training_dir', training_dir)
+        self.make_dir('image_dir', image_dir)
+        self.make_dir('label_dir', label_dir)
 
     def download_all(self):
         """downloads all files necessary to run PrepareTrainingData.py"""
@@ -31,7 +35,7 @@ class FileManager:
         :param destination: full path to the local destination directory. Defaults to self.project_dir
         :return local_path: the full path the to the newly downloaded file (or directory, if the file was a tarfile)
         """
-        destination = self.project_dir if destination is None else destination
+        destination = self.local_files['project_dir'] if destination is None else destination
         local_path = os.path.join(destination, os.path.basename(source))
         if not os.path.exists(local_path):
             run(['rclone', 'copy', source, destination])
@@ -65,7 +69,7 @@ class FileManager:
 
         # start the cloud_files dictionary with the easy to find files
         cloud_files = {'boxed_fish_csv': os.path.join(base, '__AnnotatedData/BoxedFish/BoxedFish.csv')}
-        cloud_files.update({'all_image_folder': os.path.join(base, '__AnnotatedData/BoxedFish/BoxedImages/{}.tar'.format(self.pid))})
+        cloud_files.update({'project_image_dir': os.path.join(base, '__AnnotatedData/BoxedFish/BoxedImages/{}.tar'.format(self.pid))})
 
         # track down the project-specific files with multiple possible names / locations
         remote_files = run(['rclone', 'lsf', os.path.join(base, self.pid)])

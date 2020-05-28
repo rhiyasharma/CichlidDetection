@@ -41,7 +41,7 @@ class DataPrepper:
         df['Area'] = df['Box'].apply(lambda box: area(poly_vp, box))
         df = df.dropna(subset=['Area']).reset_index(drop=True)
 
-        self.fm.local_files.update({'correct_annotations_csv': os.path.join(self.fm.project_dir, 'CorrectAnnotations.csv')})
+        self.fm.local_files.update({'correct_annotations_csv': os.path.join(self.fm.local_files['project_dir'], 'CorrectAnnotations.csv')})
         df.to_csv(self.fm.local_files['correct_annotations_csv'])
         return df
 
@@ -52,32 +52,24 @@ class DataPrepper:
         framefiles = df.Framefile.unique().tolist()
         mask = np.logical_not(np.load(self.fm.local_files['video_crop_numpy']))
         for frame in framefiles:
-            img = cv2.imread(os.path.join(self.fm.local_files['image_folder'], frame))
+            img = cv2.imread(os.path.join(self.fm.local_files['image_dir'], frame))
             img[mask] = 0
             cv2.imshow("Modified Frame: {}".format(frame), img)
             cv2.waitKey(0)
             cv2.destroyAllWindows()
 
     def YOLO_prep(self):
-        self._generate_image_folder()
+        self.prep_annotations()
+        self._move_images()
         self._generate_darknet_labels()
         self._generate_train_test_lists()
         self._generate_namefile()
         self._generate_datafile()
 
     def _generate_darknet_labels(self):
-        # check the image size
-        img_folder = self.fm.local_files['image_folder']
-        test_img = next(os.path.join(img_folder, f) for f in os.listdir(img_folder))
-        test_img_size = cv2.imread(test_img).shape
-        test_img_size = (test_img_size[1], test_img_size[0])
-
-        # create a folder for the label files
-        label_folder = self.fm.make_dir('label_folder', os.path.join(self.fm.local_files['project_directory'], 'labels'))
-
         # define a function that takes a row of CorrectAnnotations.csv and derives the annotation information expected
         # by darknet
-        def custom_apply(row, img_size):
+        def custom_apply(row, img_size=(1296, 972)):
             fname = row['Framefile'].replace('.jpg', '.txt')
             label = 0 if row['Sex'] == 'm' else 1
             w = row['Box'][2]/img_size[0]
@@ -88,34 +80,38 @@ class DataPrepper:
 
         # apply the custom_apply function to the dataframe, and use the resulting dataframe to iteratively create
         # a txt label file for each image
-        df = self.prep_annotations().apply(custom_apply, result_type='expand', axis=1, img_size=test_img_size).set_index(0)
+        df = pd.read_csv(self.fm.local_files['correct_annotations_csv'])
+        df = df.apply(custom_apply, result_type='expand', axis=1).set_index(0)
         for f in df.index.unique():
             dest = os.path.join(self.fm.local_files['label_folder'], f)
             df.loc[[f]].to_csv(dest, sep=' ', header=False, index=False)
 
     def _generate_train_test_lists(self, train_size=0.8, random_state=42):
-        img_dir = self.fm.local_files['image_folder']
+        img_dir = self.fm.local_files['image_dir']
         img_files = [os.path.join(img_dir, f) for f in os.listdir(img_dir)]
         train_files, test_files = train_test_split(img_files, train_size=train_size, random_state=random_state)
-        self.fm.local_files.update({'train_list': os.path.join(self.fm.project_dir, 'train_list.txt'),
-                                    'test_list': os.path.join(self.fm.project_dir, 'test_list.txt')})
+        self.fm.local_files.update({'train_list': os.path.join(self.fm.local_files['training_dir'], 'train_list.txt'),
+                                    'test_list': os.path.join(self.fm.local_files['training_dir'], 'test_list.txt')})
         with open(self.fm.local_files['train_list'], 'w') as f:
             f.writelines('{}\n'.format(f_) for f_ in train_files)
         with open(self.fm.local_files['test_list'], 'w') as f:
             f.writelines('{}\n'.format(f_) for f_ in test_files)
 
     def _generate_namefile(self):
-        self.fm.local_files.update({'name_file': os.path.join(self.fm.project_dir, 'CichlidDetection.names')})
-        with open(self.fm.local_files['name_file'], 'w') as f:
-            f.writelines('{}\n'.format(sex) for sex in ['male', 'female'])
+        name_file = os.path.join(self.fm.local_files['training_dir'], 'CichlidDetection.names')
+        if not os.path.exists(name_file):
+            self.fm.local_files.update({'name_file': name_file})
+            with open(self.fm.local_files['name_file'], 'w') as f:
+                f.writelines('{}\n'.format(sex) for sex in ['male', 'female'])
 
     def _generate_datafile(self):
-        fields = ['classes', 'train', 'valid', 'names']
-        values = [2] + [self.fm.local_files[key] for key in ['train_list', 'test_list', 'name_file']]
-        self.fm.local_files.update({'data_file': os.path.join(self.fm.project_dir, 'CichlidDetection.data')})
-        with open(self.fm.local_files['data_file'], 'w') as f:
-            f.writelines('{}={}\n'.format(f, v) for (f, v) in list(zip(fields, values)))
-            
+        data_file = os.path.join(self.fm.local_files['training_dir'], 'CichlidDetection.data')
+        if not os.path.exists(data_file):
+            fields = ['classes', 'train', 'valid', 'names']
+            values = [2] + [self.fm.local_files[key] for key in ['train_list', 'test_list', 'name_file']]
+            self.fm.local_files.update({'data_file': data_file})
+            with open(self.fm.local_files['data_file'], 'w') as f:
+                f.writelines('{}={}\n'.format(f, v) for (f, v) in list(zip(fields, values)))
             
             
     def FRCNN_prep(self):
@@ -124,9 +120,8 @@ class DataPrepper:
         self._generate_namefile()
         self._generate_datafile()
 
-    def _generate_image_folder(self):
+    def _move_images(self):
         good_files = pd.read_csv(self.fm.local_files['correct_annotations_csv'])['Framefile'].to_list()
-        self.fm.make_dir('image_folder', os.path.join(self.fm.project_dir, 'images'))
         for file in good_files:
-            shutil.copy(os.path.join(self.fm.local_files['all_image_folder'], file), self.fm.local_files['image_folder'])
-
+            shutil.copy(os.path.join(self.fm.local_files['project_image_dir'], file), self.fm.local_files['image_dir'])
+        return good_files

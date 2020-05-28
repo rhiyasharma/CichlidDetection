@@ -16,7 +16,6 @@ class Runner:
     def prep(self, pid):
         self.fm = FileManager(pid)
         self.dp = DataPrepper(self.fm)
-        self.dp.prep_annotations()
         self.dp.YOLO_prep()
 
     def train(self):
