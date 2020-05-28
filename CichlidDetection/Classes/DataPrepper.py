@@ -111,10 +111,10 @@ class DataPrepper:
 
     def _generate_datafile(self):
         data_file = os.path.join(self.fm.local_files['training_dir'], 'CichlidDetection.data')
+        self.fm.local_files.update({'data_file': data_file})
         if not os.path.exists(data_file):
             fields = ['classes', 'train', 'valid', 'names']
             values = [2] + [self.fm.local_files[key] for key in ['train_list', 'test_list', 'name_file']]
-            self.fm.local_files.update({'data_file': data_file})
             with open(self.fm.local_files['data_file'], 'w') as f:
                 f.writelines('{}={}\n'.format(f, v) for (f, v) in list(zip(fields, values)))
             
