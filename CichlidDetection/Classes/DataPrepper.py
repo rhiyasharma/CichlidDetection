@@ -65,6 +65,7 @@ class DataPrepper:
         self._generate_train_test_lists()
         self._generate_namefile()
         self._generate_datafile()
+        self._cleanup()
 
     def _generate_darknet_labels(self):
         # define a function that takes a row of CorrectAnnotations.csv and derives the annotation information expected
@@ -81,9 +82,10 @@ class DataPrepper:
         # apply the custom_apply function to the dataframe, and use the resulting dataframe to iteratively create
         # a txt label file for each image
         df = pd.read_csv(self.fm.local_files['correct_annotations_csv'])
+        df['Box'] = df['Box'].apply(eval)
         df = df.apply(custom_apply, result_type='expand', axis=1).set_index(0)
         for f in df.index.unique():
-            dest = os.path.join(self.fm.local_files['label_folder'], f)
+            dest = os.path.join(self.fm.local_files['label_dir'], f)
             df.loc[[f]].to_csv(dest, sep=' ', header=False, index=False)
 
     def _generate_train_test_lists(self, train_size=0.8, random_state=42):
@@ -125,3 +127,7 @@ class DataPrepper:
         for file in good_files:
             shutil.copy(os.path.join(self.fm.local_files['project_image_dir'], file), self.fm.local_files['image_dir'])
         return good_files
+
+    def _cleanup(self):
+        shutil.rmtree(self.fm.local_files['project_dir'])
+
