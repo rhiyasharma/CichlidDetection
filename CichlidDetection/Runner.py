@@ -9,7 +9,6 @@ from CichlidDetection.Utilities.SystemUtilities import run
 class Runner:
     def __init__(self):
         self.fm = FileManager()
-        self.dp = DataPrepper(self.fm)
         self.__location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
         pass
 
