@@ -32,7 +32,7 @@ class FileManager:
         # self.download(name='boxed_fish_csv', source=source, destination=self.local_files['training_dir'])
         # return pd.read_csv(self.local_files['boxed_fish_csv'], index_col=0)['ProjectID'].unique()
 
-        return ['CV10_3', 'CV_fem_con1', 'CV_fem_con2', 'CV_male_con1', 'CV_male_con2', 'CV_male_con3',
+        return ['CV10_3', 'CV_fem_con1', 'CV_fem_con2', 'CV_male_con2', 'CV_male_con3',
                 'CV_male_con4', 'CV_social_male_con1', 'CV_social_male_con1_2', 'CV_social_male_con2',
                 'CV_social_male_con3', 'CV_social_male_con3_2', 'MC16_2', 'MC6_5', 'MC9_1', 'MC_fem_con1',
                 'MC_fem_con2', 'MC_fem_con3', 'MC_male_con1', 'MC_male_con2', 'MC_male_con3', 'MC_male_con4',
