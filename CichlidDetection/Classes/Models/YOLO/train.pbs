@@ -1,7 +1,7 @@
 #PBS -N train_yolo
 #PBS -l nodes=1:ppn=8:gpus=1:exclusive_process
 #PBS -l walltime=12:00:00
-#PBS -q biocluster-gpu
+#PBS -q force-gpu
 #PBS -j oe
 #PBS -o train.out
 
