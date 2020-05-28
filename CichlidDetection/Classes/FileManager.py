@@ -25,10 +25,20 @@ class FileManager:
             self.make_dir('project_dir', project_dir)
 
     def get_all_pids(self):
-        source = self.locate_cloud_files()['boxed_fish_csv']
-        self.download(name='boxed_fish_csv', source=source, destination=self.local_files['training_dir'])
-        return pd.read_csv(self.local_files['boxed_fish_csv'], index_col=0)['ProjectID'].unique()
+        # intended to get all PIDS from boxed fish csv, but ended up hard coding it after running into incomplete
+        # projects
 
+        # source = self.locate_cloud_files()['boxed_fish_csv']
+        # self.download(name='boxed_fish_csv', source=source, destination=self.local_files['training_dir'])
+        # return pd.read_csv(self.local_files['boxed_fish_csv'], index_col=0)['ProjectID'].unique()
+
+        return ['CV10_3', 'CV_fem_con1', 'CV_fem_con2', 'CV_male_con1', 'CV_male_con2', 'CV_male_con3',
+                'CV_male_con4', 'CV_social_male_con1', 'CV_social_male_con1_2', 'CV_social_male_con2',
+                'CV_social_male_con3', 'CV_social_male_con3_2', 'MC16_2', 'MC6_5', 'MC9_1', 'MC_fem_con1',
+                'MC_fem_con2', 'MC_fem_con3', 'MC_male_con1', 'MC_male_con2', 'MC_male_con3', 'MC_male_con4',
+                'MC_social_male_con1', 'MC_social_male_con1_2', 'MC_social_male_con2', 'MC_social_male_con3',
+                'MCxCVF1_12a_1', 'MCxCVF1_12b_1', 'TI2_4' 'TI3_3', 'TI_male_con1', 'TI_male_con2', 'TI_social_fem_con1',
+                'TI_social_male_con1', 'TI_social_male_con2']
 
     def download_all(self):
         """downloads all files necessary to run DataPrepper.py"""
