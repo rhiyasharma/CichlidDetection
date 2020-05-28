@@ -8,23 +8,23 @@ from CichlidDetection.Utilities.SystemUtilities import run
 
 class Runner:
     def __init__(self):
-        self.fm = None
-        self.dp = None
+        self.fm = FileManager()
+        self.dp = DataPrepper(self.fm)
         self.__location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
         pass
 
-    def prep(self, pid):
-        self.fm = FileManager(pid)
-        self.dp = DataPrepper(self.fm)
-        self.dp.YOLO_prep()
+    def prep(self, pids='All'):
+        if pids is 'All':
+            pids = self.fm.get_all_pids()
+        for pid in pids:
+            self.fm = FileManager(pid)
+            self.dp = DataPrepper(self.fm)
+            self.dp.YOLO_prep()
 
     def train(self):
-        if self.fm is None:
-            print('No file manager detected. Run prep prior to training')
-        else:
-            model_dir = os.path.join(self.__location__, 'Classes', 'Models', 'YOLO')
-            pbs_file = os.path.join(model_dir, 'train.pbs')
-            data_file = self.fm.local_files['data_file']
-            cmd = ['qsub', '-v', 'DATA_FILE={},MODEL_DIR={}'.format(data_file, model_dir), pbs_file]
-            run(cmd)
-            print('training initiated. Use qstat to check job status')
+        model_dir = os.path.join(self.__location__, 'Classes', 'Models', 'YOLO')
+        pbs_file = os.path.join(model_dir, 'train.pbs')
+        data_file = self.fm.local_files['data_file']
+        cmd = ['qsub', '-v', 'DATA_FILE={},MODEL_DIR={}'.format(data_file, model_dir), pbs_file]
+        run(cmd)
+        print('training initiated. Use qstat to check job status')
