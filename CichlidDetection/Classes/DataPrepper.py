@@ -86,7 +86,6 @@ class DataPrepper:
         # a txt label file for each image
         df = pd.read_csv(self.fm.local_files['correct_annotations_csv'])
         df['Box'] = df['Box'].apply(eval)
-        print(self.pid)
         df = df.apply(custom_apply, result_type='expand', axis=1).set_index(0)
         for f in df.index.unique():
             dest = os.path.join(self.fm.local_files['label_dir'], f)
