@@ -1,14 +1,14 @@
 # Repo-specific GitIgnore ----------------------------------------------------------------------------------------------
-*.jpg
-*.jpeg
-*.png
+#*.jpg
+#*.jpeg
+#*.png
 *.bmp
 *.tif
 *.tiff
 *.heic
-*.JPG
-*.JPEG
-*.PNG
+#*.JPG
+#*.JPEG
+#*.PNG
 *.BMP
 *.TIF
 *.TIFF
@@ -24,7 +24,7 @@
 !cfg/yolo*.cfg
 
 storage.googleapis.com
-runs/*
+#runs/*
 data/*
 !data/samples/zidane.jpg
 !data/samples/bus.jpg
@@ -37,7 +37,7 @@ data/*
 !data/*.sh
 
 pycocotools/*
-results*.txt
+#results*.txt
 gcp_test*.sh
 
 # MATLAB GitIgnore -----------------------------------------------------------------------------------------------------
