@@ -38,7 +38,8 @@ class DataPrepper:
         """Takes the BoxedFish.csv file and runs the necessary calculations to produce the CorrectAnnotations.csv file
         :return df: pandas dataframe corresponding to CorrectAnnotations.csv"""
         df = pd.read_csv(self.fm.local_files['boxed_fish_csv'], index_col=0)
-        df = df[(df['ProjectID'] == self.pid) & (df['CorrectAnnotation'] == 'Yes')].dropna(subset=['Box'])
+        df = df[(df['ProjectID'] == self.pid) & (df['CorrectAnnotation'] == 'Yes') & (df['Sex'] != 'u')]
+        df = df.dropna(subset=['Box'])
         df['Box'] = df['Box'].apply(eval)
         poly_vp = Polygon([list(row) for row in list(np.load(self.fm.local_files['video_points_numpy']))])
         df['Area'] = df['Box'].apply(lambda box: area(poly_vp, box))
