@@ -69,7 +69,7 @@ class DataPrepper:
         self._generate_train_test_lists()
         self._generate_namefile()
         self._generate_datafile()
-        self._cleanup()
+        # self._cleanup()
 
     def _generate_darknet_labels(self):
         # define a function that takes a row of CorrectAnnotations.csv and derives the annotation information expected
