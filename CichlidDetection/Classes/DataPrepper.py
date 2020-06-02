@@ -39,11 +39,13 @@ class DataPrepper:
         :return df: pandas dataframe corresponding to CorrectAnnotations.csv"""
         df = pd.read_csv(self.fm.local_files['boxed_fish_csv'], index_col=0)
         df = df[(df['ProjectID'] == self.pid) & (df['CorrectAnnotation'] == 'Yes') & (df['Sex'] != 'u')]
+        empties = df[df['Box'].isnull()]
         df = df.dropna(subset=['Box'])
         df['Box'] = df['Box'].apply(eval)
         poly_vp = Polygon([list(row) for row in list(np.load(self.fm.local_files['video_points_numpy']))])
         df['Area'] = df['Box'].apply(lambda box: area(poly_vp, box))
-        df = df.dropna(subset=['Area']).reset_index(drop=True)
+        df = df.dropna(subset=['Area'])
+        df = pd.concat([df, empties]).reset_index(drop=True)
 
         self.fm.local_files.update({'correct_annotations_csv': os.path.join(self.fm.local_files['project_dir'], 'CorrectAnnotations.csv')})
         df.to_csv(self.fm.local_files['correct_annotations_csv'])
@@ -76,12 +78,15 @@ class DataPrepper:
         # by darknet
         def custom_apply(row, img_size=(1296, 972)):
             fname = row['Framefile'].replace('.jpg', '.txt')
-            label = 0 if row['Sex'] == 'm' else 1
-            w = row['Box'][2]/img_size[0]
-            h = row['Box'][3]/img_size[1]
-            x_center = (row['Box'][0]/img_size[0]) + (w/2)
-            y_center = (row['Box'][1]/img_size[1]) + (h/2)
-            return [fname, label, x_center, y_center, w, h]
+            if np.isnan(row['Box']):
+                return [fname, np.NaN, np.NaN, np.NaN, np.NaN, np.NaN]
+            else:
+                label = 0 if row['Sex'] == 'm' else 1
+                w = row['Box'][2]/img_size[0]
+                h = row['Box'][3]/img_size[1]
+                x_center = (row['Box'][0]/img_size[0]) + (w/2)
+                y_center = (row['Box'][1]/img_size[1]) + (h/2)
+                return [fname, label, x_center, y_center, w, h]
 
         # apply the custom_apply function to the dataframe, and use the resulting dataframe to iteratively create
         # a txt label file for each image
@@ -89,8 +94,9 @@ class DataPrepper:
         df['Box'] = df['Box'].apply(eval)
         df = df.apply(custom_apply, result_type='expand', axis=1).set_index(0)
         for f in df.index.unique():
-            dest = os.path.join(self.fm.local_files['label_dir'], f)
-            df.loc[[f]].to_csv(dest, sep=' ', header=False, index=False)
+            if not np.isnan(df.loc[f, 'Box']):
+                dest = os.path.join(self.fm.local_files['label_dir'], f)
+                df.loc[[f]].to_csv(dest, sep=' ', header=False, index=False)
 
     def _generate_train_test_lists(self, train_size=0.8, random_state=42):
         img_dir = self.fm.local_files['image_dir']
