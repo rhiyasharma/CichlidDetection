@@ -31,8 +31,6 @@ class DataPrepper:
         self.pid = self.fm.pid
         if self.fm.pid is not None:
             self.fm.download_all()
-        else:
-            self._generate_datafile()
 
     def prep_annotations(self):
         """Takes the BoxedFish.csv file and runs the necessary calculations to produce the CorrectAnnotations.csv file
