@@ -47,7 +47,7 @@ def test(cfg,
             model = nn.DataParallel(model)
     else:  # called by train.py
         device = next(model.parameters()).device  # get model device
-        verbose = False
+        verbose = True
 
     # Configure run
     data = parse_data_cfg(data)
