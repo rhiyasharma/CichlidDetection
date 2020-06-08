@@ -1,4 +1,5 @@
 import os, shutil
+from os.path import join
 import pandas as pd
 from CichlidDetection.Utilities.system_utilities import run, make_dir
 
@@ -11,14 +12,17 @@ class FileManager:
         self._initialize()
 
     def _initialize(self):
-        """create a required local directories if they do not already exist and downloads a few essential files"""
-        self._make_dir('data_dir', os.path.join(os.getenv('HOME'), 'scratch', 'CichlidDetection'))
-        self._make_dir('training_dir', os.path.join(self.local_files['data_dir'], 'training'))
-        self._make_dir('image_dir', os.path.join(self.local_files['training_dir'], 'images'))
-        self._make_dir('label_dir', os.path.join(self.local_files['training_dir'], 'labels'))
+        """create a required local directories if they do not already exist, downloads a few essential files,
+        and sets the path to a few files that will be created later"""
+        self._make_dir('data_dir', join(os.getenv('HOME'), 'scratch', 'CichlidDetection'))
+        self._make_dir('training_dir', join(self.local_files['data_dir'], 'training'))
+        self._make_dir('image_dir', join(self.local_files['training_dir'], 'images'))
+        self._make_dir('label_dir', join(self.local_files['training_dir'], 'labels'))
         self.cloud_master_dir, cloud_files = self._locate_cloud_files()
         for name, file in cloud_files.items():
             self._download(name, file)
+        for name, fname in [('train_list', 'train_list.txt'), ('test_list', 'test_list.txt')]:
+            self.local_files.update({name: join(self.local_files['training_dir'], fname)})
 
     def _download(self, name, source, destination=None, overwrite=False):
         """use rclone to download a file, and untar if it is a .tar file. Automatically adds file path to self.local_files
@@ -29,7 +33,7 @@ class FileManager:
         :return local_path: the full path the to the newly downloaded file (or directory, if the file was a tarfile)
         """
         destination = self.local_files['project_dir'] if destination is None else destination
-        local_path = os.path.join(destination, os.path.basename(source))
+        local_path = join(destination, os.path.basename(source))
         if not os.path.exists(local_path) or overwrite:
             run(['rclone', 'copy', source, destination])
             assert os.path.exists(local_path), "download failed\nsource: {}\ndestination: {}".format(source, destination)
@@ -58,10 +62,10 @@ class FileManager:
 
         # establish the correct path to the CichlidPiData directory
         root_dir = [r for r in run(['rclone', 'lsf', remote]).split() if 'McGrath' in r][0]
-        cloud_master_dir = os.path.join(remote + root_dir, 'Apps', 'CichlidPiData')
+        cloud_master_dir = join(remote + root_dir, 'Apps', 'CichlidPiData')
 
         # locate essential, project non-specific files
-        cloud_files = {'boxed_fish_csv': os.path.join(cloud_master_dir, '__AnnotatedData/BoxedFish/BoxedFish.csv')}
+        cloud_files = {'boxed_fish_csv': join(cloud_master_dir, '__AnnotatedData/BoxedFish/BoxedFish.csv')}
 
         return cloud_master_dir, cloud_files
 
@@ -84,21 +88,21 @@ class ProjectFileManager(FileManager):
 
     def _initialize(self):
         """create a required local directories if they do not already exist and download project specific files if not present"""
-        self._make_dir('project_dir', os.path.join(self.local_files['data_dir'], self.pid))
+        self._make_dir('project_dir', join(self.local_files['data_dir'], self.pid))
         for name, file in self._locate_cloud_files().items():
             self._download(name, file)
 
     def _locate_cloud_files(self):
         # track down the project-specific files with multiple possible names / locations
-        cloud_image_dir = os.path.join(self.cloud_master_dir, '__AnnotatedData/BoxedFish/BoxedImages/{}.tar'.format(self.pid))
+        cloud_image_dir = join(self.cloud_master_dir, '__AnnotatedData/BoxedFish/BoxedImages/{}.tar'.format(self.pid))
         cloud_files = {'project_image_dir': cloud_image_dir}
-        remote_files = run(['rclone', 'lsf', os.path.join(self.cloud_master_dir, self.pid)])
+        remote_files = run(['rclone', 'lsf', join(self.cloud_master_dir, self.pid)])
         if 'videoCropPoints.npy' and 'videoCrop.npy' in remote_files.split():
-            cloud_files.update({'video_points_numpy': os.path.join(self.cloud_master_dir, self.pid, 'videoCropPoints.npy')})
-            cloud_files.update({'video_crop_numpy': os.path.join(self.cloud_master_dir, self.pid, 'videoCrop.npy')})
+            cloud_files.update({'video_points_numpy': join(self.cloud_master_dir, self.pid, 'videoCropPoints.npy')})
+            cloud_files.update({'video_crop_numpy': join(self.cloud_master_dir, self.pid, 'videoCrop.npy')})
         else:
-            cloud_files.update({'video_points_numpy': os.path.join(self.cloud_master_dir, self.pid, 'MasterAnalysisFiles', 'VideoPoints.npy')})
-            cloud_files.update({'video_crop_numpy': os.path.join(self.cloud_master_dir, self.pid, 'MasterAnalysisFiles', 'VideoCrop.npy')})
+            cloud_files.update({'video_points_numpy': join(self.cloud_master_dir, self.pid, 'MasterAnalysisFiles', 'VideoPoints.npy')})
+            cloud_files.update({'video_crop_numpy': join(self.cloud_master_dir, self.pid, 'MasterAnalysisFiles', 'VideoCrop.npy')})
         return cloud_files
 
 

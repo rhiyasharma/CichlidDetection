@@ -129,24 +129,21 @@ class DataPrepper:
         for pid in self.unique_pids:
             self.proj_file_managers.update({pid: ProjectFileManager(pid, self.file_manager)})
     
-    def generate_train_validation_lists(self,train_size = 0.8, random_state=29):
-        
-        df = pd.read_csv(self.local_files['boxed_fish_csv_path'])
-        self.local_files.update({'train_list': os.path.join(self.master_dir, 'train_list.txt'),
-                                    'test_list': os.path.join(self.master_dir, 'test_list.txt')})
-        df_subset = df[(df.Nfish != 0)&((df.Sex == 'm')|(df.Sex == 'f'))&(df.CorrectAnnotation=='Yes')]
+    def generate_train_validation_lists(self, train_size=0.8, random_state=29):
+        df = self.boxed_fish_df
+        df_subset = df[(df.Nfish != 0) & ((df.Sex == 'm') | (df.Sex == 'f')) & (df.CorrectAnnotation == 'Yes')]
         df_subset = df_subset.groupby(['ProjectID', 'Framefile']).size()
-        indexs = df_subset.index
+        indices = df_subset.index
         img_files = []
-        for project,frame in indexs:
+        for project, frame in indices:
             key = os.path.join(project,'images',frame)
             img_files.append(key)
         
         train_files, test_files = train_test_split(img_files, train_size=train_size, random_state=random_state)
 
-        with open(self.local_files['train_list'], 'w') as f:
+        with open(self.file_manager.local_files['train_list'], 'w') as f:
             f.writelines('{}\n'.format(f_) for f_ in train_files)
-        with open(self.local_files['test_list'], 'w') as f:
+        with open(self.file_manager.local_files['test_list'], 'w') as f:
             f.writelines('{}\n'.format(f_) for f_ in test_files)
             
         
