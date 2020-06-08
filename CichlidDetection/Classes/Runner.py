@@ -1,7 +1,7 @@
 import argparse, os, sys, subprocess
-from CichlidDetection.Classes.DataPrepper import DataPrepper
-from CichlidDetection.Classes.FileManager import FileManager
-from CichlidDetection.Utilities.SystemUtilities import run
+from CichlidDetection.Classes.DataPreppers import DataPrepper
+from CichlidDetection.Classes.FileManagers import FileManager
+from CichlidDetection.Utilities.system_utilities import run
 
 # main script
 

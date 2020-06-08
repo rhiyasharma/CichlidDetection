@@ -1,7 +1,7 @@
 import os, shutil
 import cv2
 
-from CichlidDetection.Classes.FileManager import FileManager
+from CichlidDetection.Classes.FileManagers import FileManager
 from shapely.geometry import Polygon
 import numpy as np
 import pandas as pd
@@ -116,13 +116,13 @@ class DataPrepper:
             with open(self.fm.local_files['data_file'], 'w') as f:
                 f.writelines('{}={}\n'.format(f, v) for (f, v) in list(zip(fields, values)))
             
-class FRCNN_DataPrepper:
+class DataPrepper:
     """class to handle download and initial preparation of data required for training for faster_RCNN network
     """
     def __init__(self):
         """initializes the DataPrepper for a particular pid, and downloads the required files from dropbox"""
-        temp = FileManager('None')
-        cloud_files = temp.locate_cloud_files()
+        fm = FileManager()
+        cloud_files = fm.locate_cloud_files()
         self.local_files = {}
         self.local_files.update({'boxed_fish_csv_path':temp.download('boxed_fish_csv', cloud_files['boxed_fish_csv'])})
         self.master_dir = '/'.join(self.local_files['boxed_fish_csv_path'].split('/')[:-2])

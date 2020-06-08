@@ -8,8 +8,8 @@ import pdb
 from CichlidDetection.Utilities.utils import Logger,AverageMeter,collate_fn
 import CichlidDetection.Utilities.transforms as T
 
-from CichlidDetection.Classes.DataLoader import DataLoader
-from CichlidDetection.Classes.DataPrepper import FRCNN_DataPrepper
+from CichlidDetection.Classes.DataLoaders import DataLoader
+from CichlidDetection.Classes.DataPreppers import DataPrepper
 
 import torch
 import torchvision
@@ -85,7 +85,7 @@ def train_epoch(epoch, data_loader, model,  optimizer, epoch_logger, batch_logge
 
 def main():
     
-    dp = FRCNN_DataPrepper()
+    dp = DataPrepper()
 #     dp.download()
 #     dp.generate_train_validation_lists()
     

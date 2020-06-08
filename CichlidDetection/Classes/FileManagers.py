@@ -1,13 +1,12 @@
 import os, shutil
 import pandas as pd
-from CichlidDetection.Utilities.SystemUtilities import run, make_dir
+from CichlidDetection.Utilities.system_utilities import run, make_dir
 
 
 class FileManager:
-    """class for setting up local directories, downloading required files, and keeping track of local file paths"""
+    """Project non-specific class for setting up local directories, downloading required files, and keeping track of local file paths"""
 
-    def __init__(self, pid=None):
-        self.pid = pid
+    def __init__(self):
         self.local_files = {}
         self.initialize()
 
@@ -17,6 +16,7 @@ class FileManager:
         training_dir = os.path.join(data_dir, 'training')
         image_dir = os.path.join(training_dir, 'images')
         label_dir = os.path.join(training_dir, 'labels')
+        self.make_dir('data_dir', data_dir)
         self.make_dir('training_dir', training_dir)
         self.make_dir('image_dir', image_dir)
         self.make_dir('label_dir', label_dir)
@@ -101,8 +101,16 @@ class FileManager:
         return path
 
 
+class ProjectFileManager(FileManager):
+    """Project specific class for setting up local directories, downloading required files, and keeping track of local file paths"""
 
+    def __init__(self, pid):
+        FileManager.__init__(self)
+        self.pid = pid
 
+    def initialize(self):
+        """create a required local directories if they do not already exist"""
+        self.make_dir('project_dir', os.path.join(self.local_files['data_dir'], self.pid))
 
 
 
