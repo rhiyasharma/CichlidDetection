@@ -5,11 +5,11 @@ from PIL import Image
 
 import pdb
 
-from Utilities.utils import Logger,AverageMeter,collate_fn
-import Utilities.transforms as T
+from CichlidDetection.Utilities.utils import Logger,AverageMeter,collate_fn
+import CichlidDetection.Utilities.transforms as T
 
-from Classes.DataLoader.FasterRCNN_loader import CicilidDataset
-from Classes.DataPrepper import FRCNN_DataPrepper
+from CichlidDetection.Classes.DataLoader import DataLoader
+from CichlidDetection.Classes.DataPrepper import FRCNN_DataPrepper
 
 import torch
 import torchvision
@@ -89,7 +89,7 @@ def main():
 #     dp.download()
 #     dp.generate_train_validation_lists()
     
-    train_dataset = CicilidDataset(dp.master_dir, get_transform(train=True),'training')
+    train_dataset = DataLoader(dp.master_dir, get_transform(train=True),'training')
     
 #     for i in range(train_dataset.__len__()):
 #         try:
@@ -105,7 +105,7 @@ def main():
 #             print(train_dataset.imgs[i])
 #             print(train_dataset.boxes[train_dataset.imgs[i]])
 #             break
-    test_dataset = CicilidDataset(dp.master_dir, get_transform(train=False),'test')
+    test_dataset = DataLoader(dp.master_dir, get_transform(train=False),'test')
     
     model = torchvision.models.detection.fasterrcnn_resnet50_fpn(num_classes=2)
     parameters = model.parameters()
