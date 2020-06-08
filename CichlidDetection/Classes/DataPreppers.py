@@ -1,7 +1,7 @@
 import os, shutil
 import cv2
 
-from CichlidDetection.Classes.FileManagers import FileManager
+from CichlidDetection.Classes.FileManagers import FileManager, ProjectFileManager
 from shapely.geometry import Polygon
 import numpy as np
 import pandas as pd
@@ -120,19 +120,14 @@ class DataPrepper:
     """class to handle download and initial preparation of data required for training for faster_RCNN network
     """
     def __init__(self):
-        """initializes the DataPrepper for a particular pid, and downloads the required files from dropbox"""
-        fm = FileManager()
-        cloud_files = fm.locate_cloud_files()
-        self.local_files = {}
-        self.local_files.update({'boxed_fish_csv_path':temp.download('boxed_fish_csv', cloud_files['boxed_fish_csv'])})
-        self.master_dir = '/'.join(self.local_files['boxed_fish_csv_path'].split('/')[:-2])
+        self.file_manager = FileManager()
+        self.proj_file_managers = {}
+        self.boxed_fish_df = pd.read_csv(self.file_manager.local_files['boxed_fish_csv'], index_col=0)
+        self.unique_pids = self.boxed_fish_df['ProjectID'].unique()
         
-    def download(self):
-        df = pd.read_csv(self.local_files['boxed_fish_csv_path'], index_col=0)
-        self.unique_pids = df.ProjectID.unique()
+    def download_all(self):
         for pid in self.unique_pids:
-            fm = FileManager(pid)
-            fm.download_images()
+            self.proj_file_managers.update({pid: ProjectFileManager(pid, self.file_manager)})
     
     def generate_train_validation_lists(self,train_size = 0.8, random_state=29):
         

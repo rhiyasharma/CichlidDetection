@@ -12,19 +12,20 @@ class FileManager:
 
     def _initialize(self):
         """create a required local directories if they do not already exist and downloads a few essential files"""
-        self.make_dir('data_dir', os.path.join(os.getenv('HOME'), 'scratch', 'CichlidDetection'))
-        self.make_dir('training_dir', os.path.join(self.local_files['data_dir'], 'training'))
-        self.make_dir('image_dir', os.path.join(self.local_files['training_dir'], 'images'))
-        self.make_dir('label_dir', os.path.join(self.local_files['training_dir'], 'labels'))
-        self.cloud_master_dir, cloud_files = self.locate_cloud_files()
+        self._make_dir('data_dir', os.path.join(os.getenv('HOME'), 'scratch', 'CichlidDetection'))
+        self._make_dir('training_dir', os.path.join(self.local_files['data_dir'], 'training'))
+        self._make_dir('image_dir', os.path.join(self.local_files['training_dir'], 'images'))
+        self._make_dir('label_dir', os.path.join(self.local_files['training_dir'], 'labels'))
+        self.cloud_master_dir, cloud_files = self._locate_cloud_files()
         for name, file in cloud_files.items():
-            self.download(name, file)
+            self._download(name, file)
 
-    def download(self, name, source, destination=None, overwrite=False):
+    def _download(self, name, source, destination=None, overwrite=False):
         """use rclone to download a file, and untar if it is a .tar file. Automatically adds file path to self.local_files
         :param name: brief descriptor of the file, to be used for easy access to the file path using the self.local_files dict
         :param source: full path to a dropbox file, including the remote
         :param destination: full path to the local destination directory. Defaults to self.project_dir
+        :param overwrite: if True, run rclone copy even if a local file with the intended name already exists
         :return local_path: the full path the to the newly downloaded file (or directory, if the file was a tarfile)
         """
         destination = self.local_files['project_dir'] if destination is None else destination
@@ -39,7 +40,7 @@ class FileManager:
         self.local_files.update({name: local_path})
         return local_path
 
-    def locate_cloud_files(self):
+    def _locate_cloud_files(self):
         """locate the files in the cloud necessary to run PrepareTrainingData.py
         :return cloud_files: a dictionary of source paths of the form expected by FileManager.download(), indexed
         identically to the dictionary returned by download_all"""
@@ -64,38 +65,30 @@ class FileManager:
 
         return cloud_master_dir, cloud_files
 
-    def make_dir(self, name, path):
+    def _make_dir(self, name, path):
         self.local_files.update({name: make_dir(path)})
         return path
-
-
-    def get_all_pids(self):
-        # intended to get all PIDS from boxed fish csv, but ended up hard coding it after running into incomplete
-        # projects
-
-        # source = self.locate_cloud_files()['boxed_fish_csv']
-        # self.download(name='boxed_fish_csv', source=source, destination=self.local_files['training_dir'])
-        # return pd.read_csv(self.local_files['boxed_fish_csv'], index_col=0)['ProjectID'].unique()
-
-        return ['CV10_3', 'CV_fem_con1', 'CV_fem_con2', 'MC6_5', 'MC16_2', 'MC_fem_con1',
-                'MC_fem_con2', 'MCxCVF1_12a_1', 'MCxCVF1_12b_1', 'TI2_4', 'TI3_3']
 
 
 class ProjectFileManager(FileManager):
     """Project specific class for setting up local directories, downloading required files, and keeping track of local file paths"""
 
-    def __init__(self, pid):
-        FileManager.__init__(self)
+    def __init__(self, pid, file_manager=None):
+        # initialize the parent class, unless an existing file manager was passed to the constructor to save time
+        if file_manager is None:
+            FileManager.__init__(self)
+        else:
+            self.local_files = file_manager.local_files
         self.pid = pid
         self._initialize()
 
     def _initialize(self):
         """create a required local directories if they do not already exist and download project specific files if not present"""
-        self.make_dir('project_dir', os.path.join(self.local_files['data_dir'], self.pid))
-        for name, file in self.locate_cloud_files().items():
-            self.download(name, file)
+        self._make_dir('project_dir', os.path.join(self.local_files['data_dir'], self.pid))
+        for name, file in self._locate_cloud_files().items():
+            self._download(name, file)
 
-    def locate_cloud_files(self):
+    def _locate_cloud_files(self):
         # track down the project-specific files with multiple possible names / locations
         cloud_image_dir = os.path.join(self.cloud_master_dir, '__AnnotatedData/BoxedFish/BoxedImages/{}.tar'.format(self.pid))
         cloud_files = {'project_image_dir': cloud_image_dir}
