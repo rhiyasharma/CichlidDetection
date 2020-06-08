@@ -4,4 +4,3 @@ from CichlidDetection.Classes.FileManager import FileManager
 trial = 'MC6_5'
 fm = FileManager(trial)
 dp = DataPrepper(fm)
-#test

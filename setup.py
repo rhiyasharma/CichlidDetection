@@ -7,7 +7,7 @@ def readme():
 
 
 setup(name='CichlidDetection',
-      version='0.1',
+      version='0.2',
       description='',
       long_description=readme(),
       url='https://github.com/ptmcgrat/CichlidDetection',
