@@ -4,7 +4,7 @@ from collections import defaultdict
 from PIL import Image
 import torch
 
-class CicilidDataset(object):
+class DataLoader(object):
     def __init__(self, root, transforms,subset):
         self.root = root
         self.transforms = transforms
