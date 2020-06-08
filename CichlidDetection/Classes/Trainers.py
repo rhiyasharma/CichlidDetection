@@ -6,81 +6,76 @@ from PIL import Image
 import pdb
 
 from CichlidDetection.Utilities.utils import Logger, AverageMeter, collate_fn
-from CichlidDetection.Utilities.transforms import RandomHorizontalFlip, ToTensor, Compose
+import CichlidDetection.Utilities.transforms as T
 
 from CichlidDetection.Classes.DataLoaders import DataLoader
 from CichlidDetection.Classes.DataPreppers import DataPrepper
+from CichlidDetection.Classes.FileManagers import FileManager
 
 import torch
 import torchvision
-from torch.optim import lr_scheduler
 from torch import optim
 
+class Trainer:
 
-def get_transform(train):
-    transforms = [ToTensor]
-    if train:
-        transforms.append(T.RandomHorizontalFlip(0.5))
-    return T.Compose(transforms)
-    
+    def __init__(self):
+        self.fm = FileManager()
 
-def train_epoch(epoch, data_loader, model,  optimizer, epoch_logger, batch_logger,device):
-    print('train at epoch {}'.format(epoch))
-    model.train()
+    def get_transform(self, train):
+        transforms = [T.ToTensor]
+        if train:
+            transforms.append(T.RandomHorizontalFlip(0.5))
+        return T.Compose(transforms)
 
-    batch_time = AverageMeter()
-    data_time = AverageMeter()
-    losses = AverageMeter()
-    end_time = time.time()
-    
-    for i, (images,targets) in enumerate(data_loader):
-        data_time.update(time.time() - end_time)
-        images = list(image.to(device) for image in images)
-        targets = [{k: v.to(device) for k, v in t.items()} for t in targets]
-        
-        
-#         if not opt.no_cuda:
-#             targets = targets.cuda(async=True)
-#         inputs = Variable(inputs)
-#         targets = Variable(targets)
-        loss_dict = model(images,targets)
-        today_loss = sum(loss for loss in loss_dict.values())
-        
+    def train_epoch(self, epoch, data_loader, model,  optimizer, epoch_logger, batch_logger, device):
+        print('train at epoch {}'.format(epoch))
+        model.train()
 
-        losses.update(today_loss.item(), len(images))
-
-        optimizer.zero_grad()
-        today_loss.backward()
-        optimizer.step()
-
-        batch_time.update(time.time() - end_time)
+        batch_time = AverageMeter()
+        data_time = AverageMeter()
+        losses = AverageMeter()
         end_time = time.time()
 
-        batch_logger.log({
+        for i, (images, targets) in enumerate(data_loader):
+            data_time.update(time.time() - end_time)
+            images = list(image.to(device) for image in images)
+            targets = [{k: v.to(device) for k, v in t.items()} for t in targets]
+            loss_dict = model(images, targets)
+            today_loss = sum(loss for loss in loss_dict.values())
+            losses.update(today_loss.item(), len(images))
+
+            optimizer.zero_grad()
+            today_loss.backward()
+            optimizer.step()
+
+            batch_time.update(time.time() - end_time)
+            end_time = time.time()
+
+            batch_logger.log({
+                'epoch': epoch,
+                'batch': i + 1,
+                'iter': (epoch - 1) * len(data_loader) + (i + 1),
+                'loss': losses.val,
+                'lr': optimizer.param_groups[0]['lr']
+            })
+
+            print('Epoch: [{0}][{1}/{2}]\t'
+                  'Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
+                  'Data {data_time.val:.3f} ({data_time.avg:.3f})\t'
+                  'Loss {loss.val:.4f} ({loss.avg:.4f})\t'
+                  .format(
+                      epoch,
+                      i + 1,
+                      len(data_loader),
+                      batch_time=batch_time,
+                      data_time=data_time,
+                      loss=losses))
+        epoch_logger.log({
             'epoch': epoch,
-            'batch': i + 1,
-            'iter': (epoch - 1) * len(data_loader) + (i + 1),
-            'loss': losses.val,
+            'loss': losses.avg,
             'lr': optimizer.param_groups[0]['lr']
         })
-
-        print('Epoch: [{0}][{1}/{2}]\t'
-              'Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
-              'Data {data_time.val:.3f} ({data_time.avg:.3f})\t'
-              'Loss {loss.val:.4f} ({loss.avg:.4f})\t'
-              .format(
-                  epoch,
-                  i + 1,
-                  len(data_loader),
-                  batch_time=batch_time,
-                  data_time=data_time,
-                  loss=losses))
-    epoch_logger.log({
-        'epoch': epoch,
-        'loss': losses.avg,
-        'lr': optimizer.param_groups[0]['lr']
-    })
-    return losses.avg
+        return losses.avg
 
 def main():
     
@@ -88,7 +83,7 @@ def main():
 #     dp.download()
 #     dp.generate_train_validation_lists()
     
-    train_dataset = DataLoader(dp.master_dir, get_transform(train=True),'training')
+    train_dataset = DataLoader(get_transform(train=True), 'training')
     
 #     for i in range(train_dataset.__len__()):
 #         try:
@@ -122,7 +117,7 @@ def main():
     optimizer = optim.SGD(parameters, lr=0.005,
                                 momentum=0.9, weight_decay=0.0005)
     # and a learning rate scheduler
-    scheduler = lr_scheduler.ReduceLROnPlateau(
+    scheduler = optim.lr_scheduler.ReduceLROnPlateau(
             optimizer, 'min', patience=5)
             
             

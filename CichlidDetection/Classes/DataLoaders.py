@@ -17,13 +17,11 @@ class DataLoader(object):
             self.img_files = sorted(f.readlines())
         self.label_files = [fname.replace('.jpg', '.txt') for fname in self.img_files]
 
-
     def __getitem__(self, idx):
         img = Image.open(self.img_files[idx]).convert("RGB")
         target = read_label_file(self.label_files[idx])
         if self.transforms is not None:
             img, target = self.transforms(img, target)
-
         return img, target
 
     def __len__(self):
