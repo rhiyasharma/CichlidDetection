@@ -8,40 +8,19 @@ class FileManager:
 
     def __init__(self):
         self.local_files = {}
-        self.initialize()
+        self._initialize()
 
-    def initialize(self):
-        """create a required local directories if they do not already exist"""
-        data_dir = os.path.join(os.getenv('HOME'), 'scratch', 'CichlidDetection')
-        training_dir = os.path.join(data_dir, 'training')
-        image_dir = os.path.join(training_dir, 'images')
-        label_dir = os.path.join(training_dir, 'labels')
-        self.make_dir('data_dir', data_dir)
-        self.make_dir('training_dir', training_dir)
-        self.make_dir('image_dir', image_dir)
-        self.make_dir('label_dir', label_dir)
-        if self.pid is not None:
-            project_dir = os.path.join(data_dir, self.pid)
-            self.make_dir('project_dir', project_dir)
-
-    def get_all_pids(self):
-        # intended to get all PIDS from boxed fish csv, but ended up hard coding it after running into incomplete
-        # projects
-
-        # source = self.locate_cloud_files()['boxed_fish_csv']
-        # self.download(name='boxed_fish_csv', source=source, destination=self.local_files['training_dir'])
-        # return pd.read_csv(self.local_files['boxed_fish_csv'], index_col=0)['ProjectID'].unique()
-
-        return ['CV10_3', 'CV_fem_con1', 'CV_fem_con2', 'MC6_5', 'MC16_2', 'MC_fem_con1',
-                'MC_fem_con2', 'MCxCVF1_12a_1', 'MCxCVF1_12b_1', 'TI2_4', 'TI3_3']
-
-    def download_all(self):
-        """downloads all files necessary to run DataPrepper.py"""
-        cloud_files = self.locate_cloud_files()
+    def _initialize(self):
+        """create a required local directories if they do not already exist and downloads a few essential files"""
+        self.make_dir('data_dir', os.path.join(os.getenv('HOME'), 'scratch', 'CichlidDetection'))
+        self.make_dir('training_dir', os.path.join(self.local_files['data_dir'], 'training'))
+        self.make_dir('image_dir', os.path.join(self.local_files['training_dir'], 'images'))
+        self.make_dir('label_dir', os.path.join(self.local_files['training_dir'], 'labels'))
+        self.cloud_master_dir, cloud_files = self.locate_cloud_files()
         for name, file in cloud_files.items():
             self.download(name, file)
 
-    def download(self, name, source, destination=None):
+    def download(self, name, source, destination=None, overwrite=False):
         """use rclone to download a file, and untar if it is a .tar file. Automatically adds file path to self.local_files
         :param name: brief descriptor of the file, to be used for easy access to the file path using the self.local_files dict
         :param source: full path to a dropbox file, including the remote
@@ -50,7 +29,7 @@ class FileManager:
         """
         destination = self.local_files['project_dir'] if destination is None else destination
         local_path = os.path.join(destination, os.path.basename(source))
-        if not os.path.exists(local_path):
+        if not os.path.exists(local_path) or overwrite:
             run(['rclone', 'copy', source, destination])
             assert os.path.exists(local_path), "download failed\nsource: {}\ndestination: {}".format(source, destination)
         if os.path.splitext(local_path)[1] == '.tar':
@@ -78,27 +57,28 @@ class FileManager:
 
         # establish the correct path to the CichlidPiData directory
         root_dir = [r for r in run(['rclone', 'lsf', remote]).split() if 'McGrath' in r][0]
-        base = os.path.join(remote + root_dir, 'Apps', 'CichlidPiData')
+        cloud_master_dir = os.path.join(remote + root_dir, 'Apps', 'CichlidPiData')
 
-        # start the cloud_files dictionary with the easy to find files
-        cloud_files = {'boxed_fish_csv': os.path.join(base, '__AnnotatedData/BoxedFish/BoxedFish.csv')}
+        # locate essential, project non-specific files
+        cloud_files = {'boxed_fish_csv': os.path.join(cloud_master_dir, '__AnnotatedData/BoxedFish/BoxedFish.csv')}
 
-        # track down the project-specific files with multiple possible names / locations
-        if self.pid is not None:
-            cloud_files.update({'project_image_dir': os.path.join(base, '__AnnotatedData/BoxedFish/BoxedImages/{}.tar'.format(self.pid))})
-            remote_files = run(['rclone', 'lsf', os.path.join(base, self.pid)])
-            if 'videoCropPoints.npy' and 'videoCrop.npy' in remote_files.split():
-                cloud_files.update({'video_points_numpy': os.path.join(base, self.pid, 'videoCropPoints.npy')})
-                cloud_files.update({'video_crop_numpy': os.path.join(base, self.pid, 'videoCrop.npy')})
-            else:
-                cloud_files.update({'video_points_numpy': os.path.join(base, self.pid, 'MasterAnalysisFiles', 'VideoPoints.npy')})
-                cloud_files.update({'video_crop_numpy': os.path.join(base, self.pid, 'MasterAnalysisFiles', 'VideoCrop.npy')})
-
-        return cloud_files
+        return cloud_master_dir, cloud_files
 
     def make_dir(self, name, path):
         self.local_files.update({name: make_dir(path)})
         return path
+
+
+    def get_all_pids(self):
+        # intended to get all PIDS from boxed fish csv, but ended up hard coding it after running into incomplete
+        # projects
+
+        # source = self.locate_cloud_files()['boxed_fish_csv']
+        # self.download(name='boxed_fish_csv', source=source, destination=self.local_files['training_dir'])
+        # return pd.read_csv(self.local_files['boxed_fish_csv'], index_col=0)['ProjectID'].unique()
+
+        return ['CV10_3', 'CV_fem_con1', 'CV_fem_con2', 'MC6_5', 'MC16_2', 'MC_fem_con1',
+                'MC_fem_con2', 'MCxCVF1_12a_1', 'MCxCVF1_12b_1', 'TI2_4', 'TI3_3']
 
 
 class ProjectFileManager(FileManager):
@@ -107,12 +87,26 @@ class ProjectFileManager(FileManager):
     def __init__(self, pid):
         FileManager.__init__(self)
         self.pid = pid
+        self._initialize()
 
-    def initialize(self):
-        """create a required local directories if they do not already exist"""
+    def _initialize(self):
+        """create a required local directories if they do not already exist and download project specific files if not present"""
         self.make_dir('project_dir', os.path.join(self.local_files['data_dir'], self.pid))
+        for name, file in self.locate_cloud_files().items():
+            self.download(name, file)
 
-
+    def locate_cloud_files(self):
+        # track down the project-specific files with multiple possible names / locations
+        cloud_image_dir = os.path.join(self.cloud_master_dir, '__AnnotatedData/BoxedFish/BoxedImages/{}.tar'.format(self.pid))
+        cloud_files = {'project_image_dir': cloud_image_dir}
+        remote_files = run(['rclone', 'lsf', os.path.join(self.cloud_master_dir, self.pid)])
+        if 'videoCropPoints.npy' and 'videoCrop.npy' in remote_files.split():
+            cloud_files.update({'video_points_numpy': os.path.join(self.cloud_master_dir, self.pid, 'videoCropPoints.npy')})
+            cloud_files.update({'video_crop_numpy': os.path.join(self.cloud_master_dir, self.pid, 'videoCrop.npy')})
+        else:
+            cloud_files.update({'video_points_numpy': os.path.join(self.cloud_master_dir, self.pid, 'MasterAnalysisFiles', 'VideoPoints.npy')})
+            cloud_files.update({'video_crop_numpy': os.path.join(self.cloud_master_dir, self.pid, 'MasterAnalysisFiles', 'VideoCrop.npy')})
+        return cloud_files
 
 
 
