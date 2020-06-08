@@ -1,159 +1,68 @@
 import os, shutil
-import cv2
-
 from CichlidDetection.Classes.FileManagers import FileManager, ProjectFileManager
+from CichlidDetection.Utilities.utils import area
 from shapely.geometry import Polygon
 import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split
 
-import pdb
 
-
-def area(poly_vp, box):
-    """
-    :param poly_vp:
-    :param box:
-    :return:
-    """
-    x_a, y_a, w_a, h_a = box
-    poly_ann = Polygon([[x_a, y_a], [x_a + w_a, y_a], [x_a + w_a, y_a + h_a], [x_a, y_a + h_a]])
-    intersection_area = poly_ann.intersection(poly_vp).area
-    ann_area = poly_ann.area
-    return ann_area if ann_area == intersection_area else np.nan
-
-
-class DataPrepper:
-    """class to handle the download and initial preparation of data required for training
-    :param pid: short for ProjectID. The name of the project to be analyzed, for example, 'MC6_5'
-    """
-    def __init__(self, fm):
-        """initializes the DataPrepper for a particular pid, and downloads the required files from dropbox"""
-        self.fm = fm
-        self.pid = self.fm.pid
-        if self.fm.pid is not None:
-            self.fm.download_all()
-
-    def prep_annotations(self):
-        """Takes the BoxedFish.csv file and runs the necessary calculations to produce the CorrectAnnotations.csv file
-        :return df: pandas dataframe corresponding to CorrectAnnotations.csv"""
-        df = pd.read_csv(self.fm.local_files['boxed_fish_csv'], index_col=0)
-        df = df[(df['ProjectID'] == self.pid) & (df['CorrectAnnotation'] == 'Yes') & (df['Sex'] != 'u')]
-        empties = df[df['Box'].isnull()]
-        df = df.dropna(subset=['Box'])
-        df['Box'] = df['Box'].apply(eval)
-        poly_vp = Polygon([list(row) for row in list(np.load(self.fm.local_files['video_points_numpy']))])
-        df['Area'] = df['Box'].apply(lambda box: area(poly_vp, box))
-        df = df.dropna(subset=['Area'])
-        df = pd.concat([df, empties]).reset_index(drop=True)
-
-        self.fm.local_files.update({'correct_annotations_csv': os.path.join(self.fm.local_files['project_dir'], 'CorrectAnnotations.csv')})
-        df.to_csv(self.fm.local_files['correct_annotations_csv'])
-        return df
-
-    def view(self):
-        """
-        """
-        df = self.prep_annotations()
-        framefiles = df.Framefile.unique().tolist()
-        mask = np.logical_not(np.load(self.fm.local_files['video_crop_numpy']))
-        for frame in framefiles:
-            img = cv2.imread(os.path.join(self.fm.local_files['image_dir'], frame))
-            img[mask] = 0
-            cv2.imshow("Modified Frame: {}".format(frame), img)
-            cv2.waitKey(0)
-            cv2.destroyAllWindows()
-
-    def _generate_darknet_labels(self):
-        # define a function that takes a row of CorrectAnnotations.csv and derives the annotation information expected
-        # by darknet
-        def custom_apply(row, img_size=(1296, 972)):
-            fname = row['Framefile'].replace('.jpg', '.txt')
-            if pd.isna(row['Box']):
-                return [fname, np.NaN, np.NaN, np.NaN, np.NaN, np.NaN]
-            else:
-                box = eval(row['Box'])
-                label = 0 if row['Sex'] == 'm' else 1
-                w = box[2]/img_size[0]
-                h = box[3]/img_size[1]
-                x_center = (box[0]/img_size[0]) + (w/2)
-                y_center = (box[1]/img_size[1]) + (h/2)
-                return [fname, label, x_center, y_center, w, h]
-
-        # apply the custom_apply function to the dataframe, and use the resulting dataframe to iteratively create
-        # a txt label file for each image
-        df = pd.read_csv(self.fm.local_files['correct_annotations_csv'])
-        df = df.apply(custom_apply, result_type='expand', axis=1).set_index(0)
-        for f in df.index.unique():
-            if df.loc[f].notna().all().all():
-                dest = os.path.join(self.fm.local_files['label_dir'], f)
-                df.loc[[f]].to_csv(dest, sep=' ', header=False, index=False)
-
-    def _generate_train_test_lists(self, train_size=0.8, random_state=42):
-        img_dir = self.fm.local_files['image_dir']
-        img_files = [os.path.join(img_dir, f) for f in os.listdir(img_dir)]
-        train_files, test_files = train_test_split(img_files, train_size=train_size, random_state=random_state)
-        self.fm.local_files.update({'train_list': os.path.join(self.fm.local_files['training_dir'], 'train_list.txt'),
-                                    'test_list': os.path.join(self.fm.local_files['training_dir'], 'test_list.txt')})
-        with open(self.fm.local_files['train_list'], 'w') as f:
-            f.writelines('{}\n'.format(f_) for f_ in train_files)
-        with open(self.fm.local_files['test_list'], 'w') as f:
-            f.writelines('{}\n'.format(f_) for f_ in test_files)
-
-    def _generate_namefile(self):
-        name_file = os.path.join(self.fm.local_files['training_dir'], 'CichlidDetection.names')
-        if not os.path.exists(name_file):
-            self.fm.local_files.update({'name_file': name_file})
-            with open(self.fm.local_files['name_file'], 'w') as f:
-                f.writelines('{}\n'.format(sex) for sex in ['male', 'female'])
-
-    def _generate_datafile(self):
-        data_file = os.path.join(self.fm.local_files['training_dir'], 'CichlidDetection.data')
-        self.fm.local_files.update({'data_file': data_file})
-        if not os.path.exists(data_file):
-            fields = ['classes', 'train', 'valid', 'names']
-            values = [2] + [self.fm.local_files[key] for key in ['train_list', 'test_list', 'name_file']]
-            with open(self.fm.local_files['data_file'], 'w') as f:
-                f.writelines('{}={}\n'.format(f, v) for (f, v) in list(zip(fields, values)))
-            
 class DataPrepper:
     """class to handle download and initial preparation of data required for training for faster_RCNN network
     """
     def __init__(self):
         self.file_manager = FileManager()
         self.proj_file_managers = {}
-        self.boxed_fish_df = pd.read_csv(self.file_manager.local_files['boxed_fish_csv'], index_col=0)
-        self.unique_pids = self.boxed_fish_df['ProjectID'].unique()
-        
-    def download_all(self):
-        for pid in self.unique_pids:
-            self.proj_file_managers.update({pid: ProjectFileManager(pid, self.file_manager)})
-    
-    def generate_train_validation_lists(self, train_size=0.8, random_state=29):
-        df = self.boxed_fish_df
-        df_subset = df[(df.Nfish != 0) & ((df.Sex == 'm') | (df.Sex == 'f')) & (df.CorrectAnnotation == 'Yes')]
-        df_subset = df_subset.groupby(['ProjectID', 'Framefile']).size()
-        indices = df_subset.index
-        img_files = []
-        for project, frame in indices:
-            key = os.path.join(project,'images',frame)
-            img_files.append(key)
-        
-        train_files, test_files = train_test_split(img_files, train_size=train_size, random_state=random_state)
+        self.labels = None
 
+    def download_all(self):
+        for pid in self.file_manager.unique_pids:
+            self.proj_file_managers.update({pid: ProjectFileManager(pid, self.file_manager)})
+
+    def prep(self):
+        good_images = self._prep_labels()
+        self._prep_images(good_images)
+        self._generate_train_test_lists()
+
+    def _prep_labels(self):
+        # load the boxed fish csv
+        df = pd.read_csv(self.file_manager.local_files['boxed_fish_csv'], index_col=0)
+        # drop empty frames, frames labeled u, and incorrectly annotated frames
+        df = df[(df.Nfish != 0) & ((df.Sex == 'm') | (df.Sex == 'f')) & (df.CorrectAnnotation == 'Yes')]
+        # drop annotation boxes outside the area defined by the video points numpy
+        df['Box'] = df['Box'].apply(eval)
+        poly_vp = Polygon([list(row) for row in list(np.load(self.file_manager.local_files['video_points_numpy']))])
+        df['Area'] = df['Box'].apply(lambda box: area(poly_vp, box))
+        df = df.dropna(subset=['Area'])
+        # convert the 'Box' tuples to min and max x and y coordinates
+        df[['xmin', 'ymin', 'w', 'h']] = pd.DataFrame(df['Box'].tolist(), index=df.index)
+        df['xmax'] = df.xmin + df.w
+        df['ymax'] = df.ymin + df.h
+        df['label'] = [1 if sex == 'f' else 2 for sex in df.Sex]
+        # trim down to only the required columns
+        df = df.set_index('Framefile')
+        df = df[['xmin', 'ymin', 'xmax', 'ymax', 'label']]
+        # write a labelfile for each training image
+        good_images = df.FrameFile.unique()
+        for f in good_images:
+            dest = os.path.join(self.file_manager.local_files['label_dir'], f.replace('.jpg', '.txt'))
+            df.loc[[f]].to_csv(dest, sep=' ', header=False, index=False)
+        return good_images
+
+    def _prep_images(self, good_images):
+        dest = self.file_manager.local_files['image_dir']
+        for pid in self.file_manager.unique_pids:
+            proj_image_dir = self.proj_file_managers[pid].local_files['project_image_dir']
+            proj_images = [img for img in good_images if pid in img]
+            for fname in proj_images:
+                path = os.path.join(proj_image_dir, fname)
+                shutil.copy(path, dest)
+
+    def _generate_train_test_lists(self, train_size=0.8, random_state=42):
+        img_dir = self.file_manager.local_files['image_dir']
+        img_files = [os.path.join(img_dir, f) for f in os.listdir(img_dir)]
+        train_files, test_files = train_test_split(img_files, train_size=train_size, random_state=random_state)
         with open(self.file_manager.local_files['train_list'], 'w') as f:
             f.writelines('{}\n'.format(f_) for f_ in train_files)
         with open(self.file_manager.local_files['test_list'], 'w') as f:
             f.writelines('{}\n'.format(f_) for f_ in test_files)
-            
-        
-
-    def _move_images(self):
-        good_files = pd.read_csv(self.fm.local_files['correct_annotations_csv'])['Framefile'].to_list()
-        for file in good_files:
-            shutil.copy(os.path.join(self.fm.local_files['project_image_dir'], file), self.fm.local_files['image_dir'])
-        return good_files
-
-    def _cleanup(self):
-        shutil.rmtree(self.fm.local_files['project_dir'])
-

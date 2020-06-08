@@ -1,4 +1,8 @@
 import csv
+from shapely.geometry import Polygon
+import numpy as np
+import torch
+
 class AverageMeter(object):
     """Computes and stores the average and current value"""
 
@@ -37,6 +41,33 @@ class Logger(object):
 
         self.logger.writerow(write_values)
         self.log_file.flush()
-        
+
+
 def collate_fn(batch):
     return tuple(zip(*batch))
+
+
+def area(poly_vp, box):
+    """
+    :param poly_vp:
+    :param box:
+    :return:
+    """
+    x_a, y_a, w_a, h_a = box
+    poly_ann = Polygon([[x_a, y_a], [x_a + w_a, y_a], [x_a + w_a, y_a + h_a], [x_a, y_a + h_a]])
+    intersection_area = poly_ann.intersection(poly_vp).area
+    ann_area = poly_ann.area
+    return ann_area if ann_area == intersection_area else np.nan
+
+def read_label_file(path):
+    boxes = []
+    labels = []
+    with open(path) as f:
+        for line in f.readlines():
+            values = line.split()
+            boxes.append([float(val) for val in values[:4]])
+            labels.append(int(values[4]))
+    boxes = torch.as_tensor(boxes, dtype=torch.float32)
+    labels = torch.as_tensor(labels, dtype=torch.int64)
+    return {'boxes': boxes, 'labels': labels}
+

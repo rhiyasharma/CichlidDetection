@@ -23,6 +23,7 @@ class FileManager:
             self._download(name, file)
         for name, fname in [('train_list', 'train_list.txt'), ('test_list', 'test_list.txt')]:
             self.local_files.update({name: join(self.local_files['training_dir'], fname)})
+        self.unique_pids = pd.read_csv(self.local_files['boxed_fish_csv'], index_col=0)['ProjectID'].unique()
 
     def _download(self, name, source, destination=None, overwrite=False):
         """use rclone to download a file, and untar if it is a .tar file. Automatically adds file path to self.local_files

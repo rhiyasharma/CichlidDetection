@@ -5,8 +5,8 @@ from PIL import Image
 
 import pdb
 
-from CichlidDetection.Utilities.utils import Logger,AverageMeter,collate_fn
-import CichlidDetection.Utilities.transforms as T
+from CichlidDetection.Utilities.utils import Logger, AverageMeter, collate_fn
+from CichlidDetection.Utilities.transforms import RandomHorizontalFlip, ToTensor, Compose
 
 from CichlidDetection.Classes.DataLoaders import DataLoader
 from CichlidDetection.Classes.DataPreppers import DataPrepper
@@ -18,8 +18,7 @@ from torch import optim
 
 
 def get_transform(train):
-    transforms = []
-    transforms.append(T.ToTensor())
+    transforms = [ToTensor]
     if train:
         transforms.append(T.RandomHorizontalFlip(0.5))
     return T.Compose(transforms)
