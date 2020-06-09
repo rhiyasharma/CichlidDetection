@@ -1,15 +1,12 @@
 import os
 import numpy as np
 import time
-from PIL import Image
 
-import pdb
 
 from CichlidDetection.Utilities.utils import Logger, AverageMeter, collate_fn
 import CichlidDetection.Utilities.transforms as T
 
 from CichlidDetection.Classes.DataLoaders import DataLoader
-from CichlidDetection.Classes.DataPreppers import DataPrepper
 from CichlidDetection.Classes.FileManagers import FileManager
 
 import torch
@@ -18,12 +15,16 @@ from torch import optim
 
 class Trainer:
 
-    def __init__(self):
+    def __init__(self, num_epochs=20):
         self.fm = FileManager()
         self._initiate_loaders()
         self._initiate_model()
+        self._initiate_loggers()
 
     def train(self):
+        for epoch in range(self.num_epochs):
+            loss = self._train_epoch(epoch)
+            self.scheduler.step(loss)
 
     def _initiate_loaders(self):
         train_dataset = DataLoader(self._get_transform(train=True), 'train')
@@ -38,6 +39,13 @@ class Trainer:
         self.parameters = self.model.parameters()
         self.device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
         self.model.to(self.device)
+        self.optimizer = optim.SGD(self.parameters, lr=0.005, momentum=0.9, weight_decay=0.0005)
+        self.scheduler = optim.lr_scheduler.ReduceLROnPlateau(self.optimizer, 'min', patience=5)
+
+    def _initiate_loggers(self):
+        self.train_logger = Logger(self.fm.local_files['train_log'], ['epoch', 'loss', 'lr'])
+        self.train_batch_logger = Logger(self.fm.local_files['batch_log'], ['epoch', 'batch', 'iter', 'loss', 'lr'])
+        self.val_logger = Logger(self.fm.local_files['cal_log'], ['epoch', 'loss'])
 
     def _get_transform(self, train):
         transforms = [T.ToTensor]
@@ -45,36 +53,36 @@ class Trainer:
             transforms.append(T.RandomHorizontalFlip(0.5))
         return T.Compose(transforms)
 
-    def _train_epoch(self, epoch, data_loader, model,  optimizer, epoch_logger, batch_logger, device):
+    def _train_epoch(self, epoch):
         print('train at epoch {}'.format(epoch))
-        model.train()
+        self.model.train()
 
         batch_time = AverageMeter()
         data_time = AverageMeter()
         losses = AverageMeter()
         end_time = time.time()
 
-        for i, (images, targets) in enumerate(data_loader):
+        for i, (images, targets) in enumerate(self.train_loader):
             data_time.update(time.time() - end_time)
-            images = list(image.to(device) for image in images)
-            targets = [{k: v.to(device) for k, v in t.items()} for t in targets]
-            loss_dict = model(images, targets)
+            images = list(image.to(self.device) for image in images)
+            targets = [{k: v.to(self.device) for k, v in t.items()} for t in targets]
+            loss_dict = self.model(images, targets)
             today_loss = sum(loss for loss in loss_dict.values())
             losses.update(today_loss.item(), len(images))
 
-            optimizer.zero_grad()
+            self.optimizer.zero_grad()
             today_loss.backward()
-            optimizer.step()
+            self.optimizer.step()
 
             batch_time.update(time.time() - end_time)
             end_time = time.time()
 
-            batch_logger.log({
+            self.train_batch_logger.log({
                 'epoch': epoch,
                 'batch': i + 1,
-                'iter': (epoch - 1) * len(data_loader) + (i + 1),
+                'iter': (epoch - 1) * len(self.train_loader) + (i + 1),
                 'loss': losses.val,
-                'lr': optimizer.param_groups[0]['lr']
+                'lr': self.optimizer.param_groups[0]['lr']
             })
 
             print('Epoch: [{0}][{1}/{2}]\t'
@@ -84,58 +92,14 @@ class Trainer:
                   .format(
                       epoch,
                       i + 1,
-                      len(data_loader),
+                      len(self.train_loader),
                       batch_time=batch_time,
                       data_time=data_time,
                       loss=losses))
-        epoch_logger.log({
+        self.train_logger.log({
             'epoch': epoch,
             'loss': losses.avg,
-            'lr': optimizer.param_groups[0]['lr']
+            'lr': self.optimizer.param_groups[0]['lr']
         })
         return losses.avg
 
-def main():
-
-    
-
-
-    
-
-
-    
-
-# define training and validation data loaders
-
-    optimizer = optim.SGD(parameters, lr=0.005,
-                                momentum=0.9, weight_decay=0.0005)
-    # and a learning rate scheduler
-    scheduler = optim.lr_scheduler.ReduceLROnPlateau(
-            optimizer, 'min', patience=5)
-            
-            
-    # create logger files
-    train_logger = Logger(
-            os.path.join(dp.master_dir, 'train.log'),
-            ['epoch', 'loss', 'lr'])
-    train_batch_logger = Logger(
-            os.path.join(dp.master_dir, 'train_batch.log'),
-            ['epoch', 'batch', 'iter', 'loss', 'lr'])
-    
-    val_logger = Logger(
-            os.path.join(dp.master_dir, 'val.log'), ['epoch', 'loss'])
-    # let's train it for 10 epochs
-    num_epochs = 20
-    
-    for epoch in range(num_epochs):
-        # train for one epoch, printing every 10 iterations
-#         train_one_epoch(model, optimizer, train_loader, device, epoch, print_freq=10)
-        loss = train_epoch(epoch, train_loader, model, optimizer,train_logger, train_batch_logger,device)
-        # update the learning rate
-        scheduler.step(loss)
-        # evaluate on the test dataset
-#         evaluate(model, data_loader_test, device=device)
-    print("Done!")
-
-if __name__ == "__main__":
-    main()
