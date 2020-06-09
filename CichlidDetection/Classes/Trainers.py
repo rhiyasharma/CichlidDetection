@@ -20,14 +20,32 @@ class Trainer:
 
     def __init__(self):
         self.fm = FileManager()
+        self._initiate_loaders()
+        self._initiate_model()
 
-    def get_transform(self, train):
+    def train(self):
+
+    def _initiate_loaders(self):
+        train_dataset = DataLoader(self._get_transform(train=True), 'train')
+        test_dataset = DataLoader(self._get_transform(train=False), 'test')
+        self.train_loader = torch.utils.data.DataLoader(
+            train_dataset, batch_size=5, shuffle=True, num_workers=2, pin_memory=True, collate_fn=collate_fn)
+        self.test_loader = torch.utils.data.DataLoader(
+            test_dataset, batch_size=5, shuffle=False, num_workers=2, pin_memory=True, collate_fn=collate_fn)
+
+    def _initiate_model(self):
+        self.model = torchvision.models.detection.fasterrcnn_resnet50_fpn(num_classes=2)
+        self.parameters = self.model.parameters()
+        self.device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
+        self.model.to(self.device)
+
+    def _get_transform(self, train):
         transforms = [T.ToTensor]
         if train:
             transforms.append(T.RandomHorizontalFlip(0.5))
         return T.Compose(transforms)
 
-    def train_epoch(self, epoch, data_loader, model,  optimizer, epoch_logger, batch_logger, device):
+    def _train_epoch(self, epoch, data_loader, model,  optimizer, epoch_logger, batch_logger, device):
         print('train at epoch {}'.format(epoch))
         model.train()
 
@@ -78,41 +96,16 @@ class Trainer:
         return losses.avg
 
 def main():
+
     
-    dp = DataPrepper()
-#     dp.download()
-#     dp.generate_train_validation_lists()
+
+
     
-    train_dataset = DataLoader(get_transform(train=True), 'training')
-    
-#     for i in range(train_dataset.__len__()):
-#         try:
-#             img,boxes = train_dataset.__getitem__(i)
-#             this_size = str(img.shape)
-#             if this_size != default:
-#                 print(this_size)
-# 
-#         except:
-#             pdb.set_trace()
-#             train_dataset.__getitem__(i)
-#             print(i)
-#             print(train_dataset.imgs[i])
-#             print(train_dataset.boxes[train_dataset.imgs[i]])
-#             break
-    test_dataset = DataLoader(dp.master_dir, get_transform(train=False),'test')
-    
-    model = torchvision.models.detection.fasterrcnn_resnet50_fpn(num_classes=2)
-    parameters = model.parameters()
-    device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
-    model.to(device)
+
+
     
 
 # define training and validation data loaders
-    train_loader = torch.utils.data.DataLoader(
-        train_dataset, batch_size=5, shuffle=True, num_workers=2,pin_memory=True,collate_fn=collate_fn)
-
-    test_loader = torch.utils.data.DataLoader(
-        test_dataset, batch_size=5, shuffle=False, num_workers=2,pin_memory=True,collate_fn=collate_fn)
 
     optimizer = optim.SGD(parameters, lr=0.005,
                                 momentum=0.9, weight_decay=0.0005)
