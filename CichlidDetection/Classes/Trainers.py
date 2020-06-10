@@ -27,6 +27,7 @@ class Trainer:
             loss = self._train_epoch(epoch)
             self.scheduler.step(loss)
             # self._evaluate_epoch(epoch)
+        self._save_model()
 
     def _initiate_loaders(self):
         train_dataset = DataLoader(self._get_transform(train=True), 'train')
