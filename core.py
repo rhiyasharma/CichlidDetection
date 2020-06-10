@@ -15,26 +15,29 @@ full_auto_parser = subparsers.add_parser('full_auto')
 full_auto_parser.add_argument('-e', '--Epochs', type=int, default=10)
 full_auto_parser.add_argument('--pbs', action='store_true')
 
-
-
-
 args = parser.parse_args()
 
-runner = Runner()
 package_root = os.path.dirname(os.path.abspath(__file__))
 
-if args.command == 'download':
-    runner.download()
+if args.command == 'full_auto' and args.pbs:
+    pbs_dir = os.path.join(package_root, 'CichlidDetection/PBS')
+    subprocess.run(['cd {}; qsub train.pbs -v EPOCHS="{}"'.format(pbs_dir, args.Epochs)])
 
-elif args.command == 'train':
-    runner.prep()
-    runner.train(num_epochs=args.Epochs)
+else:
+    runner = Runner()
 
-elif args.command == 'full_auto':
-    if args.pbs:
-        pbs_dir = os.path.join(package_root, 'CichlidDetection/PBS')
-        subprocess.run(['cd {}; qsub train.pbs -v EPOCHS="{}"'.format(pbs_dir, args.Epochs)])
-    else:
+    if args.command == 'full_auto':
         runner.download()
         runner.prep()
         runner.train(num_epochs=args.Epochs)
+
+    elif args.command == 'download':
+        runner.download()
+
+    elif args.command == 'train':
+        runner.prep()
+        runner.train(num_epochs=args.Epochs)
+
+
+
+
