@@ -12,6 +12,6 @@ ssh iw-dm-4 'cd ~/data/CichlidDetection; module load anaconda3; source activate 
 cd ~/data/CichlidDetection
 module load anaconda3
 source activate CichlidDetection
-python3 core.py train -e 1
+python3 core.py train -e ${EPOCHS}
 
 
