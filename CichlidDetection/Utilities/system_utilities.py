@@ -11,6 +11,7 @@ def make_dir(path):
     assert os.path.exists(path), "failed to create {}".format(path)
     return path
 
+
 def run(command, fault_tolerant=False):
     """use the subprocess.run function to run a command
     :param command: list of strings to be passed as the first argument of subprocess.run()

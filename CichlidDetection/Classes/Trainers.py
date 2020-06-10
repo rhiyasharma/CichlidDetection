@@ -17,6 +17,7 @@ class Trainer:
 
     def __init__(self, num_epochs=20):
         self.fm = FileManager()
+        self.num_epochs = num_epochs
         self._initiate_loaders()
         self._initiate_model()
         self._initiate_loggers()
@@ -25,6 +26,7 @@ class Trainer:
         for epoch in range(self.num_epochs):
             loss = self._train_epoch(epoch)
             self.scheduler.step(loss)
+
 
     def _initiate_loaders(self):
         train_dataset = DataLoader(self._get_transform(train=True), 'train')
@@ -45,7 +47,7 @@ class Trainer:
     def _initiate_loggers(self):
         self.train_logger = Logger(self.fm.local_files['train_log'], ['epoch', 'loss', 'lr'])
         self.train_batch_logger = Logger(self.fm.local_files['batch_log'], ['epoch', 'batch', 'iter', 'loss', 'lr'])
-        self.val_logger = Logger(self.fm.local_files['cal_log'], ['epoch', 'loss'])
+        self.val_logger = Logger(self.fm.local_files['val_log'], ['epoch', 'loss'])
 
     def _get_transform(self, train):
         transforms = [T.ToTensor]
@@ -102,4 +104,30 @@ class Trainer:
             'lr': self.optimizer.param_groups[0]['lr']
         })
         return losses.avg
+
+    @torch.no_grad()
+    def _evaluate_epoch(self, epoch):
+        print('evaluating epoch {}'.format(epoch))
+        self.model.eval()
+
+        for i, (images, targets) in enumerate(self.test_loader):
+            images = list(image.to(self.device) for image in images)
+            targets = [{k: v.to(self.device) for k, v in t.items()} for t in targets]
+            prediction_list = self.model(images)
+
+        self.val_logger.log({
+            'epoch': epoch
+        })
+
+    def _save_model(self):
+        dest = self.fm.local_files['weights_file']
+        if os.path.exists(dest):
+            path = os.path.join(self.fm.local_files['weights_dir'], str(int(os.path.getmtime(dest))) + '.weights')
+            os.rename(dest, path)
+        torch.save(self.model.state_dict(), dest)
+
+
+
+
+
 

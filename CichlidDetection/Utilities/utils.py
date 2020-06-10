@@ -47,15 +47,13 @@ def collate_fn(batch):
     return tuple(zip(*batch))
 
 
-def area(poly_vp, box):
+def area(row, poly_vps):
     """
-    :param poly_vp:
-    :param box:
-    :return:
     """
-    x_a, y_a, w_a, h_a = box
+    print(row.keys())
+    x_a, y_a, w_a, h_a = row['Box']
     poly_ann = Polygon([[x_a, y_a], [x_a + w_a, y_a], [x_a + w_a, y_a + h_a], [x_a, y_a + h_a]])
-    intersection_area = poly_ann.intersection(poly_vp).area
+    intersection_area = poly_ann.intersection(poly_vps[row['ProjectID']]).area
     ann_area = poly_ann.area
     return ann_area if ann_area == intersection_area else np.nan
 

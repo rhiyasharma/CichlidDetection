@@ -31,8 +31,10 @@ class DataPrepper:
         df = df[(df.Nfish != 0) & ((df.Sex == 'm') | (df.Sex == 'f')) & (df.CorrectAnnotation == 'Yes')]
         # drop annotation boxes outside the area defined by the video points numpy
         df['Box'] = df['Box'].apply(eval)
-        poly_vp = Polygon([list(row) for row in list(np.load(self.file_manager.local_files['video_points_numpy']))])
-        df['Area'] = df['Box'].apply(lambda box: area(poly_vp, box))
+        poly_vps = {}
+        for pfm in self.proj_file_managers.values():
+            poly_vps.update({pfm.pid: Polygon([list(row) for row in list(np.load(pfm.local_files['video_points_numpy']))])})
+        df['Area'] = df.apply(lambda row: area(row, poly_vps), axis=1)
         df = df.dropna(subset=['Area'])
         # convert the 'Box' tuples to min and max x and y coordinates
         df[['xmin', 'ymin', 'w', 'h']] = pd.DataFrame(df['Box'].tolist(), index=df.index)
@@ -43,7 +45,7 @@ class DataPrepper:
         df = df.set_index('Framefile')
         df = df[['xmin', 'ymin', 'xmax', 'ymax', 'label']]
         # write a labelfile for each training image
-        good_images = df.FrameFile.unique()
+        good_images = df.index.unique()
         for f in good_images:
             dest = os.path.join(self.file_manager.local_files['label_dir'], f.replace('.jpg', '.txt'))
             df.loc[[f]].to_csv(dest, sep=' ', header=False, index=False)
