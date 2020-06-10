@@ -7,11 +7,11 @@
 
 echo "Started on `/bin/hostname`"
 
-ssh iw-dm-4 'cd ~/data/CichlidDetection; module load anaconda3; source activate CichlidDetection; python3 CichlidDetection/cichlid_detection.py download'
+ssh iw-dm-4 'cd ~/data/CichlidDetection; module load anaconda3; source activate CichlidDetection; python3 core.py download'
 
 cd ~/data/CichlidDetection
 module load anaconda3
 source activate CichlidDetection
-python3 CichlidDetection/cichlid_detection.py train -e 1
+python3 core.py train -e 1
 
 
