@@ -1,4 +1,3 @@
-from CichlidDetection.Classes.Runner import Runner
 import argparse, subprocess, os
 
 # primary command line executable script
@@ -24,6 +23,7 @@ if args.command == 'full_auto' and args.pbs:
     subprocess.run(['cd {}; qsub train.pbs -v EPOCHS="{}"'.format(pbs_dir, args.Epochs)])
 
 else:
+    from CichlidDetection.Classes.Runner import Runner
     runner = Runner()
 
     if args.command == 'full_auto':
