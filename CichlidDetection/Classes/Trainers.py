@@ -15,7 +15,7 @@ from torch import optim
 
 class Trainer:
 
-    def __init__(self, num_epochs=20):
+    def __init__(self, num_epochs=1):
         self.fm = FileManager()
         self.num_epochs = num_epochs
         self._initiate_loaders()
@@ -26,7 +26,7 @@ class Trainer:
         for epoch in range(self.num_epochs):
             loss = self._train_epoch(epoch)
             self.scheduler.step(loss)
-
+            # self._evaluate_epoch(epoch)
 
     def _initiate_loaders(self):
         train_dataset = DataLoader(self._get_transform(train=True), 'train')
@@ -47,7 +47,7 @@ class Trainer:
     def _initiate_loggers(self):
         self.train_logger = Logger(self.fm.local_files['train_log'], ['epoch', 'loss', 'lr'])
         self.train_batch_logger = Logger(self.fm.local_files['batch_log'], ['epoch', 'batch', 'iter', 'loss', 'lr'])
-        self.val_logger = Logger(self.fm.local_files['val_log'], ['epoch', 'loss'])
+        self.val_logger = Logger(self.fm.local_files['val_log'], ['epoch'])
 
     def _get_transform(self, train):
         transforms = [T.ToTensor]
@@ -108,16 +108,20 @@ class Trainer:
     @torch.no_grad()
     def _evaluate_epoch(self, epoch):
         print('evaluating epoch {}'.format(epoch))
+        box_preds_csv = open(self.fm.local_files['box_predictions_csv'], 'a')
+        label_preds_csv = open(self.fm.local_files['label_predictions_csv'], 'a')
         self.model.eval()
-
         for i, (images, targets) in enumerate(self.test_loader):
             images = list(image.to(self.device) for image in images)
-            targets = [{k: v.to(self.device) for k, v in t.items()} for t in targets]
-            prediction_list = self.model(images)
+            if i == 0:
+                box_preds_csv.write(targets)
+            output = self.model(images)
 
         self.val_logger.log({
             'epoch': epoch
         })
+        box_preds_csv.close()
+        label_preds_csv.close()
 
     def _save_model(self):
         dest = self.fm.local_files['weights_file']

@@ -24,7 +24,8 @@ class FileManager:
         for name, file in cloud_files.items():
             self._download(name, file, self.local_files['training_dir'])
         for name, fname in [('train_list', 'train_list.txt'), ('test_list', 'test_list.txt'),
-                            ('predictions_csv', 'predictions.csv')]:
+                            ('box_predictions_csv', 'box_predictions.csv'),
+                            ('label_predictions_csv', 'label_predicitons.csv')]:
             self.local_files.update({name: join(self.local_files['training_dir'], fname)})
         for name, fname in [('train_log', 'train.log'), ('batch_log', 'train_batch.log'), ('val_log', 'val.log')]:
             self.local_files.update({name: join(self.local_files['log_dir'], fname)})
