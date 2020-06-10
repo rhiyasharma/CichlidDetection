@@ -1,5 +1,5 @@
 from CichlidDetection.Classes.Runner import Runner
-import argparse
+import argparse, subprocess, os
 
 # primary command line executable script
 
@@ -9,15 +9,21 @@ download_parser = subparsers.add_parser('download')
 train_parser = subparsers.add_parser('train')
 
 train_parser.add_argument('-e', '--Epochs', type=int, default=10)
+train_parser.add_argument('--pbs', action='store_true')
 args = parser.parse_args()
 
 runner = Runner()
+package_root = os.path.dirname(os.path.abspath(__file__))
 
 if args.command == 'download':
     runner.download()
 
 elif args.command == 'train':
-    runner.prep()
-    runner.train(num_epochs=args.Epochs)
+    if args.pbs:
+        pbs_dir = os.path.join(package_root, 'CichlidDetection/PBS')
+        subprocess.run(['cd {}; qsub train.pbs'.format(pbs_dir)])
+    else:
+        runner.prep()
+        runner.train(num_epochs=args.Epochs)
 
 
