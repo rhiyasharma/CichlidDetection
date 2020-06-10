@@ -1,8 +1,4 @@
-import os
-import pandas as pd
-from collections import defaultdict
 from PIL import Image
-import torch
 from CichlidDetection.Classes.FileManagers import FileManager
 from CichlidDetection.Utilities.utils import read_label_file
 
