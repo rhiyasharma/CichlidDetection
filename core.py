@@ -20,7 +20,7 @@ package_root = os.path.dirname(os.path.abspath(__file__))
 
 if args.command == 'full_auto' and args.pbs:
     pbs_dir = os.path.join(package_root, 'CichlidDetection/PBS')
-    subprocess.run(['cd {}; qsub train.pbs -v EPOCHS="{}"'.format(pbs_dir, args.Epochs)])
+    subprocess.run(['cd {} && qsub train.pbs -v EPOCHS="{}"'.format(pbs_dir, args.Epochs)])
 
 else:
     from CichlidDetection.Classes.Runner import Runner
