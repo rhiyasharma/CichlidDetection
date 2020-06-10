@@ -6,10 +6,12 @@
 #PBS -o train.out
 
 echo "Started on `/bin/hostname`"
-ssh iw-dm-4 'cd ~/data/CichlidDetection/CichlidDetection; '
-ssh login7-d ''
-cd ~/data/CichlidDetection
+
+ssh iw-dm-4 'cd ~/data/CichlidDetection/CichlidDetection; module load anaconda3; source activate CichlidDetection; python3 cichlid_detection.py download'
+
+cd ~/data/CichlidDetection/CichlidDetection
 module load anaconda3
 source activate CichlidDetection
+python3 cichlid_detection.py train -e 1
 
 
