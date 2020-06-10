@@ -15,7 +15,7 @@ from torch import optim
 
 class Trainer:
 
-    def __init__(self, num_epochs=1):
+    def __init__(self, num_epochs):
         self.fm = FileManager()
         self.num_epochs = num_epochs
         self._initiate_loaders()

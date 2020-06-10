@@ -1,0 +1,15 @@
+#PBS -N train_rcnn
+#PBS -l nodes=1:ppn=8:gpus=1:exclusive_process
+#PBS -l walltime=12:00:00
+#PBS -q force-gpu
+#PBS -j oe
+#PBS -o train.out
+
+echo "Started on `/bin/hostname`"
+ssh iw-dm-4 'cd ~/data/CichlidDetection/CichlidDetection; '
+ssh login7-d ''
+cd ~/data/CichlidDetection
+module load anaconda3
+source activate CichlidDetection
+
+

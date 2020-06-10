@@ -13,7 +13,6 @@ class DataPrepper:
     def __init__(self):
         self.file_manager = FileManager()
         self.proj_file_managers = {}
-        self.labels = None
 
     def download_all(self):
         for pid in self.file_manager.unique_pids:
