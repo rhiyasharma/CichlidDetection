@@ -51,7 +51,7 @@ class Trainer:
         self.val_logger = Logger(self.fm.local_files['val_log'], ['epoch'])
 
     def _get_transform(self, train):
-        transforms = [T.ToTensor]
+        transforms = [T.ToTensor()]
         if train:
             transforms.append(T.RandomHorizontalFlip(0.5))
         return T.Compose(transforms)
