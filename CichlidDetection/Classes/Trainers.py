@@ -118,7 +118,7 @@ class Trainer:
             images = list(img.to(self.device) for img in images)
             targets = [{k: v.to(self.device) for k, v in t.items()} for t in targets]
             outputs = self.model(images)
-            outputs = [{k: v.to(cpu_device).numpy().to_list() for k, v in t.items()} for t in outputs]
+            outputs = [{k: v.to(cpu_device).numpy().tolist() for k, v in t.items()} for t in outputs]
             results.update({target["image_id"].item(): output for target, output in zip(targets, outputs)})
         df = pd.DataFrame.from_dict(results, orient='index')
         df['FrameFile'] = [os.path.basename(path) for path in self.train_dataset.img_files]
