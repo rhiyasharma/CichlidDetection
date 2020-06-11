@@ -1,8 +1,7 @@
-import argparse, os, sys, subprocess
+import os
 from CichlidDetection.Classes.DataPreppers import DataPrepper
 from CichlidDetection.Classes.FileManagers import FileManager
 from CichlidDetection.Classes.Trainers import Trainer
-from CichlidDetection.Utilities.system_utilities import run
 
 
 class Runner:

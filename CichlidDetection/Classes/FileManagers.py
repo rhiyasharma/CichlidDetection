@@ -1,4 +1,4 @@
-import os, shutil
+import os
 from os.path import join
 import pandas as pd
 from CichlidDetection.Utilities.system_utilities import run, make_dir
