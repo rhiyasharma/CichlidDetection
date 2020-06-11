@@ -50,7 +50,6 @@ def collate_fn(batch):
 def area(row, poly_vps):
     """
     """
-    print(row.keys())
     x_a, y_a, w_a, h_a = row['Box']
     poly_ann = Polygon([[x_a, y_a], [x_a + w_a, y_a], [x_a + w_a, y_a + h_a], [x_a, y_a + h_a]])
     intersection_area = poly_ann.intersection(poly_vps[row['ProjectID']]).area
