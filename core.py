@@ -16,8 +16,9 @@ full_auto_parser.add_argument('-e', '--Epochs', type=int, default=10)
 args = parser.parse_args()
 
 package_root = os.path.dirname(os.path.abspath(__file__))
+host = socket.gethostname()
 
-if 'pace' in socket.gethostname():
+if ('login' in host) and ('pace' in host):
     print(args.command)
     assert (args.command == 'full_auto'), 'full_auto is the only mode currently on PACE'
     pbs_dir = os.path.join(package_root, 'CichlidDetection/PBS')
