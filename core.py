@@ -1,4 +1,4 @@
-import argparse, subprocess, os
+import argparse, subprocess, os, socket
 
 # primary command line executable script
 
@@ -12,13 +12,13 @@ train_parser.add_argument('-e', '--Epochs', type=int, default=10)
 
 full_auto_parser = subparsers.add_parser('full_auto')
 full_auto_parser.add_argument('-e', '--Epochs', type=int, default=10)
-full_auto_parser.add_argument('--pbs', action='store_true')
 
 args = parser.parse_args()
 
 package_root = os.path.dirname(os.path.abspath(__file__))
 
-if args.command == 'full_auto' and args.pbs:
+if 'pace' in socket.gethostname():
+    assert (args.command == 'full_auto'), 'full-auto is the only mode currently supported when running on PACE'
     pbs_dir = os.path.join(package_root, 'CichlidDetection/PBS')
     subprocess.run(['qsub', 'train.pbs', '-v', 'EPOCHS={}'.format(args.Epochs)], cwd=pbs_dir)
 
