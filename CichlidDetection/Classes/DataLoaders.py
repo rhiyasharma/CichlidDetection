@@ -1,6 +1,7 @@
 from PIL import Image
 from CichlidDetection.Classes.FileManagers import FileManager
 from CichlidDetection.Utilities.utils import read_label_file
+from torch import tensor
 
 
 class DataLoader(object):
@@ -17,6 +18,7 @@ class DataLoader(object):
     def __getitem__(self, idx):
         img = Image.open(self.img_files[idx]).convert("RGB")
         target = read_label_file(self.label_files[idx])
+        target.update({'image_id': tensor([idx])})
         if self.transforms is not None:
             img, target = self.transforms(img, target)
         return img, target

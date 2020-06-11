@@ -1,20 +1,22 @@
 import os
 import time
-
-
-from CichlidDetection.Utilities.utils import Logger, AverageMeter, collate_fn
-import CichlidDetection.Utilities.transforms as T
-
-from CichlidDetection.Classes.DataLoaders import DataLoader
-from CichlidDetection.Classes.FileManagers import FileManager
-
+import pandas as pd
+import numpy as np
 import torch
 import torchvision
 from torch import optim
 
+from CichlidDetection.Utilities.utils import Logger, AverageMeter, collate_fn
+import CichlidDetection.Utilities.transforms as T
+from CichlidDetection.Classes.DataLoaders import DataLoader
+from CichlidDetection.Classes.FileManagers import FileManager
+
+
+
 class Trainer:
 
-    def __init__(self, num_epochs):
+    def __init__(self, num_epochs, compare_annotations=False):
+        self.compare_annotations = compare_annotations
         self.fm = FileManager()
         self.num_epochs = num_epochs
         self._initiate_loaders()
@@ -25,7 +27,8 @@ class Trainer:
         for epoch in range(self.num_epochs):
             loss = self._train_epoch(epoch)
             self.scheduler.step(loss)
-            # self._evaluate_epoch(epoch)
+            if self.compare_annotations:
+                self._evaluate_epoch(epoch)
         self._save_model()
 
     def _initiate_loaders(self):
@@ -108,20 +111,18 @@ class Trainer:
     @torch.no_grad()
     def _evaluate_epoch(self, epoch):
         print('evaluating epoch {}'.format(epoch))
-        box_preds_csv = open(self.fm.local_files['box_predictions_csv'], 'a')
-        label_preds_csv = open(self.fm.local_files['label_predictions_csv'], 'a')
         self.model.eval()
+        cpu_device = torch.device("cpu")
         for i, (images, targets) in enumerate(self.test_loader):
-            images = list(image.to(self.device) for image in images)
-            if i == 0:
-                box_preds_csv.write(targets)
-            output = self.model(images)
+            images = list(img.to(self.device) for img in images)
+            targets = [{k: v.to(self.device) for k, v in t.items()} for t in targets]
+            outputs = self.model(images)
+            outputs = [{k: v.to(cpu_device) for k, v in t.items()} for t in outputs]
+            res = {target["image_id"].item(): output for target, output in zip(targets, outputs)}
+            print(res)
 
-        self.val_logger.log({
-            'epoch': epoch
-        })
-        box_preds_csv.close()
-        label_preds_csv.close()
+
+
 
     def _save_model(self):
         dest = self.fm.local_files['weights_file']

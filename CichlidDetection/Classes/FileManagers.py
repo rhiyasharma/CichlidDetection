@@ -20,12 +20,11 @@ class FileManager:
         self._make_dir('label_dir', join(self.local_files['training_dir'], 'labels'))
         self._make_dir('log_dir', join(self.local_files['training_dir'], 'logs'))
         self._make_dir('weights_dir', join(self.local_files['training_dir'], 'weights'))
+        self._make_dir('predictions_dir', join(self.local_files['training_dir'], 'predictions'))
         self.cloud_master_dir, cloud_files = self._locate_cloud_files()
         for name, file in cloud_files.items():
             self._download(name, file, self.local_files['training_dir'])
-        for name, fname in [('train_list', 'train_list.txt'), ('test_list', 'test_list.txt'),
-                            ('box_predictions_csv', 'box_predictions.csv'),
-                            ('label_predictions_csv', 'label_predicitons.csv')]:
+        for name, fname in [('train_list', 'train_list.txt'), ('test_list', 'test_list.txt')]:
             self.local_files.update({name: join(self.local_files['training_dir'], fname)})
         for name, fname in [('train_log', 'train.log'), ('batch_log', 'train_batch.log'), ('val_log', 'val.log')]:
             self.local_files.update({name: join(self.local_files['log_dir'], fname)})
