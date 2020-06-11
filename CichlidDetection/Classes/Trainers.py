@@ -124,8 +124,6 @@ class Trainer:
         df['FrameFile'] = df.apply(lambda x: os.path.basename(self.test_dataset.img_files[x.name]))
         df.to_csv(os.path.join(self.fm.local_files['predictions_dir'], '{}.csv'.format(epoch)))
 
-
-
     def _save_model(self):
         dest = self.fm.local_files['weights_file']
         if os.path.exists(dest):
