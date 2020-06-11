@@ -99,9 +99,7 @@ class ProjectFileManager(FileManager):
 
     def _initialize(self):
         """create a required local directories if they do not already exist and download project specific files if not present"""
-        print(self.pid)
         self._make_dir('project_dir', join(self.local_files['data_dir'], self.pid))
-        print(self.local_files['project_dir'])
         for name, file in self._locate_cloud_files().items():
             self._download(name, file, self.local_files['project_dir'])
 

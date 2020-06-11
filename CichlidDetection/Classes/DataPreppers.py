@@ -56,7 +56,8 @@ class DataPrepper:
         dest = self.file_manager.local_files['image_dir']
         for pid in self.file_manager.unique_pids:
             proj_image_dir = self.proj_file_managers[pid].local_files['project_image_dir']
-            proj_images = [img for img in good_images if pid in img]
+            candidates = os.listdir(proj_image_dir)
+            proj_images = [img for img in good_images if img in candidates]
             for fname in proj_images:
                 path = os.path.join(proj_image_dir, fname)
                 shutil.copy(path, dest)
