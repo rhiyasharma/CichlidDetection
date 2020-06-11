@@ -11,7 +11,6 @@ class Runner:
         self.dp = DataPrepper()
         self.tr = None
         self.__location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
-        pass
 
     def download(self):
         self.dp.download_all()

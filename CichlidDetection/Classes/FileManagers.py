@@ -38,7 +38,7 @@ class FileManager:
         """use rclone to download a file, and untar if it is a .tar file. Automatically adds file path to self.local_files
         :param name: brief descriptor of the file, to be used for easy access to the file path using the self.local_files dict
         :param source: full path to a dropbox file, including the remote
-        :param destination: full path to the local destination directory. Defaults to self.project_dir
+        :param destination: full path to the local destination directory
         :param overwrite: if True, run rclone copy even if a local file with the intended name already exists
         :return local_path: the full path the to the newly downloaded file (or directory, if the file was a tarfile)
         """
@@ -92,14 +92,16 @@ class ProjectFileManager(FileManager):
         if file_manager is None:
             FileManager.__init__(self)
         else:
-            self.local_files = file_manager.local_files
+            self.local_files = file_manager.local_files.copy()
             self.cloud_master_dir = file_manager.cloud_master_dir
         self.pid = pid
         self._initialize()
 
     def _initialize(self):
         """create a required local directories if they do not already exist and download project specific files if not present"""
+        print(self.pid)
         self._make_dir('project_dir', join(self.local_files['data_dir'], self.pid))
+        print(self.local_files['project_dir'])
         for name, file in self._locate_cloud_files().items():
             self._download(name, file, self.local_files['project_dir'])
 
