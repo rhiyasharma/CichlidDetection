@@ -121,7 +121,7 @@ class Trainer:
             outputs = [{k: v.to(cpu_device).numpy().tolist() for k, v in t.items()} for t in outputs]
             results.update({target["image_id"].item(): output for target, output in zip(targets, outputs)})
         df = pd.DataFrame.from_dict(results, orient='index')
-        df['FrameFile'] = df.apply(lambda x: os.path.basename(self.test_dataset.img_files[int(x.name)]))
+        df['FrameFile'] = [os.path.basename(path) for path in self.test_dataset.img_files]
         df.to_csv(os.path.join(self.fm.local_files['predictions_dir'], '{}.csv'.format(epoch)))
 
     def _save_model(self):
