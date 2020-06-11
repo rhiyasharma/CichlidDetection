@@ -32,12 +32,12 @@ class Trainer:
         self._save_model()
 
     def _initiate_loaders(self):
-        train_dataset = DataLoader(self._get_transform(train=True), 'train')
-        test_dataset = DataLoader(self._get_transform(train=False), 'test')
+        self.train_dataset = DataLoader(self._get_transform(train=True), 'train')
+        self.test_dataset = DataLoader(self._get_transform(train=False), 'test')
         self.train_loader = torch.utils.data.DataLoader(
-            train_dataset, batch_size=5, shuffle=True, num_workers=8, pin_memory=True, collate_fn=collate_fn)
+            self.train_dataset, batch_size=5, shuffle=True, num_workers=8, pin_memory=True, collate_fn=collate_fn)
         self.test_loader = torch.utils.data.DataLoader(
-            test_dataset, batch_size=5, shuffle=False, num_workers=8, pin_memory=True, collate_fn=collate_fn)
+            self.test_dataset, batch_size=5, shuffle=False, num_workers=8, pin_memory=True, collate_fn=collate_fn)
 
     def _initiate_model(self):
         self.model = torchvision.models.detection.fasterrcnn_resnet50_fpn(num_classes=3)
@@ -118,11 +118,13 @@ class Trainer:
             images = list(img.to(self.device) for img in images)
             targets = [{k: v.to(self.device) for k, v in t.items()} for t in targets]
             outputs = self.model(images)
-            outputs = [{k: v.to(cpu_device).numpy() for k, v in t.items()} for t in outputs]
+            outputs = [{k: v.to(cpu_device).numpy().to_list() for k, v in t.items()} for t in outputs]
             results.update({target["image_id"].item(): output for target, output in zip(targets, outputs)})
-        df = pd.DataFrame(results)
+        df = pd.DataFrame.from_dict(results, orient='index')
+        df['FrameFile'] = [os.path.basename(path) for path in self.train_dataset.img_files]
         df.to_csv(os.path.join(self.fm.local_files['predictions_dir'], '{}.csv'.format(epoch)))
-        return df, results
+
+
 
     def _save_model(self):
         dest = self.fm.local_files['weights_file']
