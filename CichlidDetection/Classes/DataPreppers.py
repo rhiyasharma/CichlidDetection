@@ -19,6 +19,8 @@ class DataPrepper:
             self.proj_file_managers.update({pid: ProjectFileManager(pid, self.file_manager)})
 
     def prep(self):
+        if not self.proj_file_managers:
+            self.download_all()
         good_images = self._prep_labels()
         self._prep_images(good_images)
         self._generate_train_test_lists()
