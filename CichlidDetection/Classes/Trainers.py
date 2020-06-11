@@ -113,16 +113,15 @@ class Trainer:
         print('evaluating epoch {}'.format(epoch))
         self.model.eval()
         cpu_device = torch.device("cpu")
+        results = {}
         for i, (images, targets) in enumerate(self.test_loader):
             images = list(img.to(self.device) for img in images)
             targets = [{k: v.to(self.device) for k, v in t.items()} for t in targets]
             outputs = self.model(images)
-            outputs = [{k: v.to(cpu_device) for k, v in t.items()} for t in outputs]
-            res = {target["image_id"].item(): output for target, output in zip(targets, outputs)}
-            print(res)
-
-
-
+            outputs = [{k: v.to(cpu_device).numpy() for k, v in t.items()} for t in outputs]
+            results.update({target["image_id"].item(): output for target, output in zip(targets, outputs)})
+        df = pd.DataFrame(results)
+        df.to_csv(os.path.join(self.fm.local_files['predictions_dir'], '{}.csv'.format(epoch)))
 
     def _save_model(self):
         dest = self.fm.local_files['weights_file']
