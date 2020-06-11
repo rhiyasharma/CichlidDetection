@@ -10,7 +10,7 @@ class DataLoader(object):
         self.transforms = transforms
 
         with open(self.files_list, 'r') as f:
-            self.img_files = sorted(f.readlines())
+            self.img_files = sorted(f.read().splitlines())
         self.label_files = [fname.replace('.jpg', '.txt') for fname in self.img_files]
 
     def __getitem__(self, idx):
