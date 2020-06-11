@@ -32,12 +32,12 @@ class Trainer:
         train_dataset = DataLoader(self._get_transform(train=True), 'train')
         test_dataset = DataLoader(self._get_transform(train=False), 'test')
         self.train_loader = torch.utils.data.DataLoader(
-            train_dataset, batch_size=5, shuffle=True, num_workers=2, pin_memory=True, collate_fn=collate_fn)
+            train_dataset, batch_size=5, shuffle=True, num_workers=8, pin_memory=True, collate_fn=collate_fn)
         self.test_loader = torch.utils.data.DataLoader(
-            test_dataset, batch_size=5, shuffle=False, num_workers=2, pin_memory=True, collate_fn=collate_fn)
+            test_dataset, batch_size=5, shuffle=False, num_workers=8, pin_memory=True, collate_fn=collate_fn)
 
     def _initiate_model(self):
-        self.model = torchvision.models.detection.fasterrcnn_resnet50_fpn(num_classes=2)
+        self.model = torchvision.models.detection.fasterrcnn_resnet50_fpn(num_classes=3)
         self.parameters = self.model.parameters()
         self.device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
         self.model.to(self.device)
