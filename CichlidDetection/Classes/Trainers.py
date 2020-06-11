@@ -15,7 +15,7 @@ from CichlidDetection.Classes.FileManagers import FileManager
 
 class Trainer:
 
-    def __init__(self, num_epochs, compare_annotations=False):
+    def __init__(self, num_epochs, compare_annotations=True):
         self.compare_annotations = compare_annotations
         self.fm = FileManager()
         self.num_epochs = num_epochs
