@@ -12,6 +12,7 @@ class DataLoader(object):
         with open(self.files_list, 'r') as f:
             self.img_files = sorted(f.read().splitlines())
         self.label_files = [fname.replace('.jpg', '.txt') for fname in self.img_files]
+        self.label_files = [fname.replace('images', 'labels') for fname in self.label_files]
 
     def __getitem__(self, idx):
         img = Image.open(self.img_files[idx]).convert("RGB")
