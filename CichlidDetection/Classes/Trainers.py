@@ -122,6 +122,7 @@ class Trainer:
             results.update({target["image_id"].item(): output for target, output in zip(targets, outputs)})
         df = pd.DataFrame(results)
         df.to_csv(os.path.join(self.fm.local_files['predictions_dir'], '{}.csv'.format(epoch)))
+        return df, results
 
     def _save_model(self):
         dest = self.fm.local_files['weights_file']
