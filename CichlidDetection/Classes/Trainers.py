@@ -11,8 +11,17 @@ from CichlidDetection.Classes.FileManagers import FileManager
 
 
 class Trainer:
+    """class to coordinate model training and evaluation"""
 
     def __init__(self, num_epochs, compare_annotations=True):
+        """initialize trainer
+
+        Args:
+            num_epochs (int): number of epochs to train
+            compare_annotations: If True, evaluate the model on the test set after each epoch. This does not affect the
+                end result of training, but does produce significantly more data about model performance at each epoch.
+                Setting to True increases total runtime significantly
+        """
         self.compare_annotations = compare_annotations
         self.fm = FileManager()
         self.num_epochs = num_epochs

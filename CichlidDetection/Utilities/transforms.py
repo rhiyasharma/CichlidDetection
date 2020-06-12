@@ -1,6 +1,8 @@
 import random
 from torchvision.transforms import functional as F
 
+"""Pytorch transforms used by the data loader"""
+
 
 class Compose(object):
     def __init__(self, transforms):

@@ -8,17 +8,19 @@ from sklearn.model_selection import train_test_split
 
 
 class DataPrepper:
-    """class to handle download and initial preparation of data required for training for faster_RCNN network
-    """
+    """class to handle the required data prep prior to training the model"""
     def __init__(self):
+        """initiate a FileManager object, and and empty dictionary to store a ProjectFileManager object for each project"""
         self.file_manager = FileManager()
         self.proj_file_managers = {}
 
     def download_all(self):
+        """initiate a ProjectFileManager for each unique project. This automatically downloads any missing files"""
         for pid in self.file_manager.unique_pids:
             self.proj_file_managers.update({pid: ProjectFileManager(pid, self.file_manager)})
 
     def prep(self):
+        """prep the label files, image files, and train-test lists required for training"""
         if not self.proj_file_managers:
             self.download_all()
         good_images = self._prep_labels()
@@ -26,6 +28,14 @@ class DataPrepper:
         self._generate_train_test_lists()
 
     def _prep_labels(self):
+        """generate a label file for each valid image
+
+        valid images are those in the boxed fish csv for which CorrectAnnotation is Yes, Sex is m or f, Nfish > 0, and
+        the annotation box falls entirely within the boundaries defined by the video points numpy file
+
+        Returns:
+            list: file names of the images valid for training/testing
+        """
         # load the boxed fish csv
         df = pd.read_csv(self.file_manager.local_files['boxed_fish_csv'], index_col=0)
         # drop empty frames, frames labeled u, and incorrectly annotated frames
@@ -45,15 +55,20 @@ class DataPrepper:
         # trim down to only the required columns
         df = df.set_index('Framefile')
         df = df[['xmin', 'ymin', 'xmax', 'ymax', 'label']]
-        # write a labelfile for each training image
-        good_images = df.index.unique()
+        # write a labelfile for each image remaining in df
+        good_images = list(df.index.unique())
         for f in good_images:
             dest = os.path.join(self.file_manager.local_files['label_dir'], f.replace('.jpg', '.txt'))
             df.loc[[f]].to_csv(dest, sep=' ', header=False, index=False)
         return good_images
 
     def _prep_images(self, good_images):
-        dest = self.file_manager.local_files['image_dir']
+        """copy valid images from individual project directories to a centralized image directory
+
+        Args:
+            good_images (list of str): file names of valid images to move
+        """
+        dest = self.file_manager.local_files['image_dir']  # centralized image dir
         for pid in self.file_manager.unique_pids:
             proj_image_dir = self.proj_file_managers[pid].local_files['project_image_dir']
             candidates = os.listdir(proj_image_dir)
@@ -63,6 +78,12 @@ class DataPrepper:
                 shutil.copy(path, dest)
 
     def _generate_train_test_lists(self, train_size=0.8, random_state=42):
+        """split the valid images into training and testing sets, and write corresponding train list and test list files
+
+        Args:
+            train_size (float): proportion of data to use for training, 0 to 1
+            random_state (int): random state seed for repeatability
+        """
         img_dir = self.file_manager.local_files['image_dir']
         img_files = [os.path.join(img_dir, f) for f in os.listdir(img_dir)]
         train_files, test_files = train_test_split(img_files, train_size=train_size, random_state=random_state)
