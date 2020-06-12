@@ -1,16 +1,13 @@
 import os
 import time
 import pandas as pd
-import numpy as np
 import torch
 import torchvision
-from torch import optim
 
 from CichlidDetection.Utilities.utils import Logger, AverageMeter, collate_fn
 import CichlidDetection.Utilities.transforms as T
 from CichlidDetection.Classes.DataLoaders import DataLoader
 from CichlidDetection.Classes.FileManagers import FileManager
-
 
 
 class Trainer:
@@ -24,6 +21,7 @@ class Trainer:
         self._initiate_loggers()
 
     def train(self):
+        """train the model for the specified number of epochs."""
         for epoch in range(self.num_epochs):
             loss = self._train_epoch(epoch)
             self.scheduler.step(loss)
@@ -32,6 +30,7 @@ class Trainer:
         self._save_model()
 
     def _initiate_loaders(self):
+        """initiate train and test datasets and  dataloaders."""
         self.train_dataset = DataLoader(self._get_transform(train=True), 'train')
         self.test_dataset = DataLoader(self._get_transform(train=False), 'test')
         self.train_loader = torch.utils.data.DataLoader(
@@ -40,25 +39,43 @@ class Trainer:
             self.test_dataset, batch_size=5, shuffle=False, num_workers=8, pin_memory=True, collate_fn=collate_fn)
 
     def _initiate_model(self):
+        """initiate the model, optimizer, and scheduler."""
         self.model = torchvision.models.detection.fasterrcnn_resnet50_fpn(num_classes=3)
         self.parameters = self.model.parameters()
         self.device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
         self.model.to(self.device)
-        self.optimizer = optim.SGD(self.parameters, lr=0.005, momentum=0.9, weight_decay=0.0005)
-        self.scheduler = optim.lr_scheduler.ReduceLROnPlateau(self.optimizer, 'min', patience=5)
+        self.optimizer = torch.optim.SGD(self.parameters, lr=0.005, momentum=0.9, weight_decay=0.0005)
+        self.scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(self.optimizer, 'min', patience=5)
 
     def _initiate_loggers(self):
+        """initiate loggers to track training progress."""
         self.train_logger = Logger(self.fm.local_files['train_log'], ['epoch', 'loss', 'lr'])
         self.train_batch_logger = Logger(self.fm.local_files['batch_log'], ['epoch', 'batch', 'iter', 'loss', 'lr'])
         self.val_logger = Logger(self.fm.local_files['val_log'], ['epoch'])
 
     def _get_transform(self, train):
+        """get a composition of the appropriate data transformations.
+
+        Args:
+            train (bool): True if training the model, False if evaluating/testing the model
+
+        Returns:
+            composition of required transforms
+        """
         transforms = [T.ToTensor()]
         if train:
             transforms.append(T.RandomHorizontalFlip(0.5))
         return T.Compose(transforms)
 
     def _train_epoch(self, epoch):
+        """train the model for one epoch.
+
+        Args:
+            epoch (int): epoch number, greater than or equal to 0
+
+        Returns:
+            float: averaged epoch loss
+        """
         print('train at epoch {}'.format(epoch))
         self.model.train()
 
@@ -110,6 +127,12 @@ class Trainer:
 
     @torch.no_grad()
     def _evaluate_epoch(self, epoch):
+        """evaluate the model on the test set following an epoch of training.
+
+        Args:
+            epoch (int): epoch number, greater than or equal to 0
+
+        """
         print('evaluating epoch {}'.format(epoch))
         self.model.eval()
         cpu_device = torch.device("cpu")
@@ -125,6 +148,7 @@ class Trainer:
         df.to_csv(os.path.join(self.fm.local_files['predictions_dir'], '{}.csv'.format(epoch)))
 
     def _save_model(self):
+        """save the weights file (state dict) for the model."""
         dest = self.fm.local_files['weights_file']
         if os.path.exists(dest):
             path = os.path.join(self.fm.local_files['weights_dir'], str(int(os.path.getmtime(dest))) + '.weights')
