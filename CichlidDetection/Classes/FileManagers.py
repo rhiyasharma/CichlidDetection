@@ -22,6 +22,7 @@ class FileManager:
         self._make_dir('log_dir', join(self.local_files['training_dir'], 'logs'))
         self._make_dir('weights_dir', join(self.local_files['training_dir'], 'weights'))
         self._make_dir('predictions_dir', join(self.local_files['training_dir'], 'predictions'))
+        self._make_dir('figure_dir', join(self.local_files['training_dir'], 'figures'))
         # download remote files
         self.cloud_master_dir, cloud_files = self._locate_cloud_files()
         for name, file in cloud_files.items():
@@ -33,6 +34,8 @@ class FileManager:
             self.local_files.update({name: join(self.local_files['log_dir'], fname)})
         for name, fname in [('weights_file', 'last.weights')]:
             self.local_files.update({name: join(self.local_files['weights_dir'], fname)})
+        for name, fname in [('ground_truth_csv', 'ground_truth.csv')]:
+            self.local_files.update({name: join(self.local_files['predictions_dir'], fname)})
         # determine the unique project ID's from boxed_fish.csv
         self.unique_pids = pd.read_csv(self.local_files['boxed_fish_csv'], index_col=0)['ProjectID'].unique()
 

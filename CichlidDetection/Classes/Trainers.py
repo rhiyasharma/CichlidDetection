@@ -49,7 +49,7 @@ class Trainer:
 
     def _initiate_model(self):
         """initiate the model, optimizer, and scheduler."""
-        self.model = torchvision.models.detection.fasterrcnn_resnet50_fpn(num_classes=3)
+        self.model = torchvision.models.detection.fasterrcnn_resnet50_fpn(num_classes=3, box_detections_per_img=5)
         self.parameters = self.model.parameters()
         self.device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
         self.model.to(self.device)
@@ -153,7 +153,8 @@ class Trainer:
             outputs = [{k: v.to(cpu_device).numpy().tolist() for k, v in t.items()} for t in outputs]
             results.update({target["image_id"].item(): output for target, output in zip(targets, outputs)})
         df = pd.DataFrame.from_dict(results, orient='index')
-        df['FrameFile'] = [os.path.basename(path) for path in self.test_dataset.img_files]
+        df['Framefile'] = [os.path.basename(path) for path in self.test_dataset.img_files]
+        df = df[['Framefile', 'boxes', 'labels', 'scores']]
         df.to_csv(os.path.join(self.fm.local_files['predictions_dir'], '{}.csv'.format(epoch)))
 
     def _save_model(self):

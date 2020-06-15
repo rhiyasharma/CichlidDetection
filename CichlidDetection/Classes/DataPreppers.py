@@ -85,9 +85,25 @@ class DataPrepper:
             random_state (int): random state seed for repeatability
         """
         img_dir = self.file_manager.local_files['image_dir']
-        img_files = [os.path.join(img_dir, f) for f in os.listdir(img_dir)]
+        img_files = [os.path.join(img_dir, f) for f in sorted(os.listdir(img_dir))]
         train_files, test_files = train_test_split(img_files, train_size=train_size, random_state=random_state)
         with open(self.file_manager.local_files['train_list'], 'w') as f:
             f.writelines('{}\n'.format(f_) for f_ in train_files)
         with open(self.file_manager.local_files['test_list'], 'w') as f:
             f.writelines('{}\n'.format(f_) for f_ in test_files)
+
+    def _generate_ground_truth_csv(self):
+        """generate a csv of testing targets for comparison with the output of Trainers.Trainer._evaluate_epoch()"""
+        # load the boxed fish csv and narrow to valid images
+        df = pd.read_csv(self.file_manager.local_files['boxed_fish_csv'])
+        df = df[(df.Nfish != 0) & ((df.Sex == 'm') | (df.Sex == 'f')) & (df.CorrectAnnotation == 'Yes')]
+        # parse the test list from test_list.txt
+        with open(self.file_manager.local_files['test_list']) as f:
+            frames = [os.path.basename(frame) for frame in f.read().splitlines()]
+        # narrow dataframe to images in the test list
+        df = df.loc[df.Framefile.isin(frames), :][['Framefile', 'Box', 'Sex']]
+        # coerce the values into the correct form
+        df.Sex = df.Sex.apply(lambda x: 1 if x is 'f' else 2)
+        df['Box'] = df['Box'].apply(eval).apply(list)
+        df = df.groupby('Framefile').agg(lambda x: list(x))
+        df.to_csv(self.file_manager.local_files['ground_truth_csv'])
