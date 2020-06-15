@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from functools import wraps
 from matplotlib.figure import Figure
+import numpy as np
 
 
 def plotter_decorator(plotter_method):
@@ -39,7 +40,8 @@ class Plotter:
         plt.close('all')
 
     def plot_all(self):
-        pass
+        """create pdf's of every plot this class can produce"""
+        self.loss_vs_epoch()
 
     @plotter_decorator
     def loss_vs_epoch(self, fig: Figure):
@@ -50,7 +52,12 @@ class Plotter:
         """
         ax = fig.add_subplot(111)
         ax.set(xlabel='epoch', ylabel='loss', title='Training Loss vs. Epoch')
-        sns.lineplot(data=self.train_log.loss)
+        sns.lineplot(data=self.train_log.loss, ax=ax)
+
+    @plotter_decorator
+    def n_boxes_vs_epoch(self, fig: Figure):
+        """plot the average number of boxes predicted per frame vs the epoch"""
+        n_boxes = [df.boxes.apply(len).agg(np.mean) for df in self.epoch_predictions]
 
     def _load_data(self):
         """load and parse all relevant data"""
@@ -60,9 +67,6 @@ class Plotter:
         self.epoch_predictions = []
         for epoch in range(self.num_epochs):
             self.epoch_predictions.append(self._parse_epoch_csv(epoch))
-
-    def _analyze_data(self):
-        """calculate relevant summary stats, metrics, etc. from the raw data"""
 
     def _parse_train_log(self):
         """parse the logfile that tracked overall loss and learning rate at each epoch
@@ -86,6 +90,9 @@ class Plotter:
             Pandas DataFrame of epoch data
         """
         if epoch == -1:
-            return pd.read_csv(self.fm.local_files['ground_truth_csv'])
+            path = self.fm.local_files['ground_truth_csv']
+            return pd.read_csv(path, usecols=['Framefile', 'boxes', 'labels', ]).set_index('Framefile')
+
         else:
-            return pd.read_csv(join(self.fm.local_files['predictions_dir'], '{}.csv'.format(epoch)))
+            path = join(self.fm.local_files['predictions_dir'], '{}.csv'.format(epoch))
+            return pd.read_csv(path, usecols=['Framefile', 'boxes', 'labels', 'scores']).set_index('Framefile')

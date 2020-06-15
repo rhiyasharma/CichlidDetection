@@ -106,4 +106,5 @@ class DataPrepper:
         df.Sex = df.Sex.apply(lambda x: 1 if x is 'f' else 2)
         df['Box'] = df['Box'].apply(eval).apply(list)
         df = df.groupby('Framefile').agg(lambda x: list(x))
+        df.rename(columns={'Box': 'boxes', 'Sex': 'labels'}, inplace=True)
         df.to_csv(self.file_manager.local_files['ground_truth_csv'])

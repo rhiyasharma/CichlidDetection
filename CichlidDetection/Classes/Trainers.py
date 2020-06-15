@@ -154,7 +154,7 @@ class Trainer:
             results.update({target["image_id"].item(): output for target, output in zip(targets, outputs)})
         df = pd.DataFrame.from_dict(results, orient='index')
         df['Framefile'] = [os.path.basename(path) for path in self.test_dataset.img_files]
-        df = df[['Framefile', 'boxes', 'labels', 'scores']]
+        df = df[['Framefile', 'boxes', 'labels', 'scores']].set_index('Framefile')
         df.to_csv(os.path.join(self.fm.local_files['predictions_dir'], '{}.csv'.format(epoch)))
 
     def _save_model(self):
