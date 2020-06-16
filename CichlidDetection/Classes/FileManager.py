@@ -12,6 +12,11 @@ class FileManager:
         self.local_files = {}
         self._initialize()
 
+    def sync_training_dir(self):
+        """sync the training directory bidirectionally, keeping the newer version of each file"""
+        run(['rclone', 'copy', '-u', self.cloud_training_dir, self.local_files['training_dir']])
+        run(['rclone', 'copy', '-u', self.local_files['training_dir'], self.cloud_training_dir])
+
     def _initialize(self):
         """create a required local directories, download essential files, and set the path for files generated later."""
         # create the any required directories that do not already exist
@@ -23,8 +28,11 @@ class FileManager:
         self._make_dir('weights_dir', join(self.local_files['training_dir'], 'weights'))
         self._make_dir('predictions_dir', join(self.local_files['training_dir'], 'predictions'))
         self._make_dir('figure_dir', join(self.local_files['training_dir'], 'figures'))
-        # download remote files
+        # locate and download remote files
         self.cloud_master_dir, cloud_files = self._locate_cloud_files()
+        self.cloud_training_dir = join(self.cloud_master_dir, '___Tucker', 'CichlidDetection', 'training')
+        self.sync_training_dir()
+
         for name, file in cloud_files.items():
             self._download(name, file, self.local_files['training_dir'])
         # set the paths of files that will be generated later
@@ -102,10 +110,6 @@ class FileManager:
         """
         self.local_files.update({name: make_dir(path)})
         return path
-
-    def _upload(self):
-        # TODO: write function to upload weights, logs, train and test list, etc. to Dropbox
-        pass
 
 
 class ProjectFileManager(FileManager):
