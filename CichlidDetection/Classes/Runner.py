@@ -21,11 +21,12 @@ class Runner:
         """prep downloaded data"""
         self.dp.prep()
 
-    def train(self, num_epochs):
+    def train(self, num_epochs, upload_results=True):
         """initiate a Trainer object and train the model.
 
         Args:
             num_epochs (int): number of epochs to train
+            upload_results(bool): if True, automatically upload the results (weights, logs, etc.) after training
         """
-        self.tr = Trainer(num_epochs)
+        self.tr = Trainer(num_epochs, upload_results)
         self.tr.train()

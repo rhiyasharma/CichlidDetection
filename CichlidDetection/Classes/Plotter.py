@@ -57,14 +57,17 @@ class Plotter:
     @plotter_decorator
     def n_boxes_vs_epoch(self, fig: Figure):
         """plot the average number of boxes predicted per frame vs the epoch"""
-        # TODO: finish method
-        actual = self.ground_truth
-        predicted = [df.boxes.apply(len).agg(np.mean) for df in self.epoch_predictions]
+        predicted = pd.Series([df.boxes.apply(len).agg('mean') for df in self.epoch_predictions])
+        actual = pd.Series([self.ground_truth.boxes.apply(len).agg('mean')] * len(predicted))
+        ax = fig.add_subplot(111)
+        ax.set(xlabel='epoch', ylabel='avg # detections', title='Average Number of Detections vs. Epoch')
+        sns.lineplot(data=predicted, ax=ax, label='predicted')
+        sns.lineplot(data=actual, ax=ax, label='actual')
 
     @plotter_decorator
     def animated_learning(self, fig: Figure):
         # TODO: finish method
-        """for a given image, plot the predicted boxes and labels for each epoch to create an animation"""
+        """for a single frame, successively plot the predicted boxes and labels at each epoch to create an animation"""
         pass
 
     def _load_data(self):
@@ -99,8 +102,8 @@ class Plotter:
         """
         if epoch == -1:
             path = self.fm.local_files['ground_truth_csv']
-            return pd.read_csv(path, usecols=['Framefile', 'boxes', 'labels', ]).set_index('Framefile')
-
+            usecols = ['Framefile', 'boxes', 'labels']
         else:
             path = join(self.fm.local_files['predictions_dir'], '{}.csv'.format(epoch))
-            return pd.read_csv(path, usecols=['Framefile', 'boxes', 'labels', 'scores']).set_index('Framefile')
+            usecols = ['Framefile', 'boxes', 'labels', 'scores']
+        return pd.read_csv(path, usecols=usecols).set_index('Framefile').applymap(lambda x: eval(x))
