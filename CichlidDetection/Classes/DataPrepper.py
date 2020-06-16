@@ -112,16 +112,24 @@ class DataPrepper:
         """generate a csv of testing targets for comparison with the output of Trainers.Trainer._evaluate_epoch()"""
         # load the boxed fish csv and narrow to valid images
         df = pd.read_csv(self.file_manager.local_files['boxed_fish_csv'])
-        df = df[(df.Nfish != 0) & ((df.Sex == 'm') | (df.Sex == 'f')) & (df.CorrectAnnotation == 'Yes')]
         # parse the test list from test_list.txt
         with open(self.file_manager.local_files['test_list']) as f:
             frames = [os.path.basename(frame) for frame in f.read().splitlines()]
         # narrow dataframe to images in the test list
-        df = df.loc[df.Framefile.isin(frames), :][['Framefile', 'Box', 'Sex']]
+        df = df.loc[df.Framefile.isin(frames) & (df.CorrectAnnotation == 'Yes'), :][['Framefile', 'Box', 'Sex']]
         # coerce the values into the correct form
-        df.Sex = df.Sex.apply(lambda x: 1 if x is 'f' else 2)
+        df.Sex = df.Sex.apply(lambda x: [1] if x is 'f' else [2] if x is 'm' else [])
         df['Box'] = df['Box'].apply(eval).apply(list)
-        df = df.groupby('Framefile').agg(lambda x: list(x))
         df.rename(columns={'Box': 'boxes', 'Sex': 'labels'}, inplace=True)
+        df = df.groupby('Framefile').agg({'boxes': lambda x: list(x), 'labels': 'sum'})
         df.to_csv(self.file_manager.local_files['ground_truth_csv'])
 
+    def _inject_empties(self, target_ratio=0.2):
+        """add empty frames to the test set
+
+        Args:
+            target_ratio: target ratio of empty to non-empty frames in the test set. Actual ratio may be smaller if
+                there aren't enough unique empty frames to reach the target ratio
+        """
+        df = pd.read_csv(self.file_manager.local_files['boxed_fish_csv'])
+        df = df[(df.Nfish == 0) & (df.CorrectAnnotation == 'Yes')]
