@@ -103,6 +103,10 @@ class FileManager:
         self.local_files.update({name: make_dir(path)})
         return path
 
+    def _upload(self):
+        # TODO: write function to upload weights, logs, train and test list, etc. to Dropbox
+        pass
+
 
 class ProjectFileManager(FileManager):
     """Project specific class for managing local and cloud storage. Inherits from FileManager"""

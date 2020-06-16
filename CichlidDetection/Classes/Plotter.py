@@ -1,4 +1,4 @@
-from CichlidDetection.Classes.FileManagers import FileManager
+from CichlidDetection.Classes.FileManager import FileManager
 from os.path import join
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -57,7 +57,14 @@ class Plotter:
     @plotter_decorator
     def n_boxes_vs_epoch(self, fig: Figure):
         """plot the average number of boxes predicted per frame vs the epoch"""
+        # TODO: finish method
         n_boxes = [df.boxes.apply(len).agg(np.mean) for df in self.epoch_predictions]
+
+    @plotter_decorator
+    def animated_learning(self, fig: Figure):
+        # TODO: finish method
+        """for a given image, plot the predicted boxes and labels for each epoch to create an animation"""
+        pass
 
     def _load_data(self):
         """load and parse all relevant data"""

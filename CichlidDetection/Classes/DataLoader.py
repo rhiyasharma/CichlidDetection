@@ -1,5 +1,5 @@
 from PIL import Image
-from CichlidDetection.Classes.FileManagers import FileManager
+from CichlidDetection.Classes.FileManager import FileManager
 from CichlidDetection.Utilities.utils import read_label_file
 from torch import tensor
 

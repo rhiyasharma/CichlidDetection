@@ -3,11 +3,13 @@ import time
 import pandas as pd
 import torch
 import torchvision
+import random
+from torchvision.transforms import functional as F
 
 from CichlidDetection.Utilities.utils import Logger, AverageMeter, collate_fn
 import CichlidDetection.Utilities.transforms as T
-from CichlidDetection.Classes.DataLoaders import DataLoader
-from CichlidDetection.Classes.FileManagers import FileManager
+from CichlidDetection.Classes.DataLoader import DataLoader
+from CichlidDetection.Classes.FileManager import FileManager
 
 
 class Trainer:
@@ -71,7 +73,7 @@ class Trainer:
         Returns:
             composition of required transforms
         """
-        transforms = [T.ToTensor()]
+        transforms = [ToTensor()]
         if train:
             transforms.append(T.RandomHorizontalFlip(0.5))
         return T.Compose(transforms)
@@ -166,7 +168,34 @@ class Trainer:
         torch.save(self.model.state_dict(), dest)
 
 
+class Compose(object):
+    def __init__(self, transforms):
+        self.transforms = transforms
 
+    def __call__(self, image, target):
+        for t in self.transforms:
+            image, target = t(image, target)
+        return image, target
+
+
+class ToTensor(object):
+    def __call__(self, image, target):
+        image = F.to_tensor(image)
+        return image, target
+
+
+class RandomHorizontalFlip(object):
+    def __init__(self, prob):
+        self.prob = prob
+
+    def __call__(self, image, target):
+        if random.random() < self.prob:
+            height, width = image.shape[-2:]
+            image = image.flip(-1)
+            bbox = target["boxes"]
+            bbox[:, [0, 2]] = width - bbox[:, [2, 0]]
+            target["boxes"] = bbox
+        return image, target
 
 
 

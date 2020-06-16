@@ -1,5 +1,5 @@
 import os, shutil
-from CichlidDetection.Classes.FileManagers import FileManager, ProjectFileManager
+from CichlidDetection.Classes.FileManager import FileManager, ProjectFileManager
 from CichlidDetection.Utilities.utils import area
 from shapely.geometry import Polygon
 import numpy as np
