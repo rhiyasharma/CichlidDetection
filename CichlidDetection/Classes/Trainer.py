@@ -31,8 +31,8 @@ class Trainer:
         Args:
             num_epochs (int): number of epochs to train
             compare_annotations: If True, evaluate the model on the test set after each epoch. This does not affect the
-                end result of training, but does produce significantly more data about model performance at each epoch.
-                Setting to True increases total runtime significantly
+                end result of training, but does produce more data about model performance at each epoch. Setting to
+                True also increases total runtime significantly
         """
         self.compare_annotations = compare_annotations
         self.fm = FileManager()

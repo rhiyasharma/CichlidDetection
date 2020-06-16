@@ -58,7 +58,8 @@ class Plotter:
     def n_boxes_vs_epoch(self, fig: Figure):
         """plot the average number of boxes predicted per frame vs the epoch"""
         # TODO: finish method
-        n_boxes = [df.boxes.apply(len).agg(np.mean) for df in self.epoch_predictions]
+        actual = self.ground_truth
+        predicted = [df.boxes.apply(len).agg(np.mean) for df in self.epoch_predictions]
 
     @plotter_decorator
     def animated_learning(self, fig: Figure):
