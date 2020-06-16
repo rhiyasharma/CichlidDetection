@@ -42,6 +42,7 @@ class Plotter:
     def plot_all(self):
         """create pdf's of every plot this class can produce"""
         self.loss_vs_epoch()
+        self.n_boxes_vs_epoch()
 
     @plotter_decorator
     def loss_vs_epoch(self, fig: Figure):
@@ -69,6 +70,9 @@ class Plotter:
         # TODO: finish method
         """for a single frame, successively plot the predicted boxes and labels at each epoch to create an animation"""
         pass
+
+    @plotter_decorator
+    def iou_vs_epoch(self, fig: Figure):
 
     def _load_data(self):
         """load and parse all relevant data"""

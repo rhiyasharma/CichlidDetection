@@ -2,6 +2,9 @@ import argparse, subprocess, os, socket
 
 """primary command line executable script."""
 
+# example usage
+# python3 core.py full_auto -e 10 --Dry
+
 # parse command line arguments
 parser = argparse.ArgumentParser()
 subparsers = parser.add_subparsers(help='Available Commands', dest='command')
