@@ -129,7 +129,8 @@ class DataPrepper:
         self._prep_images(empty_frames)
         img_dir = self.file_manager.local_files['image_dir']
         empty_frames = [os.path.join(img_dir, f) for f in empty_frames]
-        test_files = set(test_files.extend(empty_frames))
+        test_files.extend(empty_frames)
+        test_files = set(test_files)
         with open(self.file_manager.local_files['test_list'], 'w') as f:
             f.writelines('{}\n'.format(f_) for f_ in sorted(test_files))
 

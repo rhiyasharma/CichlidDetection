@@ -31,7 +31,6 @@ class FileManager:
         # locate and download remote files
         self.cloud_master_dir, cloud_files = self._locate_cloud_files()
         self.cloud_training_dir = join(self.cloud_master_dir, '___Tucker', 'CichlidDetection', 'training')
-        self.sync_training_dir()
 
         for name, file in cloud_files.items():
             self._download(name, file, self.local_files['training_dir'])
