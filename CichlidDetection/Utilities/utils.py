@@ -1,117 +1,41 @@
-import csv
-from shapely.geometry import Polygon
-import numpy as np
-import torch
+import os, subprocess
 
 
-class AverageMeter(object):
-    """Computes and stores the running average of a metric. Useful for updating metrics after each epoch / batch."""
-
-    def __init__(self):
-        """default all values to upon class declaration."""
-        self._reset()
-
-    def _reset(self):
-        """reset all metrics to 0 when initiating."""
-        self.val = 0    #: current value
-        self.avg = 0    #: running average of metric
-        self.sum = 0    #: running sum of metric
-        self.count = 0  #: running count of metric
-
-    def update(self, val, n=1):
-        """Update the current value, as well as the running sum, count, and average.
-
-        Args:
-            val (float): value used to update metrics
-            n (int): number of instances with the value val. Default 1
-
-        """
-        self.val = val
-        self.sum += val * n
-        self.count += n
-        self.avg = self.sum / self.count
-
-
-class Logger(object):
-    """manages creation of logfiles that track basic training/evaluation stats."""
-
-    def __init__(self, path, header):
-        """open the logfile and write its header.
-
-        Args:
-            path (str): path to the logfile
-            header (list of str): column names
-        """
-        self.log_file = open(path, 'w')
-        self.logger = csv.writer(self.log_file, delimiter='\t')
-
-        self.logger.writerow(header)
-        self.header = header
-
-    def __del(self):
-        """close the logfile."""
-        self.log_file.close()
-
-    def log(self, values):
-        """write a new row to the logfile.
-
-        Args:
-            values (dict): dictionary of key-value pairs, where each key must be a column name in self.header
-        """
-        write_values = []
-        for col in self.header:
-            assert col in values
-            write_values.append(values[col])
-
-        self.logger.writerow(write_values)
-        self.log_file.flush()
-
-
-def collate_fn(batch):
-    """package a mini-batch of images and targets.
+def make_dir(path):
+    """recursively create the directory specified by path if it does not exist
 
     Args:
-        batch (list): uncollated mini-batch
+        path: path to the directory that will be created
 
     Returns:
-        tuple: collated mini-batch
+        str: path, identical to the input argument path
     """
-    return tuple(zip(*batch))
+    if not os.path.exists(path):
+        os.makedirs(path)
+    assert os.path.exists(path), "failed to create {}".format(path)
+    return path
 
 
-def area(row, poly_vps):
-    """calculate the annotation box area
+def run(command, fault_tolerant=False):
+    """use the subprocess.run function to run a command
 
     Args:
-        row: pandas dataframe row containing, at minimum, the box coordinates (in x, y, w, h form) and project id
-        poly_vps (dict): dictionary of video crops as Shapely Polygons, keyed by project id
+        command: list of strings to be passed as the first argument of subprocess.run()
+        fault_tolerant: if False (default) and the command fails to run, raise an exception and halt the script
 
     Returns:
-        float: annotation area if the box is within the video crop boundaries, else np.nan
+        str: stdout from executing subprocess.run(command)
+
+    Raises:
+        Exception: if subprocess.run() produces a nonzero return code and fault_tolerant is False
     """
-    x_a, y_a, w_a, h_a = row['Box']
-    poly_ann = Polygon([[x_a, y_a], [x_a + w_a, y_a], [x_a + w_a, y_a + h_a], [x_a, y_a + h_a]])
-    intersection_area = poly_ann.intersection(poly_vps[row['ProjectID']]).area
-    ann_area = poly_ann.area
-    return ann_area if ann_area == intersection_area else np.nan
 
-
-def read_label_file(path):
-    """read box coordinates and labels from the label file and return them as a target dictionary.
-
-    Args:
-        path (str): path to label file
-
-    Returns:
-        dict: target dictionary containing the boxes tensor and labels tensor
-    """
-    boxes = []
-    labels = []
-    with open(path) as f:
-        for line in f.readlines():
-            values = line.split()
-            boxes.append([float(val) for val in values[:4]])
-            labels.append(int(values[4]))
-    boxes = torch.as_tensor(boxes, dtype=torch.float32)
-    labels = torch.as_tensor(labels, dtype=torch.int64)
-    return {'boxes': boxes, 'labels': labels}
+    output = subprocess.run(command, stdout=subprocess.PIPE, encoding='utf-8')
+    if output.returncode != 0:
+        if not fault_tolerant:
+            print(output.stderr)
+            raise Exception('error running the following command: {}'.format(' '.join(command)))
+        else:
+            print('error running the following command: {}'.format(' '.join(command)))
+            print('fault tolerant set to True, ignoring error')
+    return output.stdout

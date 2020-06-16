@@ -1,7 +1,28 @@
 from PIL import Image
 from CichlidDetection.Classes.FileManager import FileManager
-from CichlidDetection.Utilities.utils import read_label_file
+import torch
 from torch import tensor
+
+
+def read_label_file(path):
+    """read box coordinates and labels from the label file and return them as a target dictionary.
+
+    Args:
+        path (str): path to label file
+
+    Returns:
+        dict: target dictionary containing the boxes tensor and labels tensor
+    """
+    boxes = []
+    labels = []
+    with open(path) as f:
+        for line in f.readlines():
+            values = line.split()
+            boxes.append([float(val) for val in values[:4]])
+            labels.append(int(values[4]))
+    boxes = torch.as_tensor(boxes, dtype=torch.float32)
+    labels = torch.as_tensor(labels, dtype=torch.int64)
+    return {'boxes': boxes, 'labels': labels}
 
 
 class DataLoader(object):

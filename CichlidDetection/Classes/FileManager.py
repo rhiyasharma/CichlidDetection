@@ -1,7 +1,7 @@
 import os
 from os.path import join
 import pandas as pd
-from CichlidDetection.Utilities.system_utilities import run, make_dir
+from CichlidDetection.Utilities.utils import run, make_dir
 
 
 class FileManager:

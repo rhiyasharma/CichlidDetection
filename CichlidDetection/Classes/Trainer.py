@@ -5,11 +5,20 @@ import torch
 import torchvision
 import random
 from torchvision.transforms import functional as F
-
-from CichlidDetection.Utilities.utils import Logger, AverageMeter, collate_fn
-import CichlidDetection.Utilities.transforms as T
 from CichlidDetection.Classes.DataLoader import DataLoader
 from CichlidDetection.Classes.FileManager import FileManager
+
+
+def collate_fn(batch):
+    """package a mini-batch of images and targets.
+
+    Args:
+        batch (list): uncollated mini-batch
+
+    Returns:
+        tuple: collated mini-batch
+    """
+    return tuple(zip(*batch))
 
 
 class Trainer:
@@ -75,8 +84,8 @@ class Trainer:
         """
         transforms = [ToTensor()]
         if train:
-            transforms.append(T.RandomHorizontalFlip(0.5))
-        return T.Compose(transforms)
+            transforms.append(RandomHorizontalFlip(0.5))
+        return Compose(transforms)
 
     def _train_epoch(self, epoch):
         """train the model for one epoch.
@@ -168,6 +177,9 @@ class Trainer:
         torch.save(self.model.state_dict(), dest)
 
 
+# helper classes
+
+
 class Compose(object):
     def __init__(self, transforms):
         self.transforms = transforms
@@ -197,5 +209,67 @@ class RandomHorizontalFlip(object):
             target["boxes"] = bbox
         return image, target
 
+
+class AverageMeter(object):
+    """Computes and stores the running average of a metric. Useful for updating metrics after each epoch / batch."""
+
+    def __init__(self):
+        """default all values to upon class declaration."""
+        self._reset()
+
+    def _reset(self):
+        """reset all metrics to 0 when initiating."""
+        self.val = 0    #: current value
+        self.avg = 0    #: running average of metric
+        self.sum = 0    #: running sum of metric
+        self.count = 0  #: running count of metric
+
+    def update(self, val, n=1):
+        """Update the current value, as well as the running sum, count, and average.
+
+        Args:
+            val (float): value used to update metrics
+            n (int): number of instances with the value val. Default 1
+
+        """
+        self.val = val
+        self.sum += val * n
+        self.count += n
+        self.avg = self.sum / self.count
+
+
+class Logger(object):
+    """manages creation of logfiles that track basic training/evaluation stats."""
+
+    def __init__(self, path, header):
+        """open the logfile and write its header.
+
+        Args:
+            path (str): path to the logfile
+            header (list of str): column names
+        """
+        self.log_file = open(path, 'w')
+        self.logger = csv.writer(self.log_file, delimiter='\t')
+
+        self.logger.writerow(header)
+        self.header = header
+
+    def __del(self):
+        """close the logfile."""
+        self.log_file.close()
+
+    def log(self, values):
+        """write a new row to the logfile.
+
+        Args:
+            values (dict): dictionary of key-value pairs, where each key must be a column name in self.header
+        """
+        write_values = []
+        for col in self.header:
+            assert col in values
+            write_values.append(values[col])
+
+        self.logger.writerow(write_values)
+        self.log_file.flush()
 
 

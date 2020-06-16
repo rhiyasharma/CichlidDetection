@@ -1,10 +1,26 @@
 import os, shutil
 from CichlidDetection.Classes.FileManager import FileManager, ProjectFileManager
-from CichlidDetection.Utilities.utils import area
 from shapely.geometry import Polygon
 import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split
+
+
+def area(row, poly_vps):
+    """calculate the annotation box area
+
+    Args:
+        row: pandas dataframe row containing, at minimum, the box coordinates (in x, y, w, h form) and project id
+        poly_vps (dict): dictionary of video crops as Shapely Polygons, keyed by project id
+
+    Returns:
+        float: annotation area if the box is within the video crop boundaries, else np.nan
+    """
+    x_a, y_a, w_a, h_a = row['Box']
+    poly_ann = Polygon([[x_a, y_a], [x_a + w_a, y_a], [x_a + w_a, y_a + h_a], [x_a, y_a + h_a]])
+    intersection_area = poly_ann.intersection(poly_vps[row['ProjectID']]).area
+    ann_area = poly_ann.area
+    return ann_area if ann_area == intersection_area else np.nan
 
 
 class DataPrepper:
@@ -108,3 +124,4 @@ class DataPrepper:
         df = df.groupby('Framefile').agg(lambda x: list(x))
         df.rename(columns={'Box': 'boxes', 'Sex': 'labels'}, inplace=True)
         df.to_csv(self.file_manager.local_files['ground_truth_csv'])
+
