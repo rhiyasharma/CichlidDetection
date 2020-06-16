@@ -115,14 +115,16 @@ class FileManager:
 class ProjectFileManager(FileManager):
     """Project specific class for managing local and cloud storage. Inherits from FileManager"""
 
-    def __init__(self, pid, file_manager=None):
+    def __init__(self, pid, file_manager=None, download_images=True):
         """initialize a new FileManager, unless an existing file manager was passed to the constructor to save time
 
         Args:
             pid (str): project id
             file_manager (FileManager): optional. pass a pre-existing FileManager object to improve performance when
                 initiating numerous ProjectFileManagers
+            download (bool): if True, download the full image directory for the specified project
         """
+        self.download_images = download_images
         # initiate the FileManager parent class unless the optional file_manager argument is used
         if file_manager is None:
             FileManager.__init__(self)
@@ -152,7 +154,7 @@ class ProjectFileManager(FileManager):
             dict: cloud file paths keyed by brief file descriptors.
         """
         cloud_image_dir = join(self.cloud_master_dir, '__AnnotatedData/BoxedFish/BoxedImages/{}.tar'.format(self.pid))
-        cloud_files = {'project_image_dir': cloud_image_dir}
+        cloud_files = {'project_image_dir': cloud_image_dir} if self.download_images else {}
         remote_files = run(['rclone', 'lsf', join(self.cloud_master_dir, self.pid)])
         if 'videoCropPoints.npy' and 'videoCrop.npy' in remote_files.split():
             cloud_files.update({'video_points_numpy': join(self.cloud_master_dir, self.pid, 'videoCropPoints.npy')})
