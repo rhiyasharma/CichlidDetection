@@ -153,6 +153,7 @@ class Trainer:
             epoch (int): epoch number, greater than or equal to 0
 
         """
+        # TODO: add testing on empty frames
         print('evaluating epoch {}'.format(epoch))
         self.model.eval()
         cpu_device = torch.device("cpu")
