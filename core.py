@@ -14,6 +14,7 @@ train_parser.add_argument('--Dry', action='store_true',  help='prevent upload af
 
 full_auto_parser = subparsers.add_parser('full_auto')
 full_auto_parser.add_argument('-e', '--Epochs', type=int, default=10, help='number of epochs to train')
+full_auto_parser.add_argument('--Dry', action='store_true',  help='prevent upload after training')
 
 args = parser.parse_args()
 
@@ -35,7 +36,7 @@ else:
     if args.command == 'full_auto':
         runner.download()
         runner.prep()
-        runner.train(num_epochs=args.Epochs)
+        runner.train(num_epochs=args.Epochs, upload_results=(not args.Dry))
 
     elif args.command == 'download':
         runner.download()
