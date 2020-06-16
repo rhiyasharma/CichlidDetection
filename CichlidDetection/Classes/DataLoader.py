@@ -2,6 +2,7 @@ from PIL import Image
 from CichlidDetection.Classes.FileManager import FileManager
 import torch
 from torch import tensor
+import os
 
 
 def read_label_file(path):
@@ -15,11 +16,12 @@ def read_label_file(path):
     """
     boxes = []
     labels = []
-    with open(path) as f:
-        for line in f.readlines():
-            values = line.split()
-            boxes.append([float(val) for val in values[:4]])
-            labels.append(int(values[4]))
+    if os.path.exists(path):
+        with open(path) as f:
+            for line in f.readlines():
+                values = line.split()
+                boxes.append([float(val) for val in values[:4]])
+                labels.append(int(values[4]))
     boxes = torch.as_tensor(boxes, dtype=torch.float32)
     labels = torch.as_tensor(labels, dtype=torch.int64)
     return {'boxes': boxes, 'labels': labels}
