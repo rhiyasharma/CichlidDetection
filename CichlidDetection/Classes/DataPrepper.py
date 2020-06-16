@@ -4,6 +4,7 @@ from shapely.geometry import Polygon
 import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split
+import random
 
 
 def area(row, poly_vps):
@@ -42,6 +43,8 @@ class DataPrepper:
         good_images = self._prep_labels()
         self._prep_images(good_images)
         self._generate_train_test_lists()
+        self._inject_empties()
+        self._generate_ground_truth_csv()
 
     def _prep_labels(self):
         """generate a label file for each valid image
@@ -104,9 +107,31 @@ class DataPrepper:
         img_files = [os.path.join(img_dir, f) for f in sorted(os.listdir(img_dir))]
         train_files, test_files = train_test_split(img_files, train_size=train_size, random_state=random_state)
         with open(self.file_manager.local_files['train_list'], 'w') as f:
-            f.writelines('{}\n'.format(f_) for f_ in train_files)
+            f.writelines('{}\n'.format(f_) for f_ in sorted(train_files))
         with open(self.file_manager.local_files['test_list'], 'w') as f:
-            f.writelines('{}\n'.format(f_) for f_ in test_files)
+            f.writelines('{}\n'.format(f_) for f_ in sorted(test_files))
+
+    def _inject_empties(self, target_ratio=0.2):
+        """add empty frames to the test set
+
+        Args:
+            target_ratio: target ratio of empty to non-empty frames in the test set. Actual ratio may be smaller if
+                there aren't enough unique empty frames to reach the target ratio
+        """
+        with open(self.file_manager.local_files['test_list'], 'r') as f:
+            test_files = sorted(f.read().splitlines())
+        target_num_empties = int(len(test_files) * (target_ratio/(1-target_ratio)))
+        df = pd.read_csv(self.file_manager.local_files['boxed_fish_csv'])
+        empty_frames = df[(df.Nfish == 0) & (df.CorrectAnnotation == 'Yes')].Framefile.tolist()
+        if len(empty_frames) > target_num_empties:
+            random.seed(42)
+            empty_frames = random.choices(empty_frames, k=target_num_empties)
+        self._prep_images(empty_frames)
+        img_dir = self.file_manager.local_files['image_dir']
+        empty_frames = [os.path.join(img_dir, f) for f in empty_frames]
+        test_files = set(test_files.extend(empty_frames))
+        with open(self.file_manager.local_files['test_list'], 'w') as f:
+            f.writelines('{}\n'.format(f_) for f_ in sorted(test_files))
 
     def _generate_ground_truth_csv(self):
         """generate a csv of testing targets for comparison with the output of Trainers.Trainer._evaluate_epoch()"""
@@ -119,17 +144,10 @@ class DataPrepper:
         df = df.loc[df.Framefile.isin(frames) & (df.CorrectAnnotation == 'Yes'), :][['Framefile', 'Box', 'Sex']]
         # coerce the values into the correct form
         df.Sex = df.Sex.apply(lambda x: [1] if x is 'f' else [2] if x is 'm' else [])
-        df['Box'] = df['Box'].apply(eval).apply(list)
+        df['Box'] = df['Box'].apply(lambda x: list(eval(x)) if type(x) is str else [])
         df.rename(columns={'Box': 'boxes', 'Sex': 'labels'}, inplace=True)
-        df = df.groupby('Framefile').agg({'boxes': lambda x: list(x), 'labels': 'sum'})
+        df = df.groupby('Framefile').agg({'boxes': list, 'labels': 'sum'})
+        df.boxes = df.boxes.apply(lambda x: [] if x == [[]] else x)
         df.to_csv(self.file_manager.local_files['ground_truth_csv'])
 
-    def _inject_empties(self, target_ratio=0.2):
-        """add empty frames to the test set
 
-        Args:
-            target_ratio: target ratio of empty to non-empty frames in the test set. Actual ratio may be smaller if
-                there aren't enough unique empty frames to reach the target ratio
-        """
-        df = pd.read_csv(self.file_manager.local_files['boxed_fish_csv'])
-        df = df[(df.Nfish == 0) & (df.CorrectAnnotation == 'Yes')]
