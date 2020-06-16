@@ -4,6 +4,7 @@ import pandas as pd
 import torch
 import torchvision
 import random
+import csv
 from torchvision.transforms import functional as F
 from CichlidDetection.Classes.DataLoader import DataLoader
 from CichlidDetection.Classes.FileManager import FileManager
@@ -48,6 +49,7 @@ class Trainer:
             if self.compare_annotations:
                 self._evaluate_epoch(epoch)
         self._save_model()
+        self.fm.sync_training_dir()
 
     def _initiate_loaders(self):
         """initiate train and test datasets and  dataloaders."""
