@@ -14,8 +14,9 @@ class FileManager:
 
     def sync_training_dir(self):
         """sync the training directory bidirectionally, keeping the newer version of each file"""
-        run(['rclone', 'copy', '-u', self.cloud_training_dir, self.local_files['training_dir']])
-        run(['rclone', 'copy', '-u', self.local_files['training_dir'], self.cloud_training_dir, '--exclude', '.*{/**,}'])
+        print('syncing training directory')
+        run(['rclone', 'copy', '-u', '-P', self.cloud_training_dir, self.local_files['training_dir']])
+        run(['rclone', 'copy', '-u', '-P', self.local_files['training_dir'], self.cloud_training_dir, '--exclude', '.*{/**,}'])
 
     def _initialize(self):
         """create a required local directories, download essential files, and set the path for files generated later."""

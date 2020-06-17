@@ -69,6 +69,8 @@ class Plotter:
     def animated_learning(self, fig: Figure):
         # TODO: finish method
         """for a single frame, successively plot the predicted boxes and labels at each epoch to create an animation"""
+        # find a frame with a good balance of number of fish and high final score for all boxes
+
         pass
 
     @plotter_decorator

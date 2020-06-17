@@ -3,7 +3,7 @@ from CichlidDetection.Classes.FileManager import FileManager
 from CichlidDetection.Classes.Trainer import Trainer
 from CichlidDetection.Classes.Plotter import Plotter
 
-prepper = DataPrepper()
+plotter = Plotter()
 
 
 
