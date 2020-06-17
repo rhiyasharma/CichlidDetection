@@ -1,5 +1,5 @@
 from CichlidDetection.Classes.FileManager import FileManager
-from os.path import join
+from os.path import join, exists
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -77,7 +77,13 @@ class Plotter:
         pass
 
     def _load_data(self):
-        """load and parse all relevant data"""
+        """load and parse all relevant data. Automatically syncs training dir with cloud if any files are missing"""
+        required_files = [self.fm.local_files[x] for x in ['boxed_fish_csv', 'train_log']]
+        required_files.append(join(self.fm.local_files['predictions_dir'], '0.csv'))
+        for f in required_files:
+            if not exists(f):
+                self.fm.sync_training_dir()
+                break
         self.train_log = self._parse_train_log()
         self.num_epochs = len(self.train_log)
         self.ground_truth = self._parse_epoch_csv()
