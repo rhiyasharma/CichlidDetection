@@ -39,3 +39,13 @@ def run(command, fault_tolerant=False):
             print('error running the following command: {}'.format(' '.join(command)))
             print('fault tolerant set to True, ignoring error')
     return output.stdout
+
+
+def xyminmax_to_xywh(xmin, ymin, xmax, ymax):
+    """convert box coordinates from (xmin, ymin, xmax, ymax) form to (x, y, w , h) form"""
+    return [xmin, ymin, xmax - xmin, ymax - ymin]
+
+
+def xywh_to_xyminmax(x, y, w, h):
+    """convert box coordinates from (x, y, w , h) form to (xmin, ymin, xmax, ymax) form"""
+    return [x, y, x + w, y + h]
