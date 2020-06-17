@@ -3,19 +3,24 @@ from os.path import join, exists
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
-from functools import wraps
+from functools import wraps, partial
 from matplotlib.figure import Figure
+from matplotlib.animation import FuncAnimation
+from PIL import Image
 import numpy as np
 
 
-def plotter_decorator(plotter_method):
+def plotter_decorator(plotter_method=None, save=True):
     """decorator used for automatic set-up and clean-up when making figures with methods from the Plotter class"""
+    if plotter_method is None:
+        return partial(plotter_decorator, save=save)
     @wraps(plotter_method)
     def wrapper(plotter, fig=None, *args, **kwargs):
         method_name = plotter_method.__name__
         fig = plt.Figure(*args, **kwargs) if fig is None else fig
         plotter_method(plotter, fig)
-        plotter.save_fig(fig, method_name)
+        if save:
+            plotter.save_fig(fig, method_name)
     return wrapper
 
 
@@ -65,13 +70,34 @@ class Plotter:
         sns.lineplot(data=predicted, ax=ax, label='predicted')
         sns.lineplot(data=actual, ax=ax, label='actual')
 
-    @plotter_decorator
+    @plotter_decorator(save=False)
     def animated_learning(self, fig: Figure):
         # TODO: finish method
         """for a single frame, successively plot the predicted boxes and labels at each epoch to create an animation"""
-        # find a frame with a good balance of number of fish and high final score for all boxes
 
-        pass
+        # find a frame with a good balance of number of fish and final-epoch score for each box, and load that image
+        final_epoch = self.epoch_predictions[-1].copy()
+        final_epoch['n_detections'] = final_epoch['labels'].apply(len)
+        final_epoch['min_score'] = final_epoch['scores'].apply(lambda x: 0 if len(x) is 0 else min(x))
+        final_epoch = final_epoch[final_epoch.min_score > 0.95]
+        frame = final_epoch.sort_values(by=['n_detections', 'min_score'], ascending=False).iloc[0].name
+        frame = join(self.fm.local_files['image_dir'], frame)
+        im = np.array(Image.open(frame), dtype=np.uint8)
+
+        # build up the animation
+        ax = plt.axes(xlim=(0, im.shape[0]), ylim=(im.shape[1], 0))
+
+        def init():
+            pass
+
+        def animate()
+
+        anim = FuncAnimation(fig, animate(), init_func=init(), frames=100, interval=20, blit=True)
+        plt.imshow(im, zorder=0, ax=ax)
+        anim.save(join(self.fig_dir, 'animated_learning.git'), writer='imagemagick')
+        plt.close('all')
+
+
 
     @plotter_decorator
     def iou_vs_epoch(self, fig: Figure):
@@ -84,7 +110,7 @@ class Plotter:
         required_files.append(join(self.fm.local_files['predictions_dir'], '0.csv'))
         for f in required_files:
             if not exists(f):
-                self.fm.sync_training_dir()
+                self.fm.sync_training_dir(exclude=['labels/**'])
                 break
         self.train_log = self._parse_train_log()
         self.num_epochs = len(self.train_log)

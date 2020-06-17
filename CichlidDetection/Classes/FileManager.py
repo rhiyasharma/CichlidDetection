@@ -1,4 +1,5 @@
 import os
+from itertools import chain
 from os.path import join
 import pandas as pd
 from CichlidDetection.Utilities.utils import run, make_dir
@@ -12,11 +13,22 @@ class FileManager:
         self.local_files = {}
         self._initialize()
 
-    def sync_training_dir(self):
-        """sync the training directory bidirectionally, keeping the newer version of each file"""
+    def sync_training_dir(self, exclude=None, quiet=False):
+        """sync the training directory bidirectionally, keeping the newer version of each file
+
+        Args:
+            exclude (list of str): files/directories to exclude. Accepts both explicit file/directory names and
+                regular expressions. Expects a list, even if it's a list of length one. Default None.
+            quiet: if True, suppress the output of rclone copy. Default False
+        """
         print('syncing training directory')
-        run(['rclone', 'copy', '-u', '-P', self.cloud_training_dir, self.local_files['training_dir']])
-        run(['rclone', 'copy', '-u', '-P', self.local_files['training_dir'], self.cloud_training_dir, '--exclude', '.*{/**,}'])
+        down = ['rclone', 'copy', '-u', self.cloud_training_dir, self.local_files['training_dir']]
+        up = ['rclone', 'copy', '-u', self.local_files['training_dir'], self.cloud_training_dir, '--exclude', '.*{/**,}']
+        if quiet:
+            [com.insert(3, '-P') for com in [down, up]]
+        if exclude is not None:
+            [com.extend(list(chain.from_iterable(zip(['--exclude'] * len(exclude), exclude)))) for com in [down, up]]
+        [run(com) for com in [down, up]]
 
     def _initialize(self):
         """create a required local directories, download essential files, and set the path for files generated later."""
