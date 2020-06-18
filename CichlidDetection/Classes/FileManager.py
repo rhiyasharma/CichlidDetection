@@ -22,9 +22,9 @@ class FileManager:
             quiet: if True, suppress the output of rclone copy. Default False
         """
         print('syncing training directory')
-        down = ['rclone', 'copy', '-u', self.cloud_training_dir, self.local_files['training_dir']]
-        up = ['rclone', 'copy', '-u', self.local_files['training_dir'], self.cloud_training_dir, '--exclude', '.*{/**,}']
-        if quiet:
+        down = ['rclone', 'copy', '-u', '-c', self.cloud_training_dir, self.local_files['training_dir']]
+        up = ['rclone', 'copy', '-u', '-c', self.local_files['training_dir'], self.cloud_training_dir, '--exclude', '.*{/**,}']
+        if not quiet:
             [com.insert(3, '-P') for com in [down, up]]
         if exclude is not None:
             [com.extend(list(chain.from_iterable(zip(['--exclude'] * len(exclude), exclude)))) for com in [down, up]]
@@ -41,6 +41,7 @@ class FileManager:
         self._make_dir('weights_dir', join(self.local_files['training_dir'], 'weights'))
         self._make_dir('predictions_dir', join(self.local_files['training_dir'], 'predictions'))
         self._make_dir('figure_dir', join(self.local_files['training_dir'], 'figures'))
+        self._make_dir('figure_data_dir', join(self.local_files['figure_dir'], 'figure_data'))
         # locate and download remote files
         self.cloud_master_dir, cloud_files = self._locate_cloud_files()
         self.cloud_training_dir = join(self.cloud_master_dir, '___Tucker', 'CichlidDetection', 'training')

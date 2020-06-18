@@ -1,5 +1,6 @@
 import os, shutil
 from CichlidDetection.Classes.FileManager import FileManager, ProjectFileManager
+from CichlidDetection.Utilities.utils import xywh_to_xyminmax
 from shapely.geometry import Polygon
 import numpy as np
 import pandas as pd
@@ -57,8 +58,10 @@ class DataPrepper:
         """
         # load the boxed fish csv
         df = pd.read_csv(self.file_manager.local_files['boxed_fish_csv'], index_col=0)
-        # drop empty frames, frames labeled u, and incorrectly annotated frames
-        df = df[(df.Nfish != 0) & ((df.Sex == 'm') | (df.Sex == 'f')) & (df.CorrectAnnotation == 'Yes')]
+        # drop empty frames, incorrectly annotated frames, and frames where any fish is labeled 'u'
+        u_frames = df[df.Sex == 'u'].Framefile.unique()
+        df = df[(df.Nfish != 0) & (df.CorrectAnnotation == 'Yes') & (~df.Framefile.isin(u_frames))]
+
         # drop annotation boxes outside the area defined by the video points numpy
         df['Box'] = df['Box'].apply(eval)
         poly_vps = {}
@@ -146,6 +149,7 @@ class DataPrepper:
         # coerce the values into the correct form
         df.Sex = df.Sex.apply(lambda x: [1] if x is 'f' else [2] if x is 'm' else [])
         df['Box'] = df['Box'].apply(lambda x: list(eval(x)) if type(x) is str else [])
+        df['Box'] = df['Box'].apply(lambda x: xywh_to_xyminmax(*x) if x else x)
         df.rename(columns={'Box': 'boxes', 'Sex': 'labels'}, inplace=True)
         df = df.groupby('Framefile').agg({'boxes': list, 'labels': 'sum'})
         df.boxes = df.boxes.apply(lambda x: [] if x == [[]] else x)
