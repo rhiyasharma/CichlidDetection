@@ -145,7 +145,8 @@ class DataPrepper:
         with open(self.file_manager.local_files['test_list']) as f:
             frames = [os.path.basename(frame) for frame in f.read().splitlines()]
         # narrow dataframe to images in the test list
-        df = df.loc[df.Framefile.isin(frames) & (df.CorrectAnnotation == 'Yes'), :][['Framefile', 'Box', 'Sex']]
+        df = df.loc[df.Framefile.isin(frames) & (df.CorrectAnnotation == 'Yes') & (df.Sex != 'u'), :]
+        df = df[['Framefile', 'Box', 'Sex']]
         # coerce the values into the correct form
         df.Sex = df.Sex.apply(lambda x: [1] if x is 'f' else [2] if x is 'm' else [])
         df['Box'] = df['Box'].apply(lambda x: list(eval(x)) if type(x) is str else [])
