@@ -97,7 +97,7 @@ class Trainer:
         """
         print('train at epoch {}'.format(epoch))
         self.model.train()
-        metric_logger = MetricLogger(delimiter=', ', f=self.fm.local_files['train_log'])
+        metric_logger = MetricLogger(delimiter=', ')
         metric_logger.add_meter('lr', SmoothedValue(window_size=1, fmt='{value:.6f}'))
         header = 'Epoch: [{}]'.format(epoch)
 
