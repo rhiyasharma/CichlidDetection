@@ -124,7 +124,6 @@ class Plotter:
 
     @plotter_decorator
     def iou_vs_epoch(self, fig: Figure):
-        """plot the average iou vs epoch"""
         ious = []
         for ep in range(len(self.epoch_predictions)):
             ious.append(self._calc_epoch_iou(ep))
@@ -133,9 +132,8 @@ class Plotter:
         sns.lineplot(data=pd.Series(ious), ax=ax)
         pd.DataFrame({'iou': ious}).to_csv(join(self.fig_data_dir, 'iou_vs_epoch.csv'))
 
-    @plotter_decorator
+    @plotter_decorator(save=False)
     def final_epoch_eval(self, fig: Figure):
-        """generate summary stats for the final epoch and plot"""
         epoch_index = len(self.epoch_predictions) - 1
         self._full_epoch_eval(epoch_index)
 
@@ -184,17 +182,6 @@ class Plotter:
         return pd.read_csv(path, usecols=usecols).set_index('Framefile').applymap(lambda x: eval(x))
 
     def _full_epoch_eval(self, epoch):
-        """calculate additional stats for a given epoch
-
-        Args:
-            epoch (int): epoch number
-
-        Returns:
-            DataFrame: df, a copy of self.epoch_predictions[epoch], extended with additional columns of calculated
-                per-frame stats
-            Series: summary, a series of summary statistics for the epoch
-
-        """
         ep = self.epoch_predictions[epoch]
         gt = self.ground_truth
         df = gt.join(ep, lsuffix='_actual', rsuffix='_predicted')
@@ -240,16 +227,13 @@ class Plotter:
                 outcomes.append(1 if pred == labels_actual[pred_to_act_map[i]] else 0)
         return outcomes
 
+    def _calc_precision(self):
+        pass
+
+    def _calc_recall(self):
+        pass
+
     def _flip_mapping(self, a_to_b, len_b):
-        """reverse a mapping list
-
-        Args:
-            a_to_b: list mapping list a to list b
-            len_b: length of list b
-
-        Returns:
-            list of ints: b_to_a, a list mapping list b to list a
-        """
         if len_b == 0:
             return []
         else:
@@ -336,15 +320,7 @@ class Plotter:
             return (np.mean(ious), mapping) if map_boxes else np.mean(ious)
 
     def _calc_iou(self, box_a, box_b):
-        """calculate the iou between box_a and box_b
-
-        Args:
-            box_a (list): first box, in [xmin, ymin, xmax, ymax] form
-            box_b (list): second box, in [xmin, ymin, xmax, ymax] form
-
-        Returns:
-            float: iou, the intersection over union for the two boxes
-        """
+        """calculate the iou between box_a and box_b"""
         a = box_a
         b = box_b
         if (len(box_a) == 0) and (len(box_b) == 0):

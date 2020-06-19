@@ -65,7 +65,7 @@ class Detector:
             epoch (int): epoch number, greater than or equal to 0
 
         """
-        self.model.load_state_dict(torch.load(self.dest))
+        model.load_state_dict(torch.load(self.dest))
         self.model.eval()
         cpu_device = torch.device("cpu")
         results = {}
