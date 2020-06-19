@@ -19,6 +19,8 @@ full_auto_parser = subparsers.add_parser('full_auto')
 full_auto_parser.add_argument('-e', '--Epochs', type=int, default=10, help='number of epochs to train')
 full_auto_parser.add_argument('--Dry', action='store_true',  help='prevent upload after training')
 
+sync_parser = subparsers.add_parser('sync')
+
 args = parser.parse_args()
 
 # determine the absolute path to the directory containing this script, and the host name
