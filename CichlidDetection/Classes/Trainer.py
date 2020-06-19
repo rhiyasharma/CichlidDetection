@@ -1,8 +1,10 @@
 import os, math, sys
+import time
 import pandas as pd
 import torch
 import torchvision
 import random
+import csv
 from torchvision.transforms import functional as F
 from CichlidDetection.Classes.DataLoader import DataLoader
 from CichlidDetection.Classes.FileManager import FileManager
@@ -40,7 +42,6 @@ class Trainer:
         self.upload_results = upload_results
         self._initiate_loaders()
         self._initiate_model()
-        self._clear_logs()
 
     def train(self):
         """train the model for the specified number of epochs."""
@@ -52,11 +53,6 @@ class Trainer:
         self._save_model()
         if self.upload_results:
             self.fm.sync_training_dir()
-
-    def _clear_logs(self):
-        for f in [self.fm.local_files[name] for name in ['train_log', 'batch_log', 'val_log']]:
-            if os.path.exists(f):
-                os.remove(f)
 
     def _initiate_loaders(self):
         """initiate train and test datasets and  dataloaders."""
@@ -101,8 +97,7 @@ class Trainer:
         """
         print('train at epoch {}'.format(epoch))
         self.model.train()
-        f = open(self.fm.local_files['train_log'], 'a')
-        metric_logger = MetricLogger(delimiter=', ', f=f)
+        metric_logger = MetricLogger(delimiter=', ', f=self.fm.local_files['train_log'])
         metric_logger.add_meter('lr', SmoothedValue(window_size=1, fmt='{value:.6f}'))
         header = 'Epoch: [{}]'.format(epoch)
 
@@ -126,7 +121,6 @@ class Trainer:
             metric_logger.update(loss=losses_reduced, **loss_dict_reduced)
             metric_logger.update(lr=self.optimizer.param_groups[0]["lr"])
 
-        f.close()
         return metric_logger
 
     @torch.no_grad()
