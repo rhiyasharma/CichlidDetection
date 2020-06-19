@@ -12,7 +12,6 @@ from matplotlib.animation import FuncAnimation
 from matplotlib.patches import Rectangle
 
 
-
 def plotter_decorator(plotter_method=None, save=True):
     """decorator used for automatic set-up and clean-up when making figures with methods from the Plotter class"""
     if plotter_method is None:
@@ -133,12 +132,10 @@ class Plotter:
         sns.lineplot(data=pd.Series(ious), ax=ax)
         pd.DataFrame({'iou': ious}).to_csv(join(self.fig_data_dir, 'iou_vs_epoch.csv'))
 
-    @plotter_decorator()
+    @plotter_decorator(save=False)
     def final_epoch_eval(self, fig: Figure):
         epoch_index = len(self.epoch_predictions) - 1
-        self._plot_epoch_eval(epoch_index, fig)
-
-
+        self._full_epoch_eval(epoch_index)
 
     def _load_data(self):
         """load and parse all relevant data. Automatically syncs training dir with cloud if any files are missing"""
@@ -196,14 +193,18 @@ class Plotter:
         df['pred_to_act_map'] = df.apply(lambda x: self._flip_mapping(x.act_to_pred_map, x.n_boxes_predicted), axis=1)
         df['pred_accuracy'] = df.apply(
             lambda x: self._compare_labels(x.labels_actual, x.labels_predicted, x.pred_to_act_map), axis=1)
-        return df
+        df['avg_accuracy'] = df.pred_accuracy.apply(lambda x: sum(x)/len(x) if len(x) > 0 else 1.0)
+        df.to_csv(join(self.fig_data_dir, 'epoch_{}_eval.csv'.format(epoch)))
 
-    def _plot_epoch_eval(self, epoch, fig: Figure):
-        df = self._full_epoch_eval(epoch)
-        axes = fig.subplots(3, 2)
+        summary = pd.Series()
+        summary['classification_accuracy'] = np.average(df.avg_accuracy, weights=df.n_boxes_predicted)
+        summary['average_iou'] = np.average(df.average_iou, weights=df.n_boxes_predicted)
+        summary['n_predictions'] = df.n_boxes_predicted.sum()
+        summary['n_annotations'] = df.n_boxes_actual.sum()
+        summary['n_frames'] = len(df)
+        summary.to_csv(join(self.fig_data_dir, 'epoch_{}_eval_summary.csv'.format(epoch)))
 
-        sns.distplot(df.n_boxes_actual, kde=False, ax=axes[0, 0])
-        sns.distplot(df.n_boxes_predicted, kde=False, ax=axes[0, 0])
+        return df, summary
 
     def _compare_labels(self, labels_actual, labels_predicted, pred_to_act_map):
         """determine whether the label for each predicted box matches the label of the corresponding ground-truth box
@@ -244,9 +245,6 @@ class Plotter:
                     mapping.append(None)
             return mapping
 
-
-
-
     def _calc_epoch_iou(self, epoch):
         """calculate the average iou across all test frames for a given epoch
 
@@ -254,12 +252,14 @@ class Plotter:
             epoch (int): epoch number
 
         Returns:
-            float: mean iou value for epoch
+            float: average iou value per predicted box for the epoch
         """
         gt = self.ground_truth
         ep = self.epoch_predictions[epoch]
         combo = gt.join(ep, lsuffix='_gt', rsuffix='_ep')
-        return combo.apply(lambda x: self._calc_frame_iou(x.boxes_gt, x.boxes_ep), axis=1).agg('mean')
+        combo['frame_iou'] = combo.apply(lambda x: self._calc_frame_iou(x.boxes_gt, x.boxes_ep), axis=1)
+        combo['n_boxes_ep'] = combo.boxes_ep.apply(len)
+        return np.average(combo.frame_iou, weights=combo.n_boxes_ep)
 
     def _calc_frame_iou(self, actual_boxes, predicted_boxes, map_boxes=False):
         """calculate the average iou for a frame

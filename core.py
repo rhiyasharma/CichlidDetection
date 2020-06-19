@@ -48,6 +48,9 @@ else:
         runner.prep()
         runner.train(num_epochs=args.Epochs, upload_results=(not args.Dry))
 
+    elif args.command == 'sync':
+        runner.sync()
+
 
 
 

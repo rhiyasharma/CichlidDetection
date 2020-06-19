@@ -30,3 +30,6 @@ class Runner:
         """
         self.tr = Trainer(num_epochs, upload_results)
         self.tr.train()
+
+    def sync(self):
+        self.fm.sync_training_dir()
