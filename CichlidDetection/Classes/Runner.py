@@ -32,4 +32,5 @@ class Runner:
         self.tr.train()
 
     def sync(self):
+        """bidirectionally sync the training directory with Dropbox"""
         self.fm.sync_training_dir()

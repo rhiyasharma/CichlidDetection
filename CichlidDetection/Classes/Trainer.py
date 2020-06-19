@@ -1,4 +1,4 @@
-import os
+import os, math, sys
 import time
 import pandas as pd
 import torch
@@ -8,6 +8,7 @@ import csv
 from torchvision.transforms import functional as F
 from CichlidDetection.Classes.DataLoader import DataLoader
 from CichlidDetection.Classes.FileManager import FileManager
+from CichlidDetection.Utilities.torch_utils import MetricLogger, SmoothedValue, reduce_dict
 
 
 def collate_fn(batch):
@@ -41,7 +42,6 @@ class Trainer:
         self.upload_results = upload_results
         self._initiate_loaders()
         self._initiate_model()
-        self._initiate_loggers()
 
     def train(self):
         """train the model for the specified number of epochs."""
@@ -72,12 +72,6 @@ class Trainer:
         self.optimizer = torch.optim.SGD(self.parameters, lr=0.005, momentum=0.9, weight_decay=0.0005)
         self.scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(self.optimizer, 'min', patience=5)
 
-    def _initiate_loggers(self):
-        """initiate loggers to track training progress."""
-        self.train_logger = Logger(self.fm.local_files['train_log'], ['epoch', 'loss', 'lr'])
-        self.train_batch_logger = Logger(self.fm.local_files['batch_log'], ['epoch', 'batch', 'iter', 'loss', 'lr'])
-        self.val_logger = Logger(self.fm.local_files['val_log'], ['epoch'])
-
     def _get_transform(self, train):
         """get a composition of the appropriate data transformations.
 
@@ -103,52 +97,31 @@ class Trainer:
         """
         print('train at epoch {}'.format(epoch))
         self.model.train()
+        metric_logger = MetricLogger(delimiter=', ')
+        metric_logger.add_meter('lr', SmoothedValue(window_size=1, fmt='{value:.6f}'))
+        header = 'Epoch: [{}]'.format(epoch)
 
-        batch_time = AverageMeter()
-        data_time = AverageMeter()
-        losses = AverageMeter()
-        end_time = time.time()
-
-        for i, (images, targets) in enumerate(self.train_loader):
-            data_time.update(time.time() - end_time)
+        for images, targets in metric_logger.log_every(self.train_loader, print_freq=1, header=header):
             images = list(image.to(self.device) for image in images)
             targets = [{k: v.to(self.device) for k, v in t.items()} for t in targets]
             loss_dict = self.model(images, targets)
-            today_loss = sum(loss for loss in loss_dict.values())
-            losses.update(today_loss.item(), len(images))
+            losses = sum(loss for loss in loss_dict.values())
+            loss_dict_reduced = reduce_dict(loss_dict)
+            losses_reduced = sum(loss for loss in loss_dict_reduced.values())
+            loss_value = losses_reduced.item()
+            if not math.isfinite(loss_value):
+                print("Loss is {}, stopping training".format(loss_value))
+                print(loss_dict_reduced)
+                sys.exit(1)
 
             self.optimizer.zero_grad()
-            today_loss.backward()
+            losses.backward()
             self.optimizer.step()
 
-            batch_time.update(time.time() - end_time)
-            end_time = time.time()
+            metric_logger.update(loss=losses_reduced, **loss_dict_reduced)
+            metric_logger.update(lr=self.optimizer.param_groups[0]["lr"])
 
-            self.train_batch_logger.log({
-                'epoch': epoch,
-                'batch': i + 1,
-                'iter': (epoch - 1) * len(self.train_loader) + (i + 1),
-                'loss': losses.val,
-                'lr': self.optimizer.param_groups[0]['lr']
-            })
-
-            print('Epoch: [{0}][{1}/{2}]\t'
-                  'Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
-                  'Data {data_time.val:.3f} ({data_time.avg:.3f})\t'
-                  'Loss {loss.val:.4f} ({loss.avg:.4f})\t'
-                  .format(
-                      epoch,
-                      i + 1,
-                      len(self.train_loader),
-                      batch_time=batch_time,
-                      data_time=data_time,
-                      loss=losses))
-        self.train_logger.log({
-            'epoch': epoch,
-            'loss': losses.avg,
-            'lr': self.optimizer.param_groups[0]['lr']
-        })
-        return losses.avg
+        return metric_logger
 
     @torch.no_grad()
     def _evaluate_epoch(self, epoch):
@@ -241,40 +214,5 @@ class AverageMeter(object):
         self.sum += val * n
         self.count += n
         self.avg = self.sum / self.count
-
-
-class Logger(object):
-    """manages creation of logfiles that track basic training/evaluation stats."""
-
-    def __init__(self, path, header):
-        """open the logfile and write its header.
-
-        Args:
-            path (str): path to the logfile
-            header (list of str): column names
-        """
-        self.log_file = open(path, 'w')
-        self.logger = csv.writer(self.log_file, delimiter='\t')
-
-        self.logger.writerow(header)
-        self.header = header
-
-    def __del(self):
-        """close the logfile."""
-        self.log_file.close()
-
-    def log(self, values):
-        """write a new row to the logfile.
-
-        Args:
-            values (dict): dictionary of key-value pairs, where each key must be a column name in self.header
-        """
-        write_values = []
-        for col in self.header:
-            assert col in values
-            write_values.append(values[col])
-
-        self.logger.writerow(write_values)
-        self.log_file.flush()
 
 
