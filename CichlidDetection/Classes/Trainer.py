@@ -71,7 +71,7 @@ class Trainer:
 
     def _initiate_loggers(self):
         """initiate loggers to track training progress."""
-        self.train_logger = Logger(self.fm.local_files['train_log'], ['epoch', 'loss', 'lr'])
+        self.train_logger = Logger(self.fm.local_files['train_log'], ['epoch', 'loss', 'class_loss',  'lr'])
         self.train_batch_logger = Logger(self.fm.local_files['batch_log'], ['epoch', 'batch', 'iter', 'loss', 'lr'])
         self.val_logger = Logger(self.fm.local_files['val_log'], ['epoch'])
 
@@ -103,7 +103,7 @@ class Trainer:
 
         batch_time = AverageMeter()
         data_time = AverageMeter()
-        losses = AverageMeter()
+        total_losses = AverageMeter()
         end_time = time.time()
 
         for i, (images, targets) in enumerate(self.train_loader):
@@ -111,11 +111,15 @@ class Trainer:
             images = list(image.to(self.device) for image in images)
             targets = [{k: v.to(self.device) for k, v in t.items()} for t in targets]
             loss_dict = self.model(images, targets)
-            today_loss = sum(loss for loss in loss_dict.values())
-            losses.update(today_loss.item(), len(images))
+
+            if (epoch == 0) and (i == 0):
+                print('loss dict keys: {}'.format(', '.join(list(loss_dict.keys()))))
+
+            losses = sum(loss for loss in loss_dict.values())
+            total_losses.update(losses.item(), len(images))
 
             self.optimizer.zero_grad()
-            today_loss.backward()
+            losses.backward()
             self.optimizer.step()
 
             batch_time.update(time.time() - end_time)
