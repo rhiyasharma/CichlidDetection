@@ -35,7 +35,8 @@ class FileManager:
         # create the any required directories that do not already exist
         self._make_dir('data_dir', join(os.getenv('HOME'), 'scratch', 'CichlidDetection'))
         self._make_dir('training_dir', join(self.local_files['data_dir'], 'training'))
-        self._make_dir('image_dir', join(self.local_files['training_dir'], 'images'))
+        self._make_dir('train_image_dir', join(self.local_files['training_dir'], 'train_images'))
+        self._make_dir('test_image_dir', join(self.local_files['training_dir'], 'test_images'))
         self._make_dir('label_dir', join(self.local_files['training_dir'], 'labels'))
         self._make_dir('log_dir', join(self.local_files['training_dir'], 'logs'))
         self._make_dir('weights_dir', join(self.local_files['training_dir'], 'weights'))

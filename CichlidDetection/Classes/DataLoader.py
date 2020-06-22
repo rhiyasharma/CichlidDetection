@@ -38,14 +38,15 @@ class DataLoader(object):
         """
         self.fm = FileManager()
         self.files_list = self.fm.local_files['{}_list'.format(subset)]
+        self.img_dir = self.fm.local_files['{}_image_dir'.format(subset)]
         self.transforms = transforms
 
         # open either train_list.txt or test_list.txt and read the image file names
         with open(self.files_list, 'r') as f:
-            self.img_files = sorted(f.read().splitlines())
+            self.img_files = sorted([os.path.join(self.img_dir, fname) for fname in f.read().splitlines()])
         # generate a list of matching label file names
         self.label_files = [fname.replace('.jpg', '.txt') for fname in self.img_files]
-        self.label_files = [fname.replace('images', 'labels') for fname in self.label_files]
+        self.label_files = [fname.replace(self.img_dir, 'labels') for fname in self.label_files]
 
     def __getitem__(self, idx):
         """get the image and target corresponding to idx
