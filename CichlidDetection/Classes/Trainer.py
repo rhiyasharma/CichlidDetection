@@ -25,7 +25,7 @@ def collate_fn(batch):
 class Trainer:
     """class to coordinate model training and evaluation"""
 
-    def __init__(self, num_epochs, compare_annotations=True, upload_results=True):
+    def __init__(self, num_epochs, compare_annotations=True):
         """initialize trainer
 
         Args:
@@ -33,12 +33,10 @@ class Trainer:
             compare_annotations: If True, evaluate the model on the test set after each epoch. This does not affect the
                 end result of training, but does produce more data about model performance at each epoch. Setting to
                 True also increases total runtime significantly
-            upload_results: if True, automatically upload the results (weights, logs, etc.) after training
         """
         self.compare_annotations = compare_annotations
         self.fm = FileManager()
         self.num_epochs = num_epochs
-        self.upload_results = upload_results
         self._initiate_loaders()
         self._initiate_model()
         self._initiate_loggers()
@@ -51,8 +49,6 @@ class Trainer:
             if self.compare_annotations:
                 self._evaluate_epoch(epoch)
         self._save_model()
-        if self.upload_results:
-            self.fm.sync_training_dir()
 
     def _initiate_loaders(self):
         """initiate train and test datasets and  dataloaders."""
