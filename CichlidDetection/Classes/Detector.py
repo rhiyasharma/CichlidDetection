@@ -13,7 +13,9 @@ from CichlidDetection.Classes.FileManager import FileManager
 from torch.utils.data.sampler import SubsetRandomSampler
 from torchvision import transforms
 
-
+# Run this script from the main CichlidDetection directory: python3 Detector.py
+# This script selects random images from the test set and runs them through the model to produce predictions 
+# Results csv file saved in scratch/CichlidDetection/training/predictions as "Detect_images.csv"
 
 def collate_fn(batch):
     """package a mini-batch of images and targets.
@@ -30,9 +32,7 @@ class Detector:
 
     def __init__(self):
         # initialize detector
-
         self.fm = FileManager()
-        # self._initiate_loader()
         self._initiate_model()
         self.dest = self.fm.local_files['weights_file']
 
@@ -50,9 +50,6 @@ class Detector:
         idx = indices[:num]
         sampler = SubsetRandomSampler(idx)
         self.detect_loader = torch.utils.data.DataLoader(self.detect_dataset, sampler=sampler, batch_size=num, collate_fn=collate_fn)
-        # dataiter = iter(self.detect_loader)
-        # images, labels = dataiter.next()
-        # return images, labels
 
     def _initiate_model(self):
         """initiate the model, optimizer, and scheduler."""
