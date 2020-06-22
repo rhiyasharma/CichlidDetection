@@ -46,7 +46,7 @@ class DataLoader(object):
             self.img_files = sorted([os.path.join(self.img_dir, fname) for fname in f.read().splitlines()])
         # generate a list of matching label file names
         self.label_files = [fname.replace('.jpg', '.txt') for fname in self.img_files]
-        self.label_files = [fname.replace('{}_image_dir'.format(subset), 'labels') for fname in self.label_files]
+        self.label_files = [fname.replace('{}_images'.format(subset), 'labels') for fname in self.label_files]
 
     def __getitem__(self, idx):
         """get the image and target corresponding to idx
