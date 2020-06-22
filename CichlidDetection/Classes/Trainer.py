@@ -72,7 +72,11 @@ class Trainer:
     def _initiate_loggers(self):
         """initiate loggers to track training progress."""
         self.train_logger = Logger(self.fm.local_files['train_log'], ['epoch', 'loss', 'class_loss',  'lr'])
-        self.train_batch_logger = Logger(self.fm.local_files['batch_log'], ['epoch', 'batch', 'iter', 'loss', 'lr'])
+
+        self.train_batch_logger = Logger(self.fm.local_files['batch_log'], ['epoch', 'batch', 'iter', 'loss_total',
+                                                                            'loss_classifier', 'loss_box_reg',
+                                                                            'loss_objectness', 'loss_rpn_box_reg', 'lr']
+                                         )
         self.val_logger = Logger(self.fm.local_files['val_log'], ['epoch'])
 
     def _get_transform(self, train):
@@ -103,7 +107,8 @@ class Trainer:
 
         batch_time = AverageMeter()
         data_time = AverageMeter()
-        total_losses = AverageMeter()
+        loss_types = ['loss_total', 'loss_classifier', 'loss_box_reg', 'loss_objectness', 'loss_rpn_box_reg']
+        loss_meters = {loss_type: AverageMeter() for loss_type in loss_types}
         end_time = time.time()
 
         for i, (images, targets) in enumerate(self.train_loader):
@@ -111,10 +116,10 @@ class Trainer:
             images = list(image.to(self.device) for image in images)
             targets = [{k: v.to(self.device) for k, v in t.items()} for t in targets]
             loss_dict = self.model(images, targets)
-
             losses = sum(loss for loss in loss_dict.values())
-            total_losses.update(losses.item(), len(images))
-
+            loss_meters['loss_total'].update(losses.item(), len(images))
+            for key, val in loss_dict.items():
+                loss_meters[key].update(val, len(images))
             self.optimizer.zero_grad()
             losses.backward()
             self.optimizer.step()
@@ -126,7 +131,7 @@ class Trainer:
                 'epoch': epoch,
                 'batch': i + 1,
                 'iter': (epoch - 1) * len(self.train_loader) + (i + 1),
-                'loss': losses.val,
+                'loss_total': loss_meters['loss_total'].val,
                 'lr': self.optimizer.param_groups[0]['lr']
             })
 
@@ -140,13 +145,17 @@ class Trainer:
                       len(self.train_loader),
                       batch_time=batch_time,
                       data_time=data_time,
-                      loss=losses))
+                      loss=loss_meters['loss_total']))
         self.train_logger.log({
             'epoch': epoch,
-            'loss': losses.avg,
+            'loss_total': loss_meters['loss_total'].avg,
+            'loss_classifier': loss_meters['loss_classifier'].avg,
+            'loss_box_reg': loss_meters['loss_box_reg'].avg,
+            'loss_objectness': loss_meters['loss_objectness'].avg,
+            'loss_rpn_box_reg': loss_meters['loss_rpn_box_reg'].avg,
             'lr': self.optimizer.param_groups[0]['lr']
         })
-        return losses.avg
+        return loss_meters['loss_total'].avg
 
     @torch.no_grad()
     def _evaluate_epoch(self, epoch):
