@@ -112,11 +112,6 @@ class Trainer:
             targets = [{k: v.to(self.device) for k, v in t.items()} for t in targets]
             loss_dict = self.model(images, targets)
 
-            if (epoch == 0) and (i == 0):
-                print('loss dict keys: {}'.format(', '.join(list(loss_dict.keys()))))
-                import sys
-                sys.exit()
-
             losses = sum(loss for loss in loss_dict.values())
             total_losses.update(losses.item(), len(images))
 
