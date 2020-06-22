@@ -3,6 +3,7 @@ from CichlidDetection.Classes.FileManager import FileManager
 import torch
 from torch import tensor
 import os
+from os.path import join, basename
 
 
 def read_label_file(path):
@@ -38,14 +39,17 @@ class DataLoader(object):
         """
         self.fm = FileManager()
         self.files_list = self.fm.local_files['{}_list'.format(subset)]
+        self.img_dir = self.fm.local_files['{}_image_dir'.format(subset)]
+
         self.transforms = transforms
 
         # open either train_list.txt or test_list.txt and read the image file names
         with open(self.files_list, 'r') as f:
-            self.img_files = sorted(f.read().splitlines())
+            self.img_files = sorted([os.path.join(self.img_dir, fname) for fname in f.read().splitlines()])
         # generate a list of matching label file names
+        label_dir = self.fm.local_files['label_dir']
         self.label_files = [fname.replace('.jpg', '.txt') for fname in self.img_files]
-        self.label_files = [fname.replace('images', 'labels') for fname in self.label_files]
+        self.label_files = [join(label_dir, basename(path)) for path in self.label_files]
 
     def __getitem__(self, idx):
         """get the image and target corresponding to idx
