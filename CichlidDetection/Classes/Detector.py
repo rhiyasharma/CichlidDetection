@@ -49,11 +49,6 @@ class Detector:
         images, labels = dataiter.next()
         return images, labels
 
-    # def _initiate_loader(self):
-    #     self.detect_dataset = DataLoader(self._get_transform(), 'test')
-    #     self.detect_loader = torch.utils.data.DataLoader(
-    #         self.detect_dataset, batch_size=5, shuffle=False, num_workers=8, pin_memory=True, collate_fn=collate_fn)
-
     def _initiate_model(self):
         """initiate the model, optimizer, and scheduler."""
         self.model = torchvision.models.detection.fasterrcnn_resnet50_fpn(num_classes=3, box_detections_per_img=5)
@@ -97,23 +92,6 @@ class Detector:
         df = df[['Framefile', 'boxes', 'labels', 'scores']].set_index('Framefile')
         df.to_csv('Detect_images.csv')
         df.to_csv(os.path.join(self.fm.local_files['predictions_dir'], 'detected_frames.csv'))
-
-
-'''
-    def view_predictions(self):
-        to_pil = transforms.ToPILImage()
-        images, labels = self.get_random_images(5)
-        fig = plt.figure(figsize=(10,10))
-        for i in range(len(images)):
-            image = to_pil(images[i])
-            index = self.predict_image(image)
-            sub = fig.add_subplot(1, len(images), i+1)
-            res = int(labels[i]) == index
-            sub.set_title(str(classes[index]) + ":" + str(res))
-            # plt.axis('off')
-            plt.imshow(image)
-        plt.show()
-'''
 
 # helper class
 
