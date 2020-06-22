@@ -72,8 +72,8 @@ class Trainer:
     def _initiate_loggers(self):
         """initiate loggers to track training progress."""
         self.train_logger = Logger(self.fm.local_files['train_log'],
-                                   ['epoch', 'batch', 'iter', 'loss_total', 'loss_classifier', 'loss_box_reg',
-                                    'loss_objectness', 'loss_rpn_box_reg', 'lr'])
+                                   ['epoch', 'loss_total', 'loss_classifier', 'loss_box_reg', 'loss_objectness',
+                                    'loss_rpn_box_reg', 'lr'])
 
         self.train_batch_logger = Logger(self.fm.local_files['batch_log'],
                                          ['epoch', 'batch', 'iter', 'loss_total', 'lr'])
