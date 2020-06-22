@@ -207,12 +207,7 @@ class RandomHorizontalFlip(object):
             height, width = image.shape[-2:]
             image = image.flip(-1)
             bbox = target["boxes"]
-            try:
-                bbox[:, [0, 2]] = width - bbox[:, [2, 0]]
-            except IndexError:
-                print(target['boxes'])
-                print(target['labels'])
-                print(target['image_id'])
+            bbox[:, [0, 2]] = width - bbox[:, [2, 0]]
             target["boxes"] = bbox
         return image, target
 
