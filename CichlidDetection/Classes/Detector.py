@@ -12,7 +12,7 @@ from CichlidDetection.Classes.DataLoader import DataLoader
 from CichlidDetection.Classes.FileManager import FileManager
 from torch.utils.data.sampler import SubsetRandomSampler
 from torchvision import transforms
-from torch.autograd import Variable
+
 
 
 def collate_fn(batch):
@@ -38,16 +38,21 @@ class Detector:
 
 
     def get_random_images(self, num):
-        """to get random images from test dataset"""
+        """to get random images from test dataset.
+    
+        Args:
+        num: number of random images to select
+
+        """
         self.detect_dataset = DataLoader(self._get_transform(), 'test')
         indices = list(range(len(self.detect_dataset)))
         np.random.shuffle(indices)
         idx = indices[:num]
         sampler = SubsetRandomSampler(idx)
         self.detect_loader = torch.utils.data.DataLoader(self.detect_dataset, sampler=sampler, batch_size=num, collate_fn=collate_fn)
-        dataiter = iter(self.detect_loader)
-        images, labels = dataiter.next()
-        return images, labels
+        # dataiter = iter(self.detect_loader)
+        # images, labels = dataiter.next()
+        # return images, labels
 
     def _initiate_model(self):
         """initiate the model, optimizer, and scheduler."""
@@ -74,7 +79,8 @@ class Detector:
     def _evaluate(self):
         """evaluate the model on the detect set of images"""
         cpu_device = torch.device("cpu")
-        self.model.load_state_dict(torch.load(self.dest, map_location=cpu_device))
+        # self.model.load_state_dict(torch.load(self.dest, map_location=cpu_device))
+        self.model.load_state_dict(torch.load(self.dest))
         self.model.eval()
         results = {}
         for i, (images, targets) in enumerate(self.detect_loader):
@@ -111,5 +117,5 @@ class ToTensor(object):
 
 
 x = Detector()
-images, labels = x.get_random_images(5)
+x.get_random_images(5)
 x._evaluate()
