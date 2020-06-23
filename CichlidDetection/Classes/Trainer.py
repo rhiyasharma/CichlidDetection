@@ -120,7 +120,7 @@ class Trainer:
             losses = sum(loss for loss in loss_dict.values())
             loss_meters['loss_total'].update(losses.item(), len(images))
             for key, val in loss_dict.items():
-                loss_meters[key].update(val, len(images))
+                loss_meters[key].update(val.item(), len(images))
             self.optimizer.zero_grad()
             losses.backward()
             self.optimizer.step()
