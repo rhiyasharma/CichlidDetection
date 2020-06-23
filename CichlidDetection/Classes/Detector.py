@@ -73,7 +73,7 @@ class Detector:
         return Compose(transforms)
 
     @torch.no_grad()
-    def _evaluate(self):
+    def evaluate(self):
         """evaluate the model on the detect set of images"""
         cpu_device = torch.device("cpu")
         # self.model.load_state_dict(torch.load(self.dest, map_location=cpu_device))
@@ -112,7 +112,3 @@ class ToTensor(object):
         image = F.to_tensor(image)
         return image, target
 
-
-x = Detector()
-x.get_random_images(5)
-x._evaluate()

@@ -2,6 +2,7 @@ import os
 from CichlidDetection.Classes.DataPrepper import DataPrepper
 from CichlidDetection.Classes.FileManager import FileManager
 from CichlidDetection.Classes.Trainer import Trainer
+from CichlidDetection.Classes.Detector import Detector
 
 
 class Runner:
@@ -11,6 +12,7 @@ class Runner:
         self.fm = FileManager()
         self.dp = DataPrepper()
         self.tr = None
+        self.de = None
         self.__location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
 
     def download(self):
@@ -33,3 +35,8 @@ class Runner:
 
     def sync(self):
         self.fm.sync_training_dir()
+
+    def detect(self):
+        self.de = Detector()
+        self.de.get_random_images(5)
+        self.de.evaluate()

@@ -19,6 +19,8 @@ full_auto_parser.add_argument('-e', '--Epochs', type=int, default=10, help='numb
 
 sync_parser = subparsers.add_parser('sync')
 
+detect_parser = subparsers.add_parser('detect')
+
 args = parser.parse_args()
 
 # determine the absolute path to the directory containing this script, and the host name
@@ -51,6 +53,7 @@ else:
     elif args.command == 'sync':
         runner.sync()
 
-
+    elif args.command == 'detect':
+        runner.detect()
 
 
