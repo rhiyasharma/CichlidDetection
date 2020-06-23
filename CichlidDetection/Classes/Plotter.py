@@ -89,7 +89,7 @@ class Plotter:
         final_epoch['min_score'] = final_epoch['scores'].apply(lambda x: 0 if len(x) is 0 else min(x))
         final_epoch = final_epoch[final_epoch.min_score > 0.95]
         frame = final_epoch.sort_values(by=['n_detections', 'min_score'], ascending=False).iloc[0].name
-        im = np.array(Image.open(join(self.fm.local_files['image_dir'], frame)), dtype=np.uint8)
+        im = np.array(Image.open(join(self.fm.local_files['test_image_dir'], frame)), dtype=np.uint8)
 
         # build up the animation
         max_detections = 5

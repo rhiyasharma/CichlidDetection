@@ -4,7 +4,7 @@ import pandas as pd
 import torch
 import torchvision
 from torchvision.transforms import functional as F
-from CichlidDetection.Classes.DataLoader import DataLoader
+from CichlidDetection.Classes.DataSet import DataSet
 from CichlidDetection.Classes.FileManager import FileManager
 from CichlidDetection.Utilities.utils import RandomHorizontalFlip, ToTensor, Compose, AverageMeter, Logger, collate_fn
 
@@ -39,8 +39,8 @@ class Trainer:
 
     def _initiate_loaders(self):
         """initiate train and test datasets and  dataloaders."""
-        self.train_dataset = DataLoader(self._get_transform(train=True), 'train')
-        self.test_dataset = DataLoader(self._get_transform(train=False), 'test')
+        self.train_dataset = DataSet(self._get_transform(train=True), 'train')
+        self.test_dataset = DataSet(self._get_transform(train=False), 'test')
         self.train_loader = torch.utils.data.DataLoader(
             self.train_dataset, batch_size=5, shuffle=True, num_workers=8, pin_memory=True, collate_fn=collate_fn)
         self.test_loader = torch.utils.data.DataLoader(

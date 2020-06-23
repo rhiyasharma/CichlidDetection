@@ -28,7 +28,7 @@ def read_label_file(path):
     return {'boxes': boxes, 'labels': labels}
 
 
-class DataLoader(object):
+class DataSet(object):
     """Class to handle loading of training or testing data"""
     def __init__(self, transforms, subset):
         """initialize DataLoader

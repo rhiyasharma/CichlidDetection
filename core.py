@@ -35,25 +35,27 @@ if ('login' in host) and ('pace' in host):
 
 # if not on a PACE login node, begin the analysis specified by args.command
 else:
-    from CichlidDetection.Classes.Runner import Runner
-    runner = Runner()
+    if args.command == 'sync':
+        from CichlidDetection.Classes.FileManager import FileManager
+        FileManager().sync_training_dir()
 
-    if args.command == 'full_auto':
-        runner.download()
-        runner.prep()
-        runner.train(num_epochs=args.Epochs)
+    else:
+        from CichlidDetection.Classes.Runner import Runner
+        runner = Runner()
 
-    elif args.command == 'download':
-        runner.download()
+        if args.command == 'full_auto':
+            runner.download()
+            runner.prep()
+            runner.train(num_epochs=args.Epochs)
 
-    elif args.command == 'train':
-        runner.prep()
-        runner.train(num_epochs=args.Epochs)
+        elif args.command == 'download':
+            runner.download()
 
-    elif args.command == 'sync':
-        runner.sync()
+        elif args.command == 'train':
+            runner.prep()
+            runner.train(num_epochs=args.Epochs)
 
-    elif args.command == 'detect':
-        runner.detect()
+        elif args.command == 'detect':
+            runner.detect()
 
 

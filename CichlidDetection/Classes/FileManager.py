@@ -43,6 +43,7 @@ class FileManager:
         self._make_dir('predictions_dir', join(self.local_files['training_dir'], 'predictions'))
         self._make_dir('figure_dir', join(self.local_files['training_dir'], 'figures'))
         self._make_dir('figure_data_dir', join(self.local_files['figure_dir'], 'figure_data'))
+        self._make_dir('detection_dir', join(self.local_files['data_dir'], 'detection'))
         # locate and download remote files
         self.cloud_master_dir, cloud_files = self._locate_cloud_files()
         self.cloud_training_dir = join(self.cloud_master_dir, '___Tucker', 'CichlidDetection', 'training')
