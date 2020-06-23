@@ -1,32 +1,18 @@
 import os
-import time
 import pandas as pd
 import numpy as np
 import torch
 import torchvision
-import random
-import csv
-import matplotlib.pyplot as plt
-from torchvision.transforms import functional as F
 from CichlidDetection.Classes.DataLoader import DataLoader
 from CichlidDetection.Classes.FileManager import FileManager
+from CichlidDetection.Utilities.utils import collate_fn, Compose, ToTensor
 from torch.utils.data.sampler import SubsetRandomSampler
-from torchvision import transforms
 
 # Run this script from the main CichlidDetection directory: python3 Detector.py
 # This script selects random images from the test set and runs them through the model to produce predictions 
 # Results csv file saved in scratch/CichlidDetection/training/predictions as "Detect_images.csv"
 
-def collate_fn(batch):
-    """package a mini-batch of images and targets.
 
-    Args:
-        batch (list): uncollated mini-batch
-
-    Returns:
-        tuple: collated mini-batch
-    """
-    return tuple(zip(*batch))
 
 class Detector:
 
@@ -95,20 +81,3 @@ class Detector:
         df = df[['Framefile', 'boxes', 'labels', 'scores']].set_index('Framefile')
         df.to_csv('Detect_images.csv')
         df.to_csv(os.path.join(self.fm.local_files['predictions_dir'], 'detected_frames.csv'))
-
-# helper class
-
-class Compose(object):
-    def __init__(self, transforms):
-        self.transforms = transforms
-
-    def __call__(self, image, target):
-        for t in self.transforms:
-            image, target = t(image, target)
-        return image, target
-
-class ToTensor(object):
-    def __call__(self, image, target):
-        image = F.to_tensor(image)
-        return image, target
-
