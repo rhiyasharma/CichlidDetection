@@ -20,6 +20,9 @@ full_auto_parser.add_argument('-e', '--Epochs', type=int, default=10, help='numb
 sync_parser = subparsers.add_parser('sync')
 
 detect_parser = subparsers.add_parser('detect')
+detect_parser.add_argument('-t', '--Test', action='store_true', help='run detection on 10 images from the test set')
+detect_parser.add_argument('-i', '--ImgDir', type=str, default='detection/images',
+                           help='path, relative to ~/scratch/CichlidDetection, containing the images to analyze')
 
 args = parser.parse_args()
 
@@ -56,6 +59,6 @@ else:
             runner.train(num_epochs=args.Epochs)
 
         elif args.command == 'detect':
-            runner.detect()
+            runner.detect('test' if args.Test else args.ImgDir)
 
 

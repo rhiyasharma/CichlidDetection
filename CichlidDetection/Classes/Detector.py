@@ -42,6 +42,10 @@ class Detector:
         Args:
             img_dir (str): path to the image directory
         """
+        img_dir = os.path.join(self.fm.local_files['data_dir'], img_dir)
+        assert os.path.exists(img_dir)
+
+
         pass
 
     def _initiate_model(self):

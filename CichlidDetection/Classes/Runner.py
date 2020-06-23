@@ -36,7 +36,9 @@ class Runner:
     def sync(self):
         self.fm.sync_training_dir()
 
-    def detect(self):
+    def detect(self, img_dir):
         self.de = Detector()
-        self.de.get_random_images(5)
-        self.de.evaluate()
+        if img_dir == 'test':
+            self.de.test(10)
+        else:
+            self.de.detect(img_dir)
