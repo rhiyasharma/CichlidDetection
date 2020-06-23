@@ -44,9 +44,7 @@ class Detector:
         """
         img_dir = os.path.join(self.fm.local_files['data_dir'], img_dir)
         assert os.path.exists(img_dir)
-
-
-        pass
+        img_files = os.listdir(img_dir)
 
     def _initiate_model(self):
         """initiate the model, optimizer, and scheduler."""
