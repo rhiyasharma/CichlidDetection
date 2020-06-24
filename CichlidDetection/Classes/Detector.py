@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 import torch
 import torchvision
-from CichlidDetection.Classes.DataSet import DataSet
+from CichlidDetection.Classes.DataSet import DataSet, DetectDataSet
 from CichlidDetection.Classes.FileManager import FileManager
 from CichlidDetection.Utilities.utils import collate_fn, Compose, ToTensor
 from torch.utils.data.sampler import SubsetRandomSampler
@@ -40,11 +40,16 @@ class Detector:
         """run detection on the images contained in img_dir
 
         Args:
-            img_dir (str): path to the image directory
+            img_dir (str): path to the image directory, relative to data_dir (see FileManager)
         """
         img_dir = os.path.join(self.fm.local_files['data_dir'], img_dir)
         assert os.path.exists(img_dir)
-        img_files = os.listdir(img_dir)
+        img_files = [os.path.join(img_dir, img_file) for img_file in os.listdir(img_dir)]
+        dataset = DetectDataSet(Compose([ToTensor()]), img_files)
+        dataloader = DataLoader(dataset, batch_size=5, shuffle=False, num_workers=8, pin_memory=True,
+                                collate_fn=collate_fn)
+        self.evaluate(dataloader)
+
 
     def _initiate_model(self):
         """initiate the model, optimizer, and scheduler."""

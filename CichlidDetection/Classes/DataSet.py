@@ -76,3 +76,20 @@ class DataSet(object):
 
     def __len__(self):
         return len(self.img_files)
+
+
+class DetectDataSet:
+
+    def __init__(self, transforms, img_files):
+        self.img_files = sorted(img_files)
+        self.transforms = transforms
+
+    def __getitem__(self, idx):
+        img = Image.open(self.img_files[idx]).convert("RGB")
+        target = {'image_id': tensor(idx)}
+        if self.transforms is not None:
+            img, target = self.transforms(img, target)
+        return img, target
+
+    def __len__(self):
+        return len(self.img_files)

@@ -49,23 +49,23 @@ class Plotter:
 
     def plot_all(self):
         """create pdf's of every plot this class can produce"""
-        self.loss_vs_epoch()
+        self.total_loss_vs_epoch()
         self.n_boxes_vs_epoch()
         self.animated_learning()
         self.iou_vs_epoch()
         self.final_epoch_eval()
 
     @plotter_decorator
-    def loss_vs_epoch(self, fig: Figure):
+    def total_loss_vs_epoch(self, fig: Figure):
         """plot the training loss vs epoch and save as loss_vs_epoch.pdf
 
         Args:
             fig (Figure): matplotlib Figure object into which to plot
         """
         ax = fig.add_subplot(111)
-        ax.set(xlabel='epoch', ylabel='loss', title='Training Loss vs. Epoch')
-        sns.lineplot(data=self.train_log.loss, ax=ax)
-        self.train_log.loc[:, ['loss']].to_csv(join(self.fig_data_dir, 'loss_vs_epoch.csv'))
+        ax.set(xlabel='epoch', ylabel='total loss', title='Training Loss vs. Epoch')
+        sns.lineplot(data=self.train_log.loss_total, ax=ax)
+        self.train_log.loc[:, ['loss_total']].to_csv(join(self.fig_data_dir, 'total_loss_vs_epoch.csv'))
 
     @plotter_decorator
     def n_boxes_vs_epoch(self, fig: Figure):
@@ -156,7 +156,7 @@ class Plotter:
         """parse the logfile that tracked overall loss and learning rate at each epoch
 
         Returns:
-            Pandas Dataframe, indexed by epoch number, with the columsn 'loss' and 'lr'
+            Pandas Dataframe of losses and learning rate, indexed by epoch number
         """
         return pd.read_csv(self.fm.local_files['train_log'], sep='\t', index_col='epoch')
 

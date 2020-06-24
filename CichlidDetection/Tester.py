@@ -5,5 +5,5 @@ from CichlidDetection.Classes.Plotter import Plotter
 from CichlidDetection.Classes.Detector import Detector
 
 detector = Detector()
-detector.test(1)
+detector.detect('detection/images')
 
