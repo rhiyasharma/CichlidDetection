@@ -135,7 +135,7 @@ class Plotter:
     @plotter_decorator(save=False)
     def final_epoch_eval(self, fig: Figure):
         epoch_index = len(self.epoch_predictions) - 1
-        self._full_epoch_eval(epoch_index)
+        df, summary = self._full_epoch_eval(epoch_index)
 
     def _load_data(self):
         """load and parse all relevant data. Automatically syncs training dir with cloud if any files are missing"""
