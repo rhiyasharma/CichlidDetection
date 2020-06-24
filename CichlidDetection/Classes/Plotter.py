@@ -143,7 +143,7 @@ class Plotter:
         required_files.append(join(self.fm.local_files['predictions_dir'], '0.csv'))
         for f in required_files:
             if not exists(f):
-                self.fm.sync_training_dir(exclude=['labels/**'])
+                self.fm.sync_training_dir(exclude=['labels/**', 'train_images/**'])
                 break
         self.train_log = self._parse_train_log()
         self.num_epochs = len(self.train_log)
