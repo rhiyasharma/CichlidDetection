@@ -132,7 +132,7 @@ class Plotter:
         sns.lineplot(data=pd.Series(ious), ax=ax)
         pd.DataFrame({'iou': ious}).to_csv(join(self.fig_data_dir, 'iou_vs_epoch.csv'))
 
-    @plotter_decorator(save=False)
+    @plotter_decorator
     def final_epoch_eval(self, fig: Figure):
         epoch_index = len(self.epoch_predictions) - 1
         df, summary = self._full_epoch_eval(epoch_index)
