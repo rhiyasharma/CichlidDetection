@@ -134,6 +134,7 @@ class Plotter:
 
     @plotter_decorator
     def final_epoch_eval(self, fig: Figure):
+        fig.set_size_inches(11, 8.5)
         epoch_index = len(self.epoch_predictions) - 1
         df, summary = self._full_epoch_eval(epoch_index)
         ######
