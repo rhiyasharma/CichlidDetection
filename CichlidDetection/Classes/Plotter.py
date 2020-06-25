@@ -132,7 +132,7 @@ class Plotter:
         sns.lineplot(data=pd.Series(ious), ax=ax)
         pd.DataFrame({'iou': ious}).to_csv(join(self.fig_data_dir, 'iou_vs_epoch.csv'))
 
-    @plotter_decorator(save=False)
+    @plotter_decorator
     def final_epoch_eval(self, fig: Figure):
         epoch_index = len(self.epoch_predictions) - 1
         df, summary = self._full_epoch_eval(epoch_index)
@@ -170,7 +170,7 @@ class Plotter:
         required_files.append(join(self.fm.local_files['predictions_dir'], '0.csv'))
         for f in required_files:
             if not exists(f):
-                self.fm.sync_training_dir(exclude=['labels/**'])
+                self.fm.sync_training_dir(exclude=['labels/**', 'train_images/**'])
                 break
         self.train_log = self._parse_train_log()
         self.num_epochs = len(self.train_log)
