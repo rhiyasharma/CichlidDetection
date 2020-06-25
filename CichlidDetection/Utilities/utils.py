@@ -2,8 +2,6 @@ import csv
 import os, subprocess
 import random
 
-from torchvision.transforms import functional as F
-
 
 def make_dir(path):
     """recursively create the directory specified by path if it does not exist
@@ -78,6 +76,7 @@ class Compose(object):
 
 
 class ToTensor(object):
+    from torchvision.transforms import functional as F
     def __call__(self, image, target):
         image = F.to_tensor(image)
         return image, target
