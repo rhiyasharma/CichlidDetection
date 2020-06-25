@@ -6,7 +6,8 @@ import torchvision
 from torchvision.transforms import functional as F
 from CichlidDetection.Classes.DataSet import DataSet
 from CichlidDetection.Classes.FileManager import FileManager
-from CichlidDetection.Utilities.utils import RandomHorizontalFlip, ToTensor, Compose, AverageMeter, Logger, collate_fn
+from CichlidDetection.Utilities.utils import AverageMeter, Logger
+from CichlidDetection.Utilities.ml_utils import collate_fn, Compose, ToTensor, RandomHorizontalFlip
 
 
 class Trainer:
@@ -48,7 +49,7 @@ class Trainer:
 
     def _initiate_model(self):
         """initiate the model, optimizer, and scheduler."""
-        self.model = torchvision.models.detection.fasterrcnn_resnet50_fpn(num_classes=3)
+        self.model = torchvision.models.detection.fasterrcnn_resnet50_fpn(num_classes=3, box_detections_per_img=5)
         self.parameters = self.model.parameters()
         self.device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
         torch.cuda.empty_cache()

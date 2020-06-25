@@ -2,8 +2,6 @@ import csv
 import os, subprocess
 import random
 
-from torchvision.transforms import functional as F
-
 
 def make_dir(path):
     """recursively create the directory specified by path if it does not exist
@@ -53,48 +51,6 @@ def xyminmax_to_xywh(xmin, ymin, xmax, ymax):
 def xywh_to_xyminmax(x, y, w, h):
     """convert box coordinates from (x, y, w , h) form to (xmin, ymin, xmax, ymax) form"""
     return [x, y, x + w, y + h]
-
-
-def collate_fn(batch):
-    """package a mini-batch of images and targets.
-
-    Args:
-        batch (list): uncollated mini-batch
-
-    Returns:
-        tuple: collated mini-batch
-    """
-    return tuple(zip(*batch))
-
-
-class Compose(object):
-    def __init__(self, transforms):
-        self.transforms = transforms
-
-    def __call__(self, image, target):
-        for t in self.transforms:
-            image, target = t(image, target)
-        return image, target
-
-
-class ToTensor(object):
-    def __call__(self, image, target):
-        image = F.to_tensor(image)
-        return image, target
-
-
-class RandomHorizontalFlip(object):
-    def __init__(self, prob):
-        self.prob = prob
-
-    def __call__(self, image, target):
-        if random.random() < self.prob:
-            height, width = image.shape[-2:]
-            image = image.flip(-1)
-            bbox = target["boxes"]
-            bbox[:, [0, 2]] = width - bbox[:, [2, 0]]
-            target["boxes"] = bbox
-        return image, target
 
 
 class AverageMeter(object):

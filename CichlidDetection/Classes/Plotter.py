@@ -51,7 +51,7 @@ class Plotter:
         """create pdf's of every plot this class can produce"""
         self.total_loss_vs_epoch()
         self.n_boxes_vs_epoch()
-        # self.animated_learning()
+        self.animated_learning()
         self.iou_vs_epoch()
         self.final_epoch_eval()
 
@@ -134,6 +134,7 @@ class Plotter:
 
     @plotter_decorator
     def final_epoch_eval(self, fig: Figure):
+        fig.set_size_inches(11, 8.5)
         epoch_index = len(self.epoch_predictions) - 1
         df, summary = self._full_epoch_eval(epoch_index)
 

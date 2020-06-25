@@ -5,7 +5,7 @@ import torch
 import torchvision
 from CichlidDetection.Classes.DataSet import DataSet, DetectDataSet
 from CichlidDetection.Classes.FileManager import FileManager
-from CichlidDetection.Utilities.utils import collate_fn, Compose, ToTensor
+from CichlidDetection.Utilities.ml_utils import collate_fn, Compose, ToTensor
 from torch.utils.data.sampler import SubsetRandomSampler
 from torch.utils.data.dataloader import DataLoader
 
