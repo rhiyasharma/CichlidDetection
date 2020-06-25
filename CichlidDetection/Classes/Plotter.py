@@ -51,7 +51,7 @@ class Plotter:
         """create pdf's of every plot this class can produce"""
         self.total_loss_vs_epoch()
         self.n_boxes_vs_epoch()
-        self.animated_learning()
+        # self.animated_learning()
         self.iou_vs_epoch()
         self.final_epoch_eval()
 
@@ -136,6 +136,33 @@ class Plotter:
     def final_epoch_eval(self, fig: Figure):
         epoch_index = len(self.epoch_predictions) - 1
         df, summary = self._full_epoch_eval(epoch_index)
+        ######
+        df = df.reset_index()
+        # No. of frames w/ error vs no. of frames w/o error
+        no_err_val = df[df.n_boxes_predicted_error == 0].count()['Framefile']
+        err_val = df[df.n_boxes_predicted_error != 0].count()['Framefile']
+        # No. of frames w/ positive error & negative error
+        pos = df[df.n_boxes_predicted_error > 0].count()['Framefile']
+        neg = df[df.n_boxes_predicted_error < 0].count()['Framefile']
+        # Distribution of no. of frames per error value
+        df1 = df.groupby(df.n_boxes_predicted_error).count()['Framefile']
+        ### graphs ###
+        ax1 = fig.add_subplot(1, 2, 1)  # top and bottom left
+        ax2 = fig.add_subplot(2, 2, 2)  # top right
+        ax3 = fig.add_subplot(2, 2, 4)  # bottom right
+
+        ax1.bar(x=df.n_boxes_predicted_error.unique(), height=df1, color='darkblue')
+        ax1.set_xlabel('Error Score')
+        ax1.set_ylabel('No. of Frames')
+        ax1.set_title("Distribution of No. of Frames Per Error Value")
+
+        ax2.bar(x=['No Error', 'Error'], height=[no_err_val, err_val], color=['green', 'red'], width=0.4)
+        ax2.set_ylabel('No. of Framefiles')
+        ax2.set_title('No. of Frames With Error vs Without Error')
+
+        ax3.bar(x=['Overestimation', 'Underestimation'], height=[pos, neg], color='red', width=0.4)
+        ax3.set_title('Analysis of Errors')
+        ax3.set_ylabel('No. of Frames')
 
     def _load_data(self):
         """load and parse all relevant data. Automatically syncs training dir with cloud if any files are missing"""
