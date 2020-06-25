@@ -136,33 +136,34 @@ class Plotter:
     def final_epoch_eval(self, fig: Figure):
         epoch_index = len(self.epoch_predictions) - 1
         df, summary = self._full_epoch_eval(epoch_index)
-        ######
+
         df = df.reset_index()
-        # No. of frames w/ error vs no. of frames w/o error
         no_err_val = df[df.n_boxes_predicted_error == 0].count()['Framefile']
         err_val = df[df.n_boxes_predicted_error != 0].count()['Framefile']
-        # No. of frames w/ positive error & negative error
         pos = df[df.n_boxes_predicted_error > 0].count()['Framefile']
         neg = df[df.n_boxes_predicted_error < 0].count()['Framefile']
-        # Distribution of no. of frames per error value
-        df1 = df.groupby(df.n_boxes_predicted_error).count()['Framefile']
-        ### graphs ###
-        ax1 = fig.add_subplot(1, 2, 1)  # top and bottom left
-        ax2 = fig.add_subplot(2, 2, 2)  # top right
-        ax3 = fig.add_subplot(2, 2, 4)  # bottom right
 
-        ax1.bar(x=df.n_boxes_predicted_error.unique(), height=df1, color='darkblue')
-        ax1.set_xlabel('Error Score')
-        ax1.set_ylabel('No. of Frames')
-        ax1.set_title("Distribution of No. of Frames Per Error Value")
+        ax1 = fig.add_subplot(221)  # top left
+        ax2 = fig.add_subplot(222)  # top right
+        ax3 = fig.add_subplot(223)  # bottom left
+        ax4 = fig.add_subplot(224)  # bottom right
+
+        sns.distplot(df.n_boxes_predicted_error, hist_kws=dict(edgecolor="k", linewidth=0.5), norm_hist=False,
+                     kde=False, ax=ax1)
+        ax1.set(xlabel='Error Score', ylabel='No. of Frames')
+        ax1.set_title("Distribution of Frames Over Error Values", fontsize=10)
 
         ax2.bar(x=['No Error', 'Error'], height=[no_err_val, err_val], color=['green', 'red'], width=0.4)
-        ax2.set_ylabel('No. of Framefiles')
-        ax2.set_title('No. of Frames With Error vs Without Error')
+        ax2.set_ylabel('No. of Framefiles', fontsize=10)
+        ax2.set_title('No. of Frames With Error vs Without Error', fontsize=10)
 
-        ax3.bar(x=['Overestimation', 'Underestimation'], height=[pos, neg], color='red', width=0.4)
-        ax3.set_title('Analysis of Errors')
-        ax3.set_ylabel('No. of Frames')
+        sns.distplot(df.average_iou, hist_kws=dict(edgecolor="k", linewidth=0.1), norm_hist=False, kde=False, ax=ax3)
+        ax3.set(xlabel='Average IOU', ylabel='No. of Frames')
+        ax3.set_title("Distribution of Frames Over Average IOU Scores", fontsize=10)
+
+        ax4.bar(x=['Overestimation', 'Underestimation'], height=[pos, neg], color='red', width=0.4)
+        ax4.set_title('Analysis of Errors', fontsize=10)
+        ax4.set_ylabel('No. of Frames', fontsize=10)
 
     def _load_data(self):
         """load and parse all relevant data. Automatically syncs training dir with cloud if any files are missing"""
