@@ -51,7 +51,7 @@ class Plotter:
         """create pdf's of every plot this class can produce"""
         self.total_loss_vs_epoch()
         self.n_boxes_vs_epoch()
-        # self.animated_learning()
+        self.animated_learning()
         self.iou_vs_epoch()
         self.final_epoch_eval()
 
