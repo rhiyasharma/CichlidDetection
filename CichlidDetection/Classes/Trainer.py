@@ -6,7 +6,8 @@ import torchvision
 from torchvision.transforms import functional as F
 from CichlidDetection.Classes.DataSet import DataSet
 from CichlidDetection.Classes.FileManager import FileManager
-from CichlidDetection.Utilities.utils import RandomHorizontalFlip, ToTensor, Compose, AverageMeter, Logger, collate_fn
+from CichlidDetection.Utilities.utils import AverageMeter, Logger
+from CichlidDetection.Utilities.ml_utils import collate_fn, Compose, ToTensor, RandomHorizontalFlip
 
 
 class Trainer:
