@@ -54,6 +54,11 @@ class CompareAnnotations:
 			else:
 				sex_agree.append('No fish')
 
+		dt['SexAgree'] = pd.Series(sex_agree)
+
+		dt = dt[['Box_man', 'Sex_man', 'Box_ml', 'Sex_ml', 'SexAgree', 'IOU']]
+		dt.to_csv('new_compare_ann.csv')
+
 		# 	overlap_x0, overlap_y0, overlap_x1, overlap_y1 = max(ann1[0],ann2[0]), max(ann1[1],ann2[1]), min(ann1[0] + ann1[2],ann2[0] + ann2[2]), min(ann1[1] + ann1[3],ann2[1] + ann2[3])
 		# 	if overlap_x1 < overlap_x0 or overlap_y1 < overlap_y0:
 		# 		ious.append(0)
@@ -72,11 +77,6 @@ class CompareAnnotations:
 		#
 		# dt['IOU'] = pd.Series(iou)
 		# dt['Overlap'] = pd.Series(overlap)
-		dt['SexAgree'] = pd.Series(sex_agree)
-
-		dt = dt[['Box_man', 'Sex_man', 'Box_ml','Sex_ml', 'SexAgree', 'IOU']]
-		dt.to_csv('new_compare_ann.csv')
-
 		# idx = dt.groupby(['Box_man'])['IOU'].transform(max) == dt['IOU']
 		# dt = dt[idx].reset_index()
 
