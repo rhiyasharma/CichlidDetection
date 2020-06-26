@@ -25,9 +25,9 @@ class CompareAnnotations:
 						 'labels_predicted': 'Sex_ml', 'average_iou': 'IOU'}, inplace=True)
 
 		# Add IOU
-		ious = []
+		# ious = []
 		sex_agree = []
-		overlap = []
+		# overlap = []
 
 		for row in dt.itertuples():
 			ann1 = row.Box_man
