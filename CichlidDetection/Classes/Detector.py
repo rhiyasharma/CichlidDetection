@@ -1,4 +1,6 @@
 import os
+import time
+from time import ctime
 import pandas as pd
 import numpy as np
 import torch
@@ -28,6 +30,7 @@ class Detector:
         num: number of images to select
 
         """
+        print("Start Time: ", ctime(time.time()))
         dataset = DataSet(Compose([ToTensor()]), 'test')
         indices = list(range(len(dataset)))
         np.random.shuffle(indices)
@@ -35,6 +38,7 @@ class Detector:
         sampler = SubsetRandomSampler(idx)
         loader = DataLoader(dataset, sampler=sampler, batch_size=n_imgs, collate_fn=collate_fn)
         self.evaluate(loader)
+        print("End Time: ", ctime(time.time()))
 
     def detect(self, img_dir):
         """run detection on the images contained in img_dir
