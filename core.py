@@ -32,7 +32,7 @@ host = socket.gethostname()
 
 # if running from a PACE login node, assert that args.command == full_auto, then submit the train.pbs script
 if ('login' in host) and ('pace' in host):
-    assert (args.command == 'full_auto'), 'full_auto is the only mode currently on PACE'
+    assert (args.command == 'full_auto'), 'full_auto is the only mode currently on a PACE login node'
     pbs_dir = os.path.join(package_root, 'CichlidDetection/PBS')
     subprocess.run(['qsub', 'train.pbs', '-v', 'EPOCHS={}'.format(args.Epochs)], cwd=pbs_dir)
 
