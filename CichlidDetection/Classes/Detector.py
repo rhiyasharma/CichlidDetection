@@ -11,10 +11,6 @@ from CichlidDetection.Utilities.ml_utils import collate_fn, Compose, ToTensor
 from torch.utils.data.sampler import SubsetRandomSampler
 from torch.utils.data.dataloader import DataLoader
 
-# Run this script from the main CichlidDetection directory: python3 Detector.py
-# This script selects random images from the test set and runs them through the model to produce predictions 
-# Results csv file saved in scratch/CichlidDetection/training/predictions as "Detect_images.csv"
-
 
 class Detector:
 
@@ -30,6 +26,7 @@ class Detector:
         num: number of images to select
 
         """
+        num = 'test_{}'.format(n_imgs)
         print("Start Time: ", ctime(time.time()))
         dataset = DataSet(Compose([ToTensor()]), 'test')
         indices = list(range(len(dataset)))
@@ -37,7 +34,7 @@ class Detector:
         idx = indices[:n_imgs]
         sampler = SubsetRandomSampler(idx)
         loader = DataLoader(dataset, sampler=sampler, batch_size=n_imgs, collate_fn=collate_fn)
-        self.evaluate(loader)
+        self.evaluate(loader, num)
         print("End Time: ", ctime(time.time()))
 
     def detect(self, img_dir):
@@ -46,13 +43,14 @@ class Detector:
         Args:
             img_dir (str): path to the image directory, relative to data_dir (see FileManager)
         """
+        pid = img_dir.split('/')[1]
         img_dir = os.path.join(self.fm.local_files['data_dir'], img_dir)
         assert os.path.exists(img_dir)
         img_files = [os.path.join(img_dir, img_file) for img_file in os.listdir(img_dir)]
         dataset = DetectDataSet(Compose([ToTensor()]), img_files)
         dataloader = DataLoader(dataset, batch_size=5, shuffle=False, num_workers=8, pin_memory=True,
                                 collate_fn=collate_fn)
-        self.evaluate(dataloader)
+        self.evaluate(dataloader, pid)
 
 
     def _initiate_model(self):
@@ -67,7 +65,7 @@ class Detector:
             self.model.load_state_dict(torch.load(self.fm.local_files['weights_file'], map_location=self.device))
 
     @torch.no_grad()
-    def evaluate(self, dataloader: DataLoader):
+    def evaluate(self, dataloader: DataLoader, name):
         """evaluate the model on the detect set of images"""
         cpu_device = torch.device("cpu")
         self.model.eval()
@@ -85,4 +83,8 @@ class Detector:
             detect_framefiles.append(dataloader.dataset.img_files[i])
         df['Framefile'] = [os.path.basename(path) for path in detect_framefiles]
         df = df[['Framefile', 'boxes', 'labels', 'scores']].set_index('Framefile')
-        df.to_csv(os.path.join(self.fm.local_files['detection_dir'], 'detections.csv'))
+
+        if 'test' in name:
+            df.to_csv(os.path.join(self.fm.local_files['detection_dir'], 'detections_{}.csv'.format(name)))
+        else:
+            df.to_csv(os.path.join(self.fm.local_files['detect_project'], 'detections_{}.csv'.format(name)))
