@@ -113,6 +113,6 @@ class DetectDownload:
 
 
 
-down = DetectDownload()
-master, img_dir, files = down._locate_cloud_files()
-down.download(img_dir, files)
+# down = DetectDownload()
+# master, img_dir, files = down._locate_cloud_files()
+# down.download(img_dir, files)
