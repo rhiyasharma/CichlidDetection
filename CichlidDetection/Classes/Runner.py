@@ -38,8 +38,8 @@ class Runner:
 
     def detect(self, img_dir):
         self.down = Download()
-        master, i_dir, files = down._locate_cloud_files()
-        down.download(i_dir, files)
+        master, i_dir, files = self.down._locate_cloud_files()
+        self.down.download(i_dir, files)
         self.de = Detector()
         if img_dir == 'test':
             self.de.test(5)
