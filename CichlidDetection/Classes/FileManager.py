@@ -44,6 +44,7 @@ class FileManager:
         self._make_dir('figure_dir', join(self.local_files['training_dir'], 'figures'))
         self._make_dir('figure_data_dir', join(self.local_files['figure_dir'], 'figure_data'))
         self._make_dir('detection_dir', join(self.local_files['data_dir'], 'detection'))
+        self._make_dir('detect_project', join(self.local_files['detection_dir'], 'MC6_5'))
         # locate and download remote files
         self.cloud_master_dir, cloud_files = self._locate_cloud_files()
         self.cloud_training_dir = join(self.cloud_master_dir, '___Tucker', 'CichlidDetection', 'training')
@@ -72,7 +73,7 @@ class FileManager:
             overwrite: if True, run rclone copy even if a local file with the intended name already exists
 
         Returns:
-            the full path the to the newly downloaded file (or directory, if the file was a tarfile)
+            the full path to the newly downloaded file (or directory, if the file was a tarfile)
         """
 
         local_path = join(destination_dir, os.path.basename(source))
@@ -179,5 +180,7 @@ class ProjectFileManager(FileManager):
             cloud_files.update({'video_crop_numpy': join(self.cloud_master_dir, self.pid, 'MasterAnalysisFiles', 'VideoCrop.npy')})
         return cloud_files
 
+    # def _detect_locate_cloud_files(self):
+    #     cloud_image_dir = join(self.cloud_master_dir, '__AnnotatedData/BoxedFish/BoxedImages/{}.tar'.format(self.pid))
 
 
