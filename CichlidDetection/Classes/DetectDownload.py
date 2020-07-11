@@ -112,7 +112,7 @@ class DetectDownload:
         # print('downloaded all npy files')
 
 
-#
-# down = Download()
-# master, img_dir, files = down._locate_cloud_files()
-# down.download(img_dir, files)
+
+down = DetectDownload()
+master, img_dir, files = down._locate_cloud_files()
+down.download(img_dir, files)
