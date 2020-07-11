@@ -3,7 +3,7 @@ from CichlidDetection.Classes.DataPrepper import DataPrepper
 from CichlidDetection.Classes.FileManager import FileManager
 from CichlidDetection.Classes.Trainer import Trainer
 from CichlidDetection.Classes.Detector import Detector
-
+from CichlidDetection.Classes.DetectDownload import DetectDownload
 
 class Runner:
     """user-friendly class for accessing the majority of module's functionality."""
@@ -37,8 +37,11 @@ class Runner:
         self.fm.sync_training_dir()
 
     def detect(self, img_dir):
+        self.down = Download()
+        master, i_dir, files = down._locate_cloud_files()
+        down.download(i_dir, files)
         self.de = Detector()
         if img_dir == 'test':
-            self.de.test(10)
+            self.de.test(5)
         else:
             self.de.detect(img_dir)
