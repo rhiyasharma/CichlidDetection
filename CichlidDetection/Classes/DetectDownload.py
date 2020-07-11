@@ -13,7 +13,7 @@ import cv2
 from CichlidDetection.Utilities.utils import run, make_dir
 from CichlidDetection.Classes.FileManager import FileManager
 
-class animation:
+class Download:
 
     def __init__(self):
         self.fm = FileManager()
@@ -101,18 +101,18 @@ class animation:
 
         print('downloaded all image files')
 
-        if len(os.listdir(local_npys)) < 1800:
-            print('downloading npy files')
-            for npy in npys[1:1801]:
-                if npy not in local_npys:
-                    npy_path = os.path.join(remoteDir, npy)
-                    subprocess.run(['rclone', 'copy', npy_path, local_npys], stderr=subprocess.PIPE)
-                    print('downloaded {}'.format(npy))
+        # if len(os.listdir(local_npys)) < 1800:
+        #     print('downloading npy files')
+        #     for npy in npys[1:1801]:
+        #         if npy not in local_npys:
+        #             npy_path = os.path.join(remoteDir, npy)
+        #             subprocess.run(['rclone', 'copy', npy_path, local_npys], stderr=subprocess.PIPE)
+        #             print('downloaded {}'.format(npy))
+        #
+        # print('downloaded all npy files')
 
-        print('downloaded all npy files')
 
-
-
-anim = animation()
-master, img_dir, files = anim._locate_cloud_files()
-anim.download(img_dir, files)
+#
+# down = Download()
+# master, img_dir, files = down._locate_cloud_files()
+# down.download(img_dir, files)
