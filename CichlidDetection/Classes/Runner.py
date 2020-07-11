@@ -37,9 +37,9 @@ class Runner:
         self.fm.sync_training_dir()
 
     def detect(self, img_dir):
-        self.down = DetectDownload()
-        master, i_dir, files = self.down._locate_cloud_files()
-        self.down.download(i_dir, files)
+        # self.down = DetectDownload()
+        # master, i_dir, files = self.down._locate_cloud_files()
+        # self.down.download(i_dir, files)
         self.de = Detector()
         if img_dir == 'test':
             self.de.test(5)
