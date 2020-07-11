@@ -61,7 +61,7 @@ class DetectDownload:
         return cloud_master_dir, remoteDir, remote_files
 
     def download(self, remoteDir, file_list):
-        file_list = files.stdout.split()
+        file_list = file_list.stdout.split()
         imgs=[]
         npys=[]
         for file in file_list:
