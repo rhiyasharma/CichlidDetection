@@ -13,7 +13,7 @@ import cv2
 from CichlidDetection.Utilities.utils import run, make_dir
 from CichlidDetection.Classes.FileManager import FileManager
 
-class Download:
+class DetectDownload:
 
     def __init__(self):
         self.fm = FileManager()
