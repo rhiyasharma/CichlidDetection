@@ -43,6 +43,7 @@ class Detector:
         Args:
             img_dir (str): path to the image directory, relative to data_dir (see FileManager)
         """
+
         pid = img_dir.split('/')[1]
         img_dir = os.path.join(self.fm.local_files['data_dir'], img_dir)
         assert os.path.exists(img_dir)
@@ -51,6 +52,17 @@ class Detector:
         dataloader = DataLoader(dataset, batch_size=5, shuffle=False, num_workers=8, pin_memory=True,
                                 collate_fn=collate_fn)
         self.evaluate(dataloader, pid)
+
+    def frame_detect(self, dataset):
+        """run detection on the frame
+
+        Args:
+            img_dir (str): path to the image directory, relative to data_dir (see FileManager)
+        """
+
+        dataloader = DataLoader(dataset, batch_size=5, shuffle=False, num_workers=8, pin_memory=True,
+                                collate_fn=collate_fn)
+        self.evaluate(dataloader, "blahblah")
 
 
     def _initiate_model(self):
@@ -85,6 +97,6 @@ class Detector:
         df = df[['Framefile', 'boxes', 'labels', 'scores']].set_index('Framefile')
 
         if 'test' in name:
-            df.to_csv(os.path.join(self.fm.local_files['detection_dir'], 'detections_{}.csv'.format(name)))
+            df.to_csv(os.path.join(self.fm.local_files['detection_dir'], 'detections_{}.csv'.format('test')))
         else:
             df.to_csv(os.path.join(self.fm.local_files['detect_project'], 'detections_{}.csv'.format(name)))
