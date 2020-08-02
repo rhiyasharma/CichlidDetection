@@ -6,9 +6,9 @@ import cv2
 import numpy as np
 import torch
 from torch import tensor
-
 from CichlidDetection.Utilities.utils import run, make_dir
 from CichlidDetection.Classes.FileManager import FileManager
+from CichlidDetection.Classes.FileManager import ProjectFileManager
 from CichlidDetection.Utilities.ml_utils import collate_fn, Compose, ToTensor, RandomHorizontalFlip
 from CichlidDetection.Classes.Detector import Detector
 
@@ -54,7 +54,6 @@ class VideoDataset(Dataset):
         if self.transforms is not None:
             img, target = self.transforms(img, target)
         return img, target
-
 
 videoLoader = VideoDataset('/Users/rhiyasharma/Documents/_McGrathLab/CD_work/videos/short_ten.mp4', Compose([RandomHorizontalFlip(0.5), ToTensor()]))
 de = Detector()
