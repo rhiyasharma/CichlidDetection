@@ -4,7 +4,6 @@ from os.path import join
 import pandas as pd
 from CichlidDetection.Utilities.utils import run, make_dir
 
-
 class FileManager:
     """Project non-specific class for handling local and cloud storage."""
 
@@ -131,16 +130,23 @@ class FileManager:
 class ProjectFileManager(FileManager):
     """Project specific class for managing local and cloud storage. Inherits from FileManager"""
 
-    def __init__(self, pid, file_manager=None, download_images=True):
+    def __init__(self, pid, file_manager=None, download_images=True, download_videos=False, *video_names):
         """initialize a new FileManager, unless an existing file manager was passed to the constructor to save time
 
         Args:
             pid (str): project id
             file_manager (FileManager): optional. pass a pre-existing FileManager object to improve performance when
                 initiating numerous ProjectFileManagers
-            download (bool): if True, download the full image directory for the specified project
+            download_images (bool): if True, download the full image directory for the specified project
+            download_videos (bool): if True, download the all the mp4 files in Videos directory for the specified project
+            video_num (int): specifies which video to download
         """
         self.download_images = download_images
+        self.download_videos = download_videos
+        self.video_names = []
+        for video in video_names:
+            self.video_names.append(video)
+
         # initiate the FileManager parent class unless the optional file_manager argument is used
         if file_manager is None:
             FileManager.__init__(self)
@@ -158,8 +164,16 @@ class ProjectFileManager(FileManager):
         Overwrites FileManager._initialize() method
         """
         self._make_dir('project_dir', join(self.local_files['data_dir'], self.pid))
-        for name, file in self._locate_cloud_files().items():
-            self._download(name, file, self.local_files['project_dir'])
+        if self.download_images:
+            for name, file in self._locate_cloud_files().items():
+                    self._download(name, file, self.local_files['project_dir'])
+
+        if self.download_videos:
+            for vid in self.video_names:
+                for name, file in self._locate_cloud_files().items():
+                    if name == vid:
+                        self._download(name, file, self.local_files['project_dir'])
+
 
     def _locate_cloud_files(self):
         """track down project-specific files in Dropbox.
@@ -169,6 +183,7 @@ class ProjectFileManager(FileManager):
         Returns:
             dict: cloud file paths keyed by brief file descriptors.
         """
+
         cloud_image_dir = join(self.cloud_master_dir, '__AnnotatedData/BoxedFish/BoxedImages/{}.tar'.format(self.pid))
         cloud_files = {'project_image_dir': cloud_image_dir} if self.download_images else {}
         remote_files = run(['rclone', 'lsf', join(self.cloud_master_dir, self.pid)])
@@ -178,6 +193,14 @@ class ProjectFileManager(FileManager):
         else:
             cloud_files.update({'video_points_numpy': join(self.cloud_master_dir, self.pid, 'MasterAnalysisFiles', 'VideoPoints.npy')})
             cloud_files.update({'video_crop_numpy': join(self.cloud_master_dir, self.pid, 'MasterAnalysisFiles', 'VideoCrop.npy')})
+
+        if self.download_videos:
+             cloud_video_dir = join(self.cloud_master_dir, self.pid, 'Videos')
+             # cloud_video_files = {}
+             videos_remote = run(['rclone', 'lsf', cloud_video_dir, '--include', '*.mp4']).split()
+             for v in videos_remote:
+                cloud_files.update({'{}'.format(v[0]): join(self.cloud_master_dir, self.pid, 'Videos', v[1])})
+
         return cloud_files
 
     # def _detect_locate_cloud_files(self):
