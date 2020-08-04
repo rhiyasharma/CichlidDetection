@@ -58,8 +58,9 @@ class VideoDataset(Dataset):
     def __len__(self):
         return self.len
 
-
-videoLoader = VideoDataset('/Users/rhiyasharma/Documents/_McGrathLab/CD_work/videos/short_ten.mp4', Compose([RandomHorizontalFlip(0.5), ToTensor()]))
+fm = FileManager()
+pfm = ProjectFileManager('MC6_5', fm, False, True, '0005_vid.mp4')
+videoLoader = VideoDataset('/data/home/rsharma348/scratch/CichlidDetection/MC6_5/0005_vid.mp4', Compose([RandomHorizontalFlip(0.5), ToTensor()]))
 de = Detector()
 # for i in videoLoader:
 #     print(i)
