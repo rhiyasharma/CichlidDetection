@@ -59,7 +59,7 @@ class VideoDataset(Dataset):
         return self.len
 
 fm = FileManager()
-pfm = ProjectFileManager('MC6_5', fm, False, True, '0005_vid.mp4')
+pfm = ProjectFileManager('MC6_5', fm, True, True, '0005_vid.mp4')
 videoLoader = VideoDataset('/data/home/rsharma348/scratch/CichlidDetection/MC6_5/0005_vid.mp4', Compose([RandomHorizontalFlip(0.5), ToTensor()]))
 de = Detector()
 # for i in videoLoader:
