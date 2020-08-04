@@ -167,8 +167,7 @@ class ProjectFileManager(FileManager):
         if self.download_images:
             for name, file in self._locate_cloud_files().items():
                     self._download(name, file, self.local_files['project_dir'])
-
-        if self.download_videos:
+        elif self.download_videos:
             for vid in self.video_names:
                 for name, file in self._locate_cloud_files().items():
                     if name == vid:
