@@ -62,7 +62,7 @@ class Detector:
 
         dataloader = DataLoader(dataset, batch_size=5, shuffle=False, num_workers=8, pin_memory=True,
                                 collate_fn=collate_fn)
-        self.evaluate(dataloader, "blahblah")
+        self.evaluate(dataloader, "FullVideo")
 
 
     def _initiate_model(self):
