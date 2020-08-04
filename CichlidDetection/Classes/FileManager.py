@@ -164,6 +164,8 @@ class ProjectFileManager(FileManager):
         Overwrites FileManager._initialize() method
         """
         self._make_dir('project_dir', join(self.local_files['data_dir'], self.pid))
+        print(self._locate_cloud_files().items())
+
         if self.download_images:
             for name, file in self._locate_cloud_files().items():
                     self._download(name, file, self.local_files['project_dir'])
@@ -199,7 +201,7 @@ class ProjectFileManager(FileManager):
              # cloud_video_files = {}
              videos_remote = run(['rclone', 'lsf', cloud_video_dir, '--include', '*.mp4']).split()
              for v in videos_remote:
-                cloud_files.update({'{}'.format(v[0]): join(self.cloud_master_dir, self.pid, 'Videos', v[1])})
+                cloud_files.update({'{}'.format(v): join(self.cloud_master_dir, self.pid, 'Videos', v)})
 
         return cloud_files
 
