@@ -93,13 +93,11 @@ class Detector:
             outputs = [{k: v.to(cpu_device).numpy().tolist() for k, v in t.items()} for t in outputs]
             results.update({target["image_id"].item(): output for target, output in zip(targets, outputs)})
         df = pd.DataFrame.from_dict(results, orient='index')
-        print(df)
         index_list = df.index.tolist()
         detect_framefiles = []
         for i in index_list:
             detect_framefiles.append(dataloader.dataset.img_files[i])
         df['Framefile'] = [os.path.basename(path) for path in detect_framefiles]
-        print('\n\n\n', df)
         df = df[['Framefile', 'boxes', 'labels', 'scores']].set_index('Framefile')
 
         if 'test' in name:
