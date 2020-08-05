@@ -115,12 +115,8 @@ class DetectVideoDataSet:
         self.framerate = int(cap.get(cv2.CAP_PROP_FPS))
         self.len = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
 
-        # self.start_time = 0
-        # self.stop_time = int(self.len / self.framerate) - 1
-
-        # self.frames = np.empty(shape=(self.height, self.width, self.stop_time - self.start_time), dtype='uint8')
-        self.frames = torch.FloatTensor(self.height, self.width, self.len, self.channels)
         # self.frames = np.empty(shape=(self.height, self.width, self.len), dtype='uint8')
+        self.frames = []
 
         count = 0
         # for i in range(self.start_time, self.stop_time):
@@ -128,27 +124,31 @@ class DetectVideoDataSet:
             # cap.set(cv2.CAP_PROP_POS_FRAMES, int(i * self.framerate))
             ret, frame = cap.read()
             if not ret:
-                print('Couldnt read frame ' + str(i) in video_file + '. Using last good frame', file=sys.stderr)
-                self.frames[:, :, count] = self.frames[:, :, count - 1]
-                self.img_files.append("Frame_{}.jpg".format(count-1))
+                print('Couldnt read frame ' + str(i) in video_file + '. Ending...', file=sys.stderr)
+                # self.frames[:, :, count] = self.frames[:, :, count - 1]
+                # self.img_files.append("Frame_{}.jpg".format(count-1))
+                break
             else:
-                print(frame.shape)
-                self.frames[:, :, count] = 0.2125 * frame[:, :, 2], 0.7154 * frame[:, :, 1] + 0.0721 * frame[:, :, 0]
+                # frame = 0.2125 * frame[:, :, 2] + 0.7154 * frame[:, :, 1] + 0.0721 * frame[:, :, 0]
+                self.frames.append(frame)
                 self.img_files.append("Frame_{}.jpg".format(count))
 
             count += 1
 
         cap.release()
         self.img_files.sort()
-        assert (count == self.frames.shape[2])
+
 
     def __getitem__(self, idx):
         # if torch.is_tensor(idx):
         #     idx = idx.tolist()
-        img = Image.fromarray(self.frames[idx])
-        img.save(os.path.join(self.img_dir, "Frame_{}.jpg".format(idx)))
+        name = "Frame_{}.jpg".format(idx)
+        if len(os.listdir(self.img_dir)) < self.len:
+            if name not in os.listdir(self.img_dir):
+                img = Image.fromarray(self.frames[idx])
+                img.save(os.path.join(self.img_dir, name))
+
         img = self.frames[idx]
-        # self.img_files.append("Frame_{}.jpg".format(idx))
         target = {'image_id': tensor(idx)}
         if self.transforms is not None:
             img, target = self.transforms(img, target)
