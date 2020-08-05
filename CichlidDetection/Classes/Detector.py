@@ -61,7 +61,6 @@ class Detector:
         Args:
             path (str): path to the video directory (see ProjectFileManager)
         """
-        print('step: frame_detect')
         video_name = path.split('/')[-1].split('.')[0]
         dataset = DetectVideoDataSet(Compose([ToTensor()]), path, self.pfm)
         dataloader = DataLoader(dataset, batch_size=5, shuffle=False, num_workers=8, pin_memory=True,
@@ -82,7 +81,6 @@ class Detector:
     @torch.no_grad()
     def evaluate(self, dataloader: DataLoader, name):
         """evaluate the model on the detect set of images"""
-        print('step: detect evaluate')
         cpu_device = torch.device("cpu")
         self.model.eval()
         results = {}
@@ -107,3 +105,5 @@ class Detector:
             df.to_csv(os.path.join(self.fm.local_files['detection_dir'], '{}_detections.csv'.format(name)))
         else:
             df.to_csv(os.path.join(self.fm.local_files['detect_dir'], '{}_detections.csv'.format(name)))
+
+        return '{}_detections.csv'.format(name)
