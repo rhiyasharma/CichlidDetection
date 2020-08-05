@@ -128,13 +128,11 @@ class DetectVideoDataSet:
                 break
             else:
                 self.frames.append(frame)
-                self.img_files.append("Frame_{}.jpg".format(count))
 
             count += 1
 
         cap.release()
         self.img_files.sort()
-
 
     def __getitem__(self, idx):
         # if torch.is_tensor(idx):
@@ -142,10 +140,11 @@ class DetectVideoDataSet:
         name = "Frame_{}.jpg".format(idx)
         if len(os.listdir(self.img_dir)) < self.len:
             if name not in os.listdir(self.img_dir):
-                img = Image.fromarray(self.frames[idx])
+                img = Image.fromarray(self.frames[idx], 'RGB')
                 img.save(os.path.join(self.img_dir, name))
 
         img = self.frames[idx]
+        self.img_files.append("Frame_{}.jpg".format(idx))
         target = {'image_id': tensor(idx)}
         if self.transforms is not None:
             img, target = self.transforms(img, target)

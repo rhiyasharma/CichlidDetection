@@ -44,7 +44,7 @@ class Animation:
 
         boxes = [Rectangle((0, 0), 0, 0, fill=False) for _ in range(max_detections)]
 
-        def animate(self, i):
+        def animate(i):
             new_frame = df.iloc[i].Framefile
             new_img = mpimg.imread(os.path.join(self.frame_dir, new_frame))
             img = plt.imshow(new_img)
@@ -62,7 +62,6 @@ class Animation:
                 boxes[j].set_edgecolor(color_lookup[label_preds[j]])
 
             for box in boxes:
-                print(box)
                 ax.add_patch(box)
 
             img.set_array(new_img)
@@ -72,7 +71,6 @@ class Animation:
             return [img]
 
         anim = FuncAnimation(fig, animate, frames=len(df), blit=True, interval=200, repeat=False)
-        anim.save(os.path.join(self.detection_dir, '{}_detections.mp4'.format(self.video_name)), writer='imagemagick')
+        anim.save(os.path.join(self.detection_dir, '{}_detections.gif'.format(self.video_name)), writer='imagemagick')
         plt.close('all')
 
-        return '{}_detections.mp4'.format(self.video_name)
