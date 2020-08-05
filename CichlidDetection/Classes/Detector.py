@@ -5,7 +5,7 @@ import pandas as pd
 import numpy as np
 import torch
 import torchvision
-from CichlidDetection.Classes.DataSet import DataSet, DetectDataSet
+from CichlidDetection.Classes.DataSet import DataSet, DetectDataSet, DetectVideoDataSet
 from CichlidDetection.Classes.FileManager import FileManager
 from CichlidDetection.Utilities.ml_utils import collate_fn, Compose, ToTensor
 from torch.utils.data.sampler import SubsetRandomSampler
@@ -28,12 +28,12 @@ class Detector:
         """
         num = 'test_{}'.format(n_imgs)
         print("Start Time: ", ctime(time.time()))
-        dataset = DataSet(Compose([ToTensor()]), 'test')
-        indices = list(range(len(dataset)))
+        test_dataset = DataSet(Compose([ToTensor()]), 'test')
+        indices = list(range(len(test_dataset)))
         np.random.shuffle(indices)
         idx = indices[:n_imgs]
         sampler = SubsetRandomSampler(idx)
-        loader = DataLoader(dataset, sampler=sampler, batch_size=n_imgs, collate_fn=collate_fn)
+        loader = DataLoader(test_dataset, sampler=sampler, batch_size=n_imgs, collate_fn=collate_fn)
         self.evaluate(loader, num)
         print("End Time: ", ctime(time.time()))
 
@@ -53,17 +53,17 @@ class Detector:
                                 collate_fn=collate_fn)
         self.evaluate(dataloader, pid)
 
-    def frame_detect(self, dataset):
+    def frame_detect(self, path):
         """run detection on the frame
 
         Args:
-            img_dir (str): path to the image directory, relative to data_dir (see FileManager)
+            path (str): path to the video directory (see ProjectFileManager)
         """
-
+        # pfm = ProjectFileManager('MC6_5', fm, False, True, '0005_vid.mp4')
+        dataset = DetectVideoDataSet(Compose([ToTensor()]), path)
         dataloader = DataLoader(dataset, batch_size=5, shuffle=False, num_workers=8, pin_memory=True,
                                 collate_fn=collate_fn)
         self.evaluate(dataloader, "FullVideo")
-
 
     def _initiate_model(self):
         """initiate the model, optimizer, and scheduler."""
@@ -98,5 +98,7 @@ class Detector:
 
         if 'test' in name:
             df.to_csv(os.path.join(self.fm.local_files['detection_dir'], 'detections_{}.csv'.format('test')))
+        elif 'FullVideo' in name:
+            df.to_csv(os.path.join(self.fm.local_files['detection_dir'], 'detections_{}.csv'.format('FullVideo')))
         else:
             df.to_csv(os.path.join(self.fm.local_files['detect_project'], 'detections_{}.csv'.format(name)))
