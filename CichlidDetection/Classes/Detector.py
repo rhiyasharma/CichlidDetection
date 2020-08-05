@@ -53,17 +53,17 @@ class Detector:
                                 collate_fn=collate_fn)
         self.evaluate(dataloader, pid)
 
-    def frame_detect(self, path):
+    def frame_detect(self, pid, path):
         """run detection on the frame
 
         Args:
             path (str): path to the video directory (see ProjectFileManager)
         """
-        # pfm = ProjectFileManager('MC6_5', fm, False, True, '0005_vid.mp4')
+        video_name = path.split('/')[-1].split('.')[0]
         dataset = DetectVideoDataSet(Compose([ToTensor()]), path)
         dataloader = DataLoader(dataset, batch_size=5, shuffle=False, num_workers=8, pin_memory=True,
                                 collate_fn=collate_fn)
-        self.evaluate(dataloader, "FullVideo")
+        self.evaluate(dataloader, "{}_{}".format(pid, video_name))
 
     def _initiate_model(self):
         """initiate the model, optimizer, and scheduler."""
@@ -97,8 +97,10 @@ class Detector:
         df = df[['Framefile', 'boxes', 'labels', 'scores']].set_index('Framefile')
 
         if 'test' in name:
-            df.to_csv(os.path.join(self.fm.local_files['detection_dir'], 'detections_{}.csv'.format('test')))
-        elif 'FullVideo' in name:
-            df.to_csv(os.path.join(self.fm.local_files['detection_dir'], 'detections_{}.csv'.format('FullVideo')))
+            df.to_csv(os.path.join(self.fm.local_files['detection_dir'], '{}_detections.csv'.format(name)))
+        elif 'vid' in name:
+            df.to_csv(os.path.join(self.fm.local_files['detection_dir'], '{}_detections.csv'.format(name)))
         else:
-            df.to_csv(os.path.join(self.fm.local_files['detect_project'], 'detections_{}.csv'.format(name)))
+            df.to_csv(os.path.join(self.fm.local_files['detect_dir'], '{}_detections.csv'.format(name)))
+
+        return '{}_detections.csv'.format(name)
