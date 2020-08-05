@@ -26,7 +26,9 @@ Args:
 fm = FileManager()
 # Create project directory and download the specified files
 pfm = ProjectFileManager(args.pid, fm, args.download_images, args.download_video, args.video)
+print('downloaded video, created directories!')
 detect = Detector(pfm)
+# video_path = os.path.join('/Users/rhiyasharma/Documents/_McGrathLab/CD_work/videos', args.video)
 video_path = os.path.join(pfm.local_files['{}_dir'.format(args.pid)], args.video)
 csv_file = detect.frame_detect(args.pid, video_path)
 animation = Animation(args.pid, args.video, csv_file, pfm)
