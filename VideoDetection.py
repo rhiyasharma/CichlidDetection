@@ -1,16 +1,16 @@
-import os
 import argparse
-import subprocess
+import os
 from CichlidDetection.Classes.Detector import Detector
 from CichlidDetection.Classes.FileManager import FileManager
 from CichlidDetection.Classes.FileManager import ProjectFileManager
+from CichlidDetection.Classes.VideoCreator import Animation
 
 # parse command line arguments
 parser = argparse.ArgumentParser(description='To Detect Cichlids in Videos')
 parser.add_argument('pid', type=str, metavar=' ', help='Project ID. Ex: MC6_5')
-parser.add_argument('video', type=int, metavar = ' ', help='Run detection on specified video. Ex: 0005_vid.mp4')
-parser.add_argument('-i','--download_images', type='store_true', metavar=' ', help='Download the full image directory')
-parser.add_argument('-v','--download_video', action='store_true', metavar=' ', help='Download video')
+parser.add_argument('video', type=str, metavar=' ', help='Run detection on specified video. Ex: 0005_vid.mp4')
+parser.add_argument('-i', '--download_images', action='store_true', help='Download full image directory')
+parser.add_argument('-v', '--download_video', action='store_true', help='Download video')
 args = parser.parse_args()
 
 """
@@ -24,7 +24,11 @@ Args:
 """
 
 fm = FileManager()
+# Create project directory and download the specified files
 pfm = ProjectFileManager(args.pid, fm, args.download_images, args.download_video, args.video)
-de = Detector()
-# video_path = fm.local_files['project_dir']
-de.frame_detect(args.pid, )
+detect = Detector()
+video_path = os.path.join(fm.local_files['{}_dir'.format(args.pid)], args.video)
+csv_file = detect.frame_detect(args.pid, video_path)
+animation = Animation(args.pid, args.video, csv_file)
+print('Detections video name:  ', animation)
+
