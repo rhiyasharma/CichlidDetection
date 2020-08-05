@@ -127,14 +127,7 @@ class DetectVideoDataSet:
                 print('Couldnt read frame ' + str(i) in video_file + '. Ending...', file=sys.stderr)
                 break
             else:
-                name = "Frame_{}.jpg".format(count)
                 self.frames.append(frame)
-                if len(os.listdir(self.img_dir)) < self.len:
-                    if name not in os.listdir(self.img_dir):
-                        img = Image.fromarray(frame, 'RGB')
-                        img.save(os.path.join(self.img_dir, name))
-
-                self.img_files.append("Frame_{}.jpg".format(count))
 
             count += 1
 
@@ -144,12 +137,17 @@ class DetectVideoDataSet:
     def __getitem__(self, idx):
         # if torch.is_tensor(idx):
         #     idx = idx.tolist()
+        name = "Frame_{}.jpg".format(idx)
+        if len(os.listdir(self.img_dir)) < self.len:
+            if name not in os.listdir(self.img_dir):
+                img = Image.fromarray(self.frames[idx], 'RGB')
+                img.save(os.path.join(self.img_dir, name))
+
         img = self.frames[idx]
+        self.img_files.append("Frame_{}.jpg".format(idx))
         target = {'image_id': tensor(idx)}
         if self.transforms is not None:
             img, target = self.transforms(img, target)
-        print('img:', img)
-        print('target:', target)
         return img, target
 
     def __len__(self):
