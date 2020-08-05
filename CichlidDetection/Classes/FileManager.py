@@ -4,6 +4,7 @@ from os.path import join
 import pandas as pd
 from CichlidDetection.Utilities.utils import run, make_dir
 
+
 class FileManager:
     """Project non-specific class for handling local and cloud storage."""
 
@@ -22,7 +23,8 @@ class FileManager:
         """
         print('syncing training directory')
         down = ['rclone', 'copy', '-u', '-c', self.cloud_training_dir, self.local_files['training_dir']]
-        up = ['rclone', 'copy', '-u', '-c', self.local_files['training_dir'], self.cloud_training_dir, '--exclude', '.*{/**,}']
+        up = ['rclone', 'copy', '-u', '-c', self.local_files['training_dir'], self.cloud_training_dir, '--exclude',
+              '.*{/**,}']
         if not quiet:
             [com.insert(3, '-P') for com in [down, up]]
         if exclude is not None:
@@ -43,7 +45,6 @@ class FileManager:
         self._make_dir('figure_dir', join(self.local_files['training_dir'], 'figures'))
         self._make_dir('figure_data_dir', join(self.local_files['figure_dir'], 'figure_data'))
         self._make_dir('detection_dir', join(self.local_files['data_dir'], 'detection'))
-        self._make_dir('detect_project', join(self.local_files['detection_dir'], 'MC6_5'))
         # locate and download remote files
         self.cloud_master_dir, cloud_files = self._locate_cloud_files()
         self.cloud_training_dir = join(self.cloud_master_dir, '___Tucker', 'CichlidDetection', 'training')
@@ -78,7 +79,8 @@ class FileManager:
         local_path = join(destination_dir, os.path.basename(source))
         if not os.path.exists(local_path) or overwrite:
             run(['rclone', 'copy', source, destination_dir])
-            assert os.path.exists(local_path), "download failed\nsource: {}\ndestination_dir: {}".format(source, destination_dir)
+            assert os.path.exists(local_path), "download failed\nsource: {}\ndestination_dir: {}".format(source,
+                                                                                                         destination_dir)
         if os.path.splitext(local_path)[1] == '.tar':
             if not os.path.exists(os.path.splitext(local_path)[0]):
                 run(['tar', '-xvf', local_path, '-C', os.path.dirname(local_path)])
@@ -130,7 +132,7 @@ class FileManager:
 class ProjectFileManager(FileManager):
     """Project specific class for managing local and cloud storage. Inherits from FileManager"""
 
-    def __init__(self, pid, file_manager=None, download_images=True, download_videos=False, *video_names):
+    def __init__(self, pid, file_manager=None, download_images=False, download_videos=False, *video_names):
         """initialize a new FileManager, unless an existing file manager was passed to the constructor to save time
 
         Args:
@@ -138,7 +140,7 @@ class ProjectFileManager(FileManager):
             file_manager (FileManager): optional. pass a pre-existing FileManager object to improve performance when
                 initiating numerous ProjectFileManagers
             download_images (bool): if True, download the full image directory for the specified project
-            download_videos (bool): if True, download the all the mp4 files in Videos directory for the specified project
+            download_videos (bool): if True, download the mp4 file in Videos directory of the specified project
             video_num (int): specifies which video to download
         """
         self.download_images = download_images
@@ -163,19 +165,17 @@ class ProjectFileManager(FileManager):
 
         Overwrites FileManager._initialize() method
         """
-        self._make_dir('project_dir', join(self.local_files['data_dir'], self.pid))
-        print(self._locate_cloud_files().items())
+        self._make_dir('{}_dir'.format(self.pid), join(self.local_files['data_dir'], self.pid))
 
         if self.download_images:
             for name, file in self._locate_cloud_files().items():
-                    self._download(name, file, self.local_files['project_dir'])
+                self._download(name, file, self.local_files['{}_dir'.format(self.pid)])
 
         if self.download_videos:
             for vid in self.video_names:
                 for name, file in self._locate_cloud_files().items():
                     if name == vid:
-                        self._download(name, file, self.local_files['project_dir'])
-
+                        self._download(name, file, self.local_files['{}_dir'.format(self.pid)])
 
     def _locate_cloud_files(self):
         """track down project-specific files in Dropbox.
@@ -193,19 +193,15 @@ class ProjectFileManager(FileManager):
             cloud_files.update({'video_points_numpy': join(self.cloud_master_dir, self.pid, 'videoCropPoints.npy')})
             cloud_files.update({'video_crop_numpy': join(self.cloud_master_dir, self.pid, 'videoCrop.npy')})
         else:
-            cloud_files.update({'video_points_numpy': join(self.cloud_master_dir, self.pid, 'MasterAnalysisFiles', 'VideoPoints.npy')})
-            cloud_files.update({'video_crop_numpy': join(self.cloud_master_dir, self.pid, 'MasterAnalysisFiles', 'VideoCrop.npy')})
+            cloud_files.update(
+                {'video_points_numpy': join(self.cloud_master_dir, self.pid, 'MasterAnalysisFiles', 'VideoPoints.npy')})
+            cloud_files.update(
+                {'video_crop_numpy': join(self.cloud_master_dir, self.pid, 'MasterAnalysisFiles', 'VideoCrop.npy')})
 
         if self.download_videos:
-             cloud_video_dir = join(self.cloud_master_dir, self.pid, 'Videos')
-             # cloud_video_files = {}
-             videos_remote = run(['rclone', 'lsf', cloud_video_dir, '--include', '*.mp4']).split()
-             for v in videos_remote:
+            cloud_video_dir = join(self.cloud_master_dir, self.pid, 'Videos')
+            videos_remote = run(['rclone', 'lsf', cloud_video_dir, '--include', '*.mp4']).split()
+            for v in videos_remote:
                 cloud_files.update({'{}'.format(v): join(self.cloud_master_dir, self.pid, 'Videos', v)})
 
         return cloud_files
-
-    # def _detect_locate_cloud_files(self):
-    #     cloud_image_dir = join(self.cloud_master_dir, '__AnnotatedData/BoxedFish/BoxedImages/{}.tar'.format(self.pid))
-
-
