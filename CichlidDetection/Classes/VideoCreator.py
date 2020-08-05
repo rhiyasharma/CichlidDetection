@@ -1,59 +1,39 @@
-import numpy as np
-import pandas as pd
-from PIL import Image
-import matplotlib.pyplot as plt
+import os
 import matplotlib.image as mpimg
-from os.path import join, exists
-from matplotlib.figure import Figure
-from matplotlib.patches import Rectangle
-import pdb, matplotlib, os, argparse, cv2
+import matplotlib.pyplot as plt
+import pandas as pd
 from matplotlib.animation import FuncAnimation
+from matplotlib.patches import Rectangle
+
 from CichlidDetection.Classes.FileManager import FileManager
 
 pd.set_option('display.expand_frame_repr', False)
 
+
+def convert_pos(x1, y1, x2, y2):
+    return [x1, y1, x2 - x1, y2 - y1]
+
+
 class Animation:
 
-    def __init__(self):
+    def __init__(self, pid, video_name, csv_file):
+
         self.fm = FileManager()
-        self.img_dir = os.path.join(self.fm.local_files['detect_project'], "Frames")
-        self.detect_dir = self.fm.local_files['detect_project']
-
-
-    def map(self, box):
-        if len(box) == 0:
-            return [None]
-        else:
-            mapping = []
-            for i in range(len(box)):
-                try:
-                    mapping.append(i)
-                except ValueError:
-                    mapping.append(None)
-            return mapping
-
-
-    def convert_pos(self, x1, y1, x2, y2):
-        return [x1, y1, x2 - x1, y2 - y1]
-
+        # collect a good set of frames to animate
+        self.frame_dir = os.path.join(self.fm.local_files['{}_dir'.format(pid)], "Frames")
+        self.detection_dir = self.fm.local_files['detection_dir']
+        self.video_name = video_name
+        self.csv_file_path = os.path.join(self.detection_dir, csv_file)
 
     def animated_learning(self):
         """for a single frame, successively plot the predicted boxes and labels at each epoch to create an animation"""
 
-        # collect a good set of frames to animate
-        self.fm = FileManager()
-        frame_dir =
-        dir = '/Users/rhiyasharma/Documents/_McGrathLab/CD_work/frames'
-        detect_dir = '/Users/rhiyasharma/Documents/_McGrathLab/CD_work'
-
-        df = pd.read_csv('/Users/rhiyasharma/Documents/_McGrathLab/CD_work/csv/detections_new.csv')
+        df = pd.read_csv(os.path.join(self.csv_file_path))
         df = df[['Framefile', 'boxes', 'labels', 'scores']]
         df[['boxes', 'labels']] = df[['boxes', 'labels']].applymap(lambda x: eval(x))
         df['order'] = df.apply(lambda x: int(x.Framefile.split('.')[0].split('_')[1]), axis=1)
         df = df.sort_values(by=['order']).reset_index()
         df['len'] = df['boxes'].apply(lambda x: len(x))
-        dd = df[df['len'] > 1]
-        # df.to_csv(os.path.join(detect_dir, 'detections_new_Ordered.csv'))
 
         # build up the animation
         fig = plt.figure()
@@ -62,9 +42,9 @@ class Animation:
 
         boxes = [Rectangle((0, 0), 0, 0, fill=False) for _ in range(max_detections)]
 
-        def animate(i):
+        def animate(self, i):
             new_frame = df.iloc[i].Framefile
-            new_img = mpimg.imread(os.path.join(dir, new_frame))
+            new_img = mpimg.imread(os.path.join(self.frame_dir, new_frame))
             img = plt.imshow(new_img)
             ax = plt.gca()
             label_preds = df.labels[i]
@@ -90,6 +70,7 @@ class Animation:
             return [img]
 
         anim = FuncAnimation(fig, animate, frames=len(df), blit=True, interval=200, repeat=False)
-        # # # ax.imshow(im, zorder=0)
-        anim.save(os.path.join(detect_dir, 'detections_new1.mp4'), writer='imagemagick')
+        anim.save(os.path.join(self.detection_dir, '{}_detections.mp4'.format(self.video_name)), writer='imagemagick')
         plt.close('all')
+
+        return '{}_detections.mp4'.format(self.video_name)
