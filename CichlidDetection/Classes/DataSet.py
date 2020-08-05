@@ -104,8 +104,9 @@ class DetectVideoDataSet:
 
     def __init__(self, transforms, video_file):
         self.fm = FileManager()
-        make_dir(os.path.join(self.fm.local_files['detect_project'], "Frames"))
-        self.img_dir = os.path.join(self.fm.local_files['detect_project'], "Frames")
+        self.pid = video_file.split('/')[-2]
+        make_dir(os.path.join(self.fm.local_files['{}_dir'.format(self.pid)], "Frames"))
+        self.img_dir = os.path.join(self.fm.local_files['{}_dir'.format(self.pid)], "Frames")
         self.transforms = transforms
         self.img_files = []
 
@@ -115,21 +116,15 @@ class DetectVideoDataSet:
         self.framerate = int(cap.get(cv2.CAP_PROP_FPS))
         self.len = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
 
-        # self.frames = np.empty(shape=(self.height, self.width, self.len), dtype='uint8')
         self.frames = []
 
         count = 0
-        # for i in range(self.start_time, self.stop_time):
         for i in range(self.len):
-            # cap.set(cv2.CAP_PROP_POS_FRAMES, int(i * self.framerate))
             ret, frame = cap.read()
             if not ret:
                 print('Couldnt read frame ' + str(i) in video_file + '. Ending...', file=sys.stderr)
-                # self.frames[:, :, count] = self.frames[:, :, count - 1]
-                # self.img_files.append("Frame_{}.jpg".format(count-1))
                 break
             else:
-                # frame = 0.2125 * frame[:, :, 2] + 0.7154 * frame[:, :, 1] + 0.0721 * frame[:, :, 0]
                 self.frames.append(frame)
                 self.img_files.append("Frame_{}.jpg".format(count))
 
