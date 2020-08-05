@@ -106,7 +106,7 @@ class DetectVideoDataSet:
         self.fm = FileManager()
         for i in args:
             self.pfm = i
-        self.pid = video_file.split('/')[-2]
+        self.pid = self.pfm.pid
         make_dir(os.path.join(self.pfm.local_files['{}_dir'.format(self.pid)], "Frames"))
         self.img_dir = os.path.join(self.pfm.local_files['{}_dir'.format(self.pid)], "Frames")
         self.transforms = transforms

@@ -154,7 +154,7 @@ class ProjectFileManager(FileManager):
             FileManager.__init__(self)
         # if the file_manager argument is used, manually inherit the required attributes
         else:
-            self.local_files = file_manager.local_files
+            self.local_files = file_manager.local_files.copy()
             self.cloud_master_dir = file_manager.cloud_master_dir
         self.pid = pid
         # initialize project-specific directories
@@ -175,7 +175,9 @@ class ProjectFileManager(FileManager):
             for vid in self.video_names:
                 for name, file in self._locate_cloud_files().items():
                     if name == vid:
-                        self._download(name, file, self.local_files['{}_dir'.format(self.pid)])
+                        if name not in self.local_files['{}_dir'.format(self.pid)]:
+                            self._download(name, file, self.local_files['{}_dir'.format(self.pid)])
+                            print('downloaded video!')
 
     def _locate_cloud_files(self):
         """track down project-specific files in Dropbox.
