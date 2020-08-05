@@ -16,11 +16,13 @@ def convert_pos(x1, y1, x2, y2):
 
 class Animation:
 
-    def __init__(self, pid, video_name, csv_file):
+    def __init__(self, pid, video_name, csv_file, *args):
 
         self.fm = FileManager()
+        for i in args:
+            self.pfm = i
         # collect a good set of frames to animate
-        self.frame_dir = os.path.join(self.fm.local_files['{}_dir'.format(pid)], "Frames")
+        self.frame_dir = os.path.join(self.pfm.local_files['{}_dir'.format(pid)], "Frames")
         self.detection_dir = self.fm.local_files['detection_dir']
         self.video_name = video_name
         self.csv_file_path = os.path.join(self.detection_dir, csv_file)

@@ -14,8 +14,10 @@ from torch.utils.data.dataloader import DataLoader
 
 class Detector:
 
-    def __init__(self):
+    def __init__(self, *args):
         # initialize detector
+        for i in args:
+            self.pfm = i
         self.fm = FileManager()
         self._initiate_model()
 
@@ -60,7 +62,7 @@ class Detector:
             path (str): path to the video directory (see ProjectFileManager)
         """
         video_name = path.split('/')[-1].split('.')[0]
-        dataset = DetectVideoDataSet(Compose([ToTensor()]), path)
+        dataset = DetectVideoDataSet(Compose([ToTensor()]), path, self.pfm)
         dataloader = DataLoader(dataset, batch_size=5, shuffle=False, num_workers=8, pin_memory=True,
                                 collate_fn=collate_fn)
         self.evaluate(dataloader, "{}_{}".format(pid, video_name))

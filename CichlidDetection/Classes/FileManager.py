@@ -154,7 +154,7 @@ class ProjectFileManager(FileManager):
             FileManager.__init__(self)
         # if the file_manager argument is used, manually inherit the required attributes
         else:
-            self.local_files = file_manager.local_files.copy()
+            self.local_files = file_manager.local_files
             self.cloud_master_dir = file_manager.cloud_master_dir
         self.pid = pid
         # initialize project-specific directories
