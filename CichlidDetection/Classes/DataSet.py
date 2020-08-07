@@ -103,6 +103,8 @@ class DetectDataSet:
 class DetectVideoDataSet:
 
     def __init__(self, transforms, video_file, *args):
+
+        self.video_name = video_file.split('/')[-1].split('.')[0]
         self.fm = FileManager()
         for i in args:
             self.pfm = i
@@ -115,38 +117,36 @@ class DetectVideoDataSet:
         cap = cv2.VideoCapture(video_file)
         self.height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
         self.width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-        self.framerate = int(cap.get(cv2.CAP_PROP_FPS))
         self.len = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
 
         self.frames = []
+
+        # self.frames = np.empty(shape=(self.len, self.height, self.width, 3), dtype='uint8')
 
         count = 0
         for i in range(self.len):
             ret, frame = cap.read()
             if not ret:
-                print('Couldnt read frame ' + str(i) in video_file + '. Ending...', file=sys.stderr)
+                print("Couldn't read frame " + str(i) in video_file + ". Using last good frame", file=sys.stderr)
+                # self.frames[count, :, :, :] = self.frames[count-1, :, :, :]
                 break
             else:
+                name = 'Frame_{}.jpg'.format(count)
+                self.img_files.append(name)
                 self.frames.append(frame)
-                self.img_files.append("Frame_{}.jpg".format(count))
-
-                name = "Frame_{}.jpg".format(count)
-                print(name)
-                if len(os.listdir(self.img_dir)) < self.len:
-                    if name not in os.listdir(self.img_dir):
-                        img = Image.fromarray(frame, 'RGB')
-                        img.save(os.path.join(self.img_dir, name))
+                # self.frames[count, :, :, :] = frame
 
             count += 1
 
         cap.release()
-        self.img_files.sort()
+        self.frames = np.array(self.frames)
+        np.save(os.path.join(self.pfm.local_files['{}_dir'.format(self.pid)], self.video_name), self.frames)
+        # self.img_files.sort()
 
     def __getitem__(self, idx):
         # if torch.is_tensor(idx):
         #     idx = idx.tolist()
-        print(idx)
-        img = self.frames[idx]
+        img = Image.fromarray(self.frames[idx], 'RGB')
         target = {'image_id': tensor(idx)}
         if self.transforms is not None:
             img, target = self.transforms(img, target)

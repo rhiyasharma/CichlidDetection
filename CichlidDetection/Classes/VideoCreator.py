@@ -1,7 +1,9 @@
 import os
 import matplotlib.image as mpimg
+from PIL import Image
 import matplotlib.pyplot as plt
 import pandas as pd
+import numpy as np
 from matplotlib.animation import FuncAnimation
 from matplotlib.patches import Rectangle
 
@@ -22,9 +24,9 @@ class Animation:
         for i in args:
             self.pfm = i
         # collect a good set of frames to animate
-        self.frame_dir = os.path.join(self.pfm.local_files['{}_dir'.format(pid)], "Frames")
         self.detection_dir = self.fm.local_files['detection_dir']
-        self.video_name = video_name
+        self.video_name = video_name.split('.')[0]
+        self.frames = np.load(os.path.join(self.pfm.local_files['{}_dir'.format(pid)], self.video_name))
         self.csv_file_path = os.path.join(self.detection_dir, csv_file)
 
     def animated_learning(self):
@@ -34,8 +36,8 @@ class Animation:
         df = df[['Framefile', 'boxes', 'labels', 'scores']]
         df[['boxes', 'labels']] = df[['boxes', 'labels']].applymap(lambda x: eval(x))
         df['order'] = df.apply(lambda x: int(x.Framefile.split('.')[0].split('_')[1]), axis=1)
-        df = df.sort_values(by=['order']).reset_index()
-        df['len'] = df['boxes'].apply(lambda x: len(x))
+        # df = df.sort_values(by=['order']).reset_index()
+        # df['len'] = df['boxes'].apply(lambda x: len(x))
 
         # build up the animation
         fig = plt.figure()
@@ -46,7 +48,8 @@ class Animation:
 
         def animate(i):
             new_frame = df.iloc[i].Framefile
-            new_img = mpimg.imread(os.path.join(self.frame_dir, new_frame))
+            new_img = Image.fromarray(self.frames[i], 'RGB')
+            # new_img = mpimg.imread(os.path.join(self.frame_dir, new_frame))
             img = plt.imshow(new_img)
             ax = plt.gca()
             label_preds = df.labels[i]
@@ -70,7 +73,7 @@ class Animation:
 
             return [img]
 
-        anim = FuncAnimation(fig, animate, frames=len(df), blit=True, interval=200, repeat=False)
+        anim = FuncAnimation(fig, animate, frames=len(df)-1, blit=True, interval=200, repeat=False)
         anim.save(os.path.join(self.detection_dir, '{}_detections.gif'.format(self.video_name)), writer='imagemagick')
         plt.close('all')
 
