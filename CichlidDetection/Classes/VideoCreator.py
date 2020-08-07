@@ -26,6 +26,7 @@ class Animation:
         # collect a good set of frames to animate
         self.detection_dir = self.fm.local_files['detection_dir']
         self.video_name = video_name.split('.')[0] + '.npy'
+        self.animation_name = video_name.split('.')[0]
         self.frames = np.load(os.path.join(self.pfm.local_files['{}_dir'.format(pid)], self.video_name))
         self.csv_file_path = os.path.join(self.detection_dir, csv_file)
 
@@ -74,6 +75,6 @@ class Animation:
             return [img]
 
         anim = FuncAnimation(fig, animate, frames=len(df)-1, blit=True, interval=200, repeat=False)
-        anim.save(os.path.join(self.detection_dir, '{}_detections.gif'.format(self.video_name)), writer='imagemagick')
+        anim.save(os.path.join(self.detection_dir, '{}_detections.gif'.format(self.animation_name)), writer='imagemagick')
         plt.close('all')
 
