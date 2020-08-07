@@ -25,7 +25,7 @@ class Animation:
             self.pfm = i
         # collect a good set of frames to animate
         self.detection_dir = self.fm.local_files['detection_dir']
-        self.video_name = video_name.split('.')[0]
+        self.video_name = video_name.split('.')[0] + '.npy'
         self.frames = np.load(os.path.join(self.pfm.local_files['{}_dir'.format(pid)], self.video_name))
         self.csv_file_path = os.path.join(self.detection_dir, csv_file)
 
