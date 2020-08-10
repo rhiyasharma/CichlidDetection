@@ -1,4 +1,5 @@
 import os
+import time
 import argparse
 from time import ctime
 from CichlidDetection.Classes.Detector import Detector
