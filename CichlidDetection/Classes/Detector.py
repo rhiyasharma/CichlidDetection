@@ -65,8 +65,6 @@ class Detector:
         dataset = DetectVideoDataSet(Compose([ToTensor()]), path, self.pfm)
         dataloader = DataLoader(dataset, batch_size=5, shuffle=False, num_workers=8, pin_memory=True,
                                 collate_fn=collate_fn)
-        for i in dataloader:
-            print(i)
         self.evaluate(dataloader, "{}_{}".format(pid, video_name))
 
     def _initiate_model(self):
@@ -93,7 +91,6 @@ class Detector:
             outputs = [{k: v.to(cpu_device).numpy().tolist() for k, v in t.items()} for t in outputs]
             results.update({target["image_id"].item(): output for target, output in zip(targets, outputs)})
         df = pd.DataFrame.from_dict(results, orient='index')
-        print(df)
         index_list = df.index.tolist()
         detect_framefiles = []
         for i in index_list:
