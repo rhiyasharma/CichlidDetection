@@ -150,6 +150,7 @@ class DetectVideoDataSet:
         target = {'image_id': tensor(idx)}
         if self.transforms is not None:
             img, target = self.transforms(img, target)
+        print(img, target)
         return img, target
 
     def __len__(self):
