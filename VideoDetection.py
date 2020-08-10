@@ -35,6 +35,7 @@ detect = Detector(pfm)
 # # video_path = os.path.join('/Users/rhiyasharma/Documents/_McGrathLab/CD_work/videos', args.video)
 video_path = os.path.join(pfm.local_files['{}_dir'.format(args.pid)], args.video)
 video_name = args.video.split('.')[0]
+print('calling frame_detect')
 detect.frame_detect(args.pid, video_path)
 csv_file_name = '{}_{}_detections.csv'.format(args.pid, video_name)
 animation = Animation(args.pid, args.video, csv_file_name, pfm)
