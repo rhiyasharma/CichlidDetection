@@ -4,6 +4,6 @@ from CichlidDetection.Classes.Trainer import Trainer
 from CichlidDetection.Classes.Plotter import Plotter
 from CichlidDetection.Classes.Detector import Detector
 
-detector = Detector()
-detector.detect('detection/images')
+# detector = Detector()
+# detector.detect('detection/images')
 

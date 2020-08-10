@@ -61,10 +61,13 @@ class Detector:
         Args:
             path (str): path to the video directory (see ProjectFileManager)
         """
+        print(pid, path)
         video_name = path.split('/')[-1].split('.')[0]
+        print('in frame_detect; ', video_name)
         dataset = DetectVideoDataSet(Compose([ToTensor()]), path, self.pfm)
         dataloader = DataLoader(dataset, batch_size=5, shuffle=False, num_workers=8, pin_memory=True,
                                 collate_fn=collate_fn)
+        print('dataloader: ', dataloader)
         self.evaluate(dataloader, "{}_{}".format(pid, video_name))
 
     def _initiate_model(self):

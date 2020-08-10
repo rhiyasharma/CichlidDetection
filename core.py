@@ -1,4 +1,7 @@
-import argparse, subprocess, os, socket
+import argparse
+import subprocess
+import os
+import socket
 
 """primary command line executable script."""
 
@@ -21,6 +24,7 @@ sync_parser = subparsers.add_parser('sync')
 
 detect_parser = subparsers.add_parser('detect')
 detect_parser.add_argument('-t', '--Test', action='store_true', help='run detection on 10 images from the test set')
+detect_parser.add_argument('-v', '--Video', action='store_true', help='run detection on complete video')
 detect_parser.add_argument('-i', '--ImgDir', type=str, default='detection/images',
                            help='path, relative to ~/scratch/CichlidDetection, containing the images to analyze')
 
@@ -59,6 +63,9 @@ else:
             runner.train(num_epochs=args.Epochs)
 
         elif args.command == 'detect':
-            runner.detect('test' if args.Test else args.ImgDir)
-
-
+            if args.Test:
+                runner.detect('test')
+            elif args.Video:
+                runner.detect('fullvideo')
+            else:
+                runner.detect(args.ImgDir)
