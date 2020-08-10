@@ -115,9 +115,12 @@ class DetectVideoDataSet:
         self.img_files = []
 
         cap = cv2.VideoCapture(video_file)
+        print(video_file)
         self.height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
         self.width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
         self.len = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+
+        print(self.height, self.width, self.len)
 
         self.frames = []
 
@@ -134,6 +137,7 @@ class DetectVideoDataSet:
                 name = 'Frame_{}.jpg'.format(count)
                 self.img_files.append(name)
                 self.frames.append(frame)
+                print(self.frames)
                 # self.frames[count, :, :, :] = frame
 
             count += 1
