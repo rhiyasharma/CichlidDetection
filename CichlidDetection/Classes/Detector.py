@@ -97,7 +97,7 @@ class Detector:
         for i in index_list:
             detect_framefiles.append(dataloader.dataset.img_files[i])
         df['Framefile'] = [os.path.basename(path) for path in detect_framefiles]
-        df = df[['Framefile', 'boxes', 'labels', 'scores']].set_index('Framefile')
+        # df = df[['Framefile', 'boxes', 'labels', 'scores']].set_index('Framefile')
 
         if 'test' in name:
             df.to_csv(os.path.join(self.fm.local_files['detection_dir'], '{}_detections.csv'.format(name)))
