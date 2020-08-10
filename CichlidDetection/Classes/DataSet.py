@@ -115,12 +115,9 @@ class DetectVideoDataSet:
         self.img_files = []
 
         cap = cv2.VideoCapture(video_file)
-        print(video_file)
         self.height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
         self.width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
         self.len = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-
-        print(self.height, self.width, self.len)
 
         self.frames = []
 
@@ -137,7 +134,6 @@ class DetectVideoDataSet:
                 name = 'Frame_{}.jpg'.format(count)
                 self.img_files.append(name)
                 self.frames.append(frame)
-                print(self.frames)
                 # self.frames[count, :, :, :] = frame
 
             count += 1
@@ -145,9 +141,6 @@ class DetectVideoDataSet:
         cap.release()
         self.frames = np.array(self.frames)
         np.save(os.path.join(self.pfm.local_files['{}_dir'.format(self.pid)], self.video_name), self.frames)
-        self.array_file = self.video_name + '.npy'
-        self.frames = np.load(os.path.join(self.pfm.local_files['{}_dir'.format(self.pid)], self.array_file))
-        print(self.frames)
         # self.img_files.sort()
 
     def __getitem__(self, idx):
@@ -157,7 +150,6 @@ class DetectVideoDataSet:
         target = {'image_id': tensor(idx)}
         if self.transforms is not None:
             img, target = self.transforms(img, target)
-        print(img, target)
         return img, target
 
     def __len__(self):
