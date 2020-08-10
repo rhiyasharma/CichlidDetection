@@ -5,7 +5,7 @@ from CichlidDetection.Classes.Detector import Detector
 from CichlidDetection.Classes.FileManager import FileManager
 from CichlidDetection.Classes.FileManager import ProjectFileManager
 from CichlidDetection.Classes.VideoCreator import Animation
-from CichlidDetection.Classes.DetectionsAnalysis import DetectionsAnalysis
+# from CichlidDetection.Classes.DetectionsAnalysis import DetectionsAnalysis
 
 # parse command line arguments
 parser = argparse.ArgumentParser(description='To Detect Cichlids in Videos')
