@@ -1,6 +1,5 @@
 import os
 import time
-from itertools import islice
 from time import ctime
 import pandas as pd
 import numpy as np
@@ -11,7 +10,6 @@ from CichlidDetection.Classes.FileManager import FileManager
 from CichlidDetection.Utilities.ml_utils import collate_fn, Compose, ToTensor
 from torch.utils.data.sampler import SubsetRandomSampler
 from torch.utils.data.dataloader import DataLoader
-from torch.utils.data import IterableDataset
 
 
 class Detector:
@@ -64,15 +62,12 @@ class Detector:
             path (str): path to the video directory (see ProjectFileManager)
         """
         video_name = path.split('/')[-1].split('.')[0]
-        array_name = video_name + '.npy'
         print('beginning loading')
         dataset = DetectVideoDataSet(Compose([ToTensor()]), path, self.pfm)
-        dataloader = DataLoader(dataset, batch_size=5)
-        # shuffle = False, num_workers = 8, pin_memory = True, collate_fn = collate_fn
+        dataloader = DataLoader(dataset, batch_size=5, shuffle=False, num_workers=8, pin_memory=True,
+                                collate_fn=collate_fn)
         print('done loading')
-        for data in islice(dataloader, 5):
-            print(data)
-        # self.evaluate(dataloader, "{}_{}".format(pid, video_name))
+        self.evaluate(dataloader, "{}_{}".format(pid, video_name))
 
     def _initiate_model(self):
         """initiate the model, optimizer, and scheduler."""
