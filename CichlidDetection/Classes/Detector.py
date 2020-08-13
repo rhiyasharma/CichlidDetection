@@ -66,12 +66,9 @@ class Detector:
         array_name = video_name + '.npy'
         print('beginning loading')
         dataset = DetectVideoDataSet(Compose([ToTensor()]), path, self.pfm)
-        # dataloader = DataLoader(dataset, batch_size=5, shuffle=False, num_workers=8, pin_memory=True,collate_fn=collate_fn)
+        dataloader = DataLoader(dataset, batch_size=5, shuffle=False, num_workers=8, pin_memory=True,collate_fn=collate_fn)
         print('done loading')
-        video_set = np.load(os.path.join(self.pfm.local_files['{}_dir'.format(pid)], array_name))
-        for data in video_set:
-            print(data)
-        # self.evaluate(dataloader, "{}_{}".format(pid, video_name))
+        self.evaluate(dataloader, "{}_{}".format(pid, video_name))
 
     def _initiate_model(self):
         """initiate the model, optimizer, and scheduler."""

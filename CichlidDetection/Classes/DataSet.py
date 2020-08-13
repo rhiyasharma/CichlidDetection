@@ -1,3 +1,4 @@
+from itertools import cycle
 from PIL import Image
 from CichlidDetection.Classes.FileManager import FileManager
 from CichlidDetection.Utilities.utils import make_dir
@@ -100,6 +101,65 @@ class DetectDataSet:
         return len(self.img_files)
 
 
+'''
+class DetectVideoDataSet:
+
+    def __init__(self, transforms, video_file, *args):
+
+        self.video_name = video_file.split('/')[-1].split('.')[0]
+        self.fm = FileManager()
+        for i in args:
+            self.pfm = i
+        self.pid = self.pfm.pid
+        make_dir(os.path.join(self.pfm.local_files['{}_dir'.format(self.pid)], "Frames"))
+        self.img_dir = os.path.join(self.pfm.local_files['{}_dir'.format(self.pid)], "Frames")
+        self.transforms = transforms
+        self.img_files = []
+
+        cap = cv2.VideoCapture(video_file)
+        self.height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        self.width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+        self.len = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+
+        self.frames = []
+
+        # self.frames = np.empty(shape=(self.len, self.height, self.width, 3), dtype='uint8')
+
+        count = 0
+        for i in range(self.len):
+            ret, frame = cap.read()
+            if not ret:
+                print("Couldn't read frame " + str(i) in video_file + ". Using last good frame", file=sys.stderr)
+                # self.frames[count, :, :, :] = self.frames[count-1, :, :, :]
+                break
+            else:
+                name = 'Frame_{}.jpg'.format(count)
+                self.img_files.append(name)
+                self.frames.append(frame)
+                # self.frames[count, :, :, :] = frame
+
+            count += 1
+
+        cap.release()
+        self.frames = np.array(self.frames)
+        np.save(os.path.join(self.pfm.local_files['{}_dir'.format(self.pid)], self.video_name), self.frames)
+        # self.img_files.sort()
+
+    def __getitem__(self, idx):
+        # if torch.is_tensor(idx):
+        #     idx = idx.tolist()
+        img = Image.fromarray(self.frames[idx], 'RGB')
+        target = {'image_id': tensor(idx)}
+        if self.transforms is not None:
+            img, target = self.transforms(img, target)
+        return img, target
+
+    def __len__(self):
+        return self.len
+
+'''
+
+
 class DetectVideoDataSet:
 
     def __init__(self, transforms, video_file, *args):
@@ -138,14 +198,18 @@ class DetectVideoDataSet:
         self.frames = np.array(self.frames)
         np.save(os.path.join(self.pfm.local_files['{}_dir'.format(self.pid)], self.video_name), self.frames)
 
-    # def __getitem__(self, idx):
-    #     # if torch.is_tensor(idx):
-    #     #     idx = idx.tolist()
-    #     img = Image.fromarray(self.frames[idx], 'RGB')
-    #     target = {'image_id': tensor(idx)}
-    #     if self.transforms is not None:
-    #         img, target = self.transforms(img, target)
-    #     return img, target
-    #
-    def __len__(self):
-        return self.len
+    def process_data(self, data):
+
+        for idx in data:
+            img = Image.fromarray(data[idx], 'RGB')
+            target = {'image_id': tensor(idx)}
+            if self.transforms is not None:
+                img, target = self.transforms(img, target)
+
+            yield img, target
+
+    def get_stream(self, data):
+        return cycle(self.process_data(data))
+
+    def __iter__(self):
+        return self.get_stream(self.frames)
