@@ -63,11 +63,13 @@ class Detector:
             path (str): path to the video directory (see ProjectFileManager)
         """
         video_name = path.split('/')[-1].split('.')[0]
+        array_name = video_name + '.npy'
         print('beginning loading')
         dataset = DetectVideoDataSet(Compose([ToTensor()]), path, self.pfm)
         # dataloader = DataLoader(dataset, batch_size=5, shuffle=False, num_workers=8, pin_memory=True,collate_fn=collate_fn)
         print('done loading')
-        for data in dataset:
+        video_set = np.load(os.path.join(self.pfm.local_files['{}_dir'.format(pid)], array_name))
+        for data in video_set:
             print(data)
         # self.evaluate(dataloader, "{}_{}".format(pid, video_name))
 
