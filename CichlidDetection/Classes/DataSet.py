@@ -206,6 +206,7 @@ class DetectVideoDataSet:
             if self.transforms is not None:
                 img, target = self.transforms(img, target)
 
+            print(img, target)
             yield img, target
 
     def get_stream(self, data):
