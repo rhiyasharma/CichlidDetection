@@ -196,6 +196,7 @@ class DetectVideoDataSet:
 
         cap.release()
         self.frames = np.array(self.frames)
+        print(self.frames)
         np.save(os.path.join(self.pfm.local_files['{}_dir'.format(self.pid)], self.video_name), self.frames)
 
     def process_data(self, data):
