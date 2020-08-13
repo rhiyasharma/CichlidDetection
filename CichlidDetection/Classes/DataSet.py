@@ -165,6 +165,7 @@ class DetectVideoDataSet:
     def __init__(self, transforms, video_file, *args):
 
         self.video_name = video_file.split('/')[-1].split('.')[0]
+        self.array_name = self.video_name + '.npy'
         self.fm = FileManager()
         for i in args:
             self.pfm = i
@@ -196,7 +197,6 @@ class DetectVideoDataSet:
 
         cap.release()
         self.frames = np.array(self.frames)
-        print(self.frames)
         np.save(os.path.join(self.pfm.local_files['{}_dir'.format(self.pid)], self.video_name), self.frames)
 
     def process_data(self, data):
@@ -214,6 +214,7 @@ class DetectVideoDataSet:
         return cycle(self.process_data(data))
 
     def __iter__(self):
+        self.frames = np.load(os.path.join(self.pfm.local_files['{}_dir'.format(pid)], self.array_name))
         return self.get_stream(self.frames)
 
     def __len__(self):
