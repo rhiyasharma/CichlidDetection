@@ -121,7 +121,6 @@ class DetectVideoDataSet:
 
         self.frames = []
 
-
         count = 0
         for i in range(self.len):
             ret, frame = cap.read()
@@ -148,5 +147,5 @@ class DetectVideoDataSet:
     #         img, target = self.transforms(img, target)
     #     return img, target
     #
-    # def __len__(self):
-    #     return self.len
+    def __len__(self):
+        return self.len
