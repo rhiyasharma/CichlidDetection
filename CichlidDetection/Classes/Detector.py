@@ -1,5 +1,6 @@
 import os
 import time
+from itertools import islice
 from time import ctime
 import pandas as pd
 import numpy as np
@@ -68,7 +69,7 @@ class Detector:
         dataset = DetectVideoDataSet(Compose([ToTensor()]), path, self.pfm)
         dataloader = DataLoader(dataset, batch_size=5, shuffle=False, num_workers=8, pin_memory=True,collate_fn=collate_fn)
         print('done loading')
-        for data in dataloader:
+        for data in islice(dataloader, 5):
             print(data)
         # self.evaluate(dataloader, "{}_{}".format(pid, video_name))
 
