@@ -10,6 +10,7 @@ from CichlidDetection.Classes.FileManager import FileManager
 from CichlidDetection.Utilities.ml_utils import collate_fn, Compose, ToTensor
 from torch.utils.data.sampler import SubsetRandomSampler
 from torch.utils.data.dataloader import DataLoader
+from torch.utils.data import IterableDataset
 
 
 class Detector:
@@ -64,10 +65,10 @@ class Detector:
         video_name = path.split('/')[-1].split('.')[0]
         print('beginning loading')
         dataset = DetectVideoDataSet(Compose([ToTensor()]), path, self.pfm)
-        dataloader = DataLoader(dataset, batch_size=5, shuffle=False, num_workers=15, pin_memory=True,
+        # dataloader = DataLoader(dataset, batch_size=5, shuffle=False, num_workers=8, pin_memory=True,
                                 collate_fn=collate_fn)
         print('done loading')
-        for data in dataloader:
+        for data in dataset:
             print(data)
         # self.evaluate(dataloader, "{}_{}".format(pid, video_name))
 
