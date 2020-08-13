@@ -67,7 +67,8 @@ class Detector:
         dataloader = DataLoader(dataset, batch_size=5, shuffle=False, num_workers=15, pin_memory=True,
                                 collate_fn=collate_fn)
         print('done loading')
-        print(dataloader)
+        for data in dataloader:
+            print(data)
         # self.evaluate(dataloader, "{}_{}".format(pid, video_name))
 
     def _initiate_model(self):
