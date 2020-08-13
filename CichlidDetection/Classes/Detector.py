@@ -67,7 +67,8 @@ class Detector:
         array_name = video_name + '.npy'
         print('beginning loading')
         dataset = DetectVideoDataSet(Compose([ToTensor()]), path, self.pfm)
-        dataloader = DataLoader(dataset, batch_size=5, shuffle=False, num_workers=8, pin_memory=True,collate_fn=collate_fn)
+        dataloader = DataLoader(dataset, batch_size=5)
+        # shuffle = False, num_workers = 8, pin_memory = True, collate_fn = collate_fn
         print('done loading')
         for data in islice(dataloader, 5):
             print(data)
