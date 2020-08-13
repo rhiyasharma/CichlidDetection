@@ -213,3 +213,6 @@ class DetectVideoDataSet:
 
     def __iter__(self):
         return self.get_stream(self.frames)
+
+    def __len__(self):
+        return len(self.img_files)
