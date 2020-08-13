@@ -121,36 +121,32 @@ class DetectVideoDataSet:
 
         self.frames = []
 
-        # self.frames = np.empty(shape=(self.len, self.height, self.width, 3), dtype='uint8')
 
         count = 0
         for i in range(self.len):
             ret, frame = cap.read()
             if not ret:
                 print("Couldn't read frame " + str(i) in video_file + ". Using last good frame", file=sys.stderr)
-                # self.frames[count, :, :, :] = self.frames[count-1, :, :, :]
                 break
             else:
                 name = 'Frame_{}.jpg'.format(count)
                 self.img_files.append(name)
                 self.frames.append(frame)
-                # self.frames[count, :, :, :] = frame
 
             count += 1
 
         cap.release()
         self.frames = np.array(self.frames)
         np.save(os.path.join(self.pfm.local_files['{}_dir'.format(self.pid)], self.video_name), self.frames)
-        # self.img_files.sort()
 
-    def __getitem__(self, idx):
-        # if torch.is_tensor(idx):
-        #     idx = idx.tolist()
-        img = Image.fromarray(self.frames[idx], 'RGB')
-        target = {'image_id': tensor(idx)}
-        if self.transforms is not None:
-            img, target = self.transforms(img, target)
-        return img, target
-
-    def __len__(self):
-        return self.len
+    # def __getitem__(self, idx):
+    #     # if torch.is_tensor(idx):
+    #     #     idx = idx.tolist()
+    #     img = Image.fromarray(self.frames[idx], 'RGB')
+    #     target = {'image_id': tensor(idx)}
+    #     if self.transforms is not None:
+    #         img, target = self.transforms(img, target)
+    #     return img, target
+    #
+    # def __len__(self):
+    #     return self.len
