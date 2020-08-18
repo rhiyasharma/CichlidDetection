@@ -137,6 +137,7 @@ class DetectVideoDataSet:
                 # self.frames[count, :, :, :] = frame
 
             count += 1
+            print('video: ', self.video_name, '\tFrame: ', count)
 
         cap.release()
         self.frames = np.array(self.frames)
