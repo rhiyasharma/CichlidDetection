@@ -25,6 +25,7 @@ Args:
     download_videos (bool): if True, download the all the mp4 files in Videos directory for the specified project
     video (str): specifies which video to download
 """
+s = ctime(time.time())
 print("Start Time (Full): ", ctime(time.time()))
 fm = FileManager()
 # Create project directory and download the specified files
@@ -42,6 +43,7 @@ csv_file_name = '{}_{}_detections.csv'.format(args.pid, video_name)
 animation = Animation(args.pid, args.video, csv_file_name, pfm)
 animation.animated_learning()
 print('Detections video made!')
+print("Start Time (Full): ", s)
 print("End Time (Full): ", ctime(time.time()))
 
 
