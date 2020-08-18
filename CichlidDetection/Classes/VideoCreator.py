@@ -70,7 +70,7 @@ class Animation:
 
             img.set_array(new_img)
 
-            # print('Completed ', new_frame)
+            print('Completed ', new_frame)
 
             return [img]
 
