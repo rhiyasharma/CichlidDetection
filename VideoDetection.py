@@ -37,10 +37,10 @@ def calc_video_intervals(video):
     len = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
     # limit for the number of frames that can be loaded at once: 46000
     for x in range(len):
-        if x % 46000 == 0:
+        if x % 23000 == 0:
             intervals.append(x)
 
-    if len % 46000 != 0:
+    if len % 23000 != 0:
         intervals.append(len)
 
     cap.release()
