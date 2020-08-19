@@ -102,9 +102,9 @@ class DetectDataSet:
 
 class DetectVideoDataSet:
 
-    def __init__(self, transforms, video_file, *args):
+    def __init__(self, transforms, video_file, start, end, *args):
 
-        self.video_name = video_file.split('/')[-1].split('.')[0]
+        self.video_name = video_file.split('/')[-1].split('.')[0] + '_{}'.format(start)
         self.fm = FileManager()
         for i in args:
             self.pfm = i
@@ -124,7 +124,7 @@ class DetectVideoDataSet:
         # self.frames = np.empty(shape=(self.len, self.height, self.width, 3), dtype='uint8')
 
         count = 0
-        for i in range(self.len):
+        for i in range(start, end):
             ret, frame = cap.read()
             if not ret:
                 print("Couldn't read frame " + str(i) in video_file + ". Using last good frame", file=sys.stderr)
