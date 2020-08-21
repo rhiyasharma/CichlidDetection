@@ -55,15 +55,15 @@ class Detector:
                                 collate_fn=collate_fn)
         self.evaluate(dataloader, pid)
 
-    def frame_detect(self, pid, path, start, end):
+    def frame_detect(self, pid, path):
         """run detection on the frame
 
         Args:
             path (str): path to the video directory (see ProjectFileManager)
         """
-        video_name = path.split('/')[-1].split('.')[0] + '_{}'.format(start)
+        video_name = path.split('/')[-1].split('.')[0]
         print('beginning loading')
-        dataset = DetectVideoDataSet(Compose([ToTensor()]), path, start, end, self.pfm)
+        dataset = DetectVideoDataSet(Compose([ToTensor()]), path, self.pfm)
         dataloader = DataLoader(dataset, batch_size=5, shuffle=False, num_workers=8, pin_memory=True,
                                 collate_fn=collate_fn)
         print('done loading')

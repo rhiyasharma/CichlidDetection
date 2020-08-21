@@ -1,8 +1,8 @@
 import os
-import cv2
+# import cv2
 import time
 import argparse
-import pandas as pd
+# import pandas as pd
 from time import ctime
 from CichlidDetection.Classes.Detector import Detector
 from CichlidDetection.Classes.FileManager import FileManager
@@ -30,21 +30,21 @@ Args:
 """
 
 
-def calc_video_intervals(video):
-    # Create a list of intervals for the model
-    cap = cv2.VideoCapture(video)
-    intervals = []
-    len = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-    # limit for the number of frames that can be loaded at once: 46000
-    for x in range(len):
-        if x % 23000 == 0:
-            intervals.append(x)
-
-    if len % 23000 != 0:
-        intervals.append(len)
-
-    cap.release()
-    return intervals
+# def calc_video_intervals(video):
+#     # Create a list of intervals for the model
+#     cap = cv2.VideoCapture(video)
+#     intervals = []
+#     len = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+#     # limit for the number of frames that can be loaded at once: 46000
+#     for x in range(len):
+#         if x % 23000 == 0:
+#             intervals.append(x)
+#
+#     if len % 23000 != 0:
+#         intervals.append(len)
+#
+#     cap.release()
+#     return intervals
 
 
 s = ctime(time.time())
@@ -62,28 +62,32 @@ video_path = os.path.join(pfm.local_files['{}_dir'.format(args.pid)], args.video
 video_name = args.video.split('.')[0]
 
 # Calculate intervals for the videos
-intervals_list = calc_video_intervals(video_path)
-for i in range(len(intervals_list)):
-    start = intervals_list[i]
-    end = intervals_list[i + 1]
-    detect.frame_detect(args.pid, video_path, start, end)
+# intervals_list = calc_video_intervals(video_path)
+# for i in range(len(intervals_list)):
+#     start = intervals_list[i]
+#     end = intervals_list[i + 1]
+#     detect.frame_detect(args.pid, video_path, start, end)
 
+detect.frame_detect(args.pid, video_path)
 print("End Detect Time: ", ctime(time.time()))
 
-print('Creating the final consolidated csv file')
-identifying_name = '{}_{}'.format(args.pid, video_name)
-csv_files = []
-for file in os.listdir(fm.local_files['detect_dir']):
-    if identifying_name in file:
-        df = pd.read_csv(file, index_col='Framefile', header=0)
-        csv_files.append(df)
+# print('Creating the final consolidated csv file')
+# identifying_name = '{}_{}'.format(args.pid, video_name)
+# csv_files = []
+# for file in os.listdir(fm.local_files['detect_dir']):
+#     if identifying_name in file:
+#         df = pd.read_csv(file, index_col='Framefile', header=0)
+#         csv_files.append(df)
+#
+# csv_final = pd.concat(csv_files)
+# csv_final.to_csv('{}_detections_final.csv'.format(identifying_name))
 
-csv_final = pd.concat(csv_files)
-csv_final.to_csv('{}_detections_final.csv'.format(identifying_name))
-print('Created {}_detections_final.csv'.format(identifying_name))
+csv_file_name = '{}_{}_detections.csv'.format(args.pid, video_name)
+# print('Created {}_detections_final.csv'.format(identifying_name))
 
 print('Starting the animation process...')
-animation = Animation(args.pid, args.video, csv_final, pfm)
+animation = Animation(args.pid, args.video, csv_file_name, pfm)
+# animation = Animation(args.pid, args.video, csv_final, pfm)
 animation.animated_learning()
 print('Detections video made!')
 
