@@ -137,11 +137,9 @@ class DetectVideoDataSet:
                 # self.frames[count, :, :, :] = frame
 
             count += 1
-            # print('video: ', self.video_name, '\tFrame: ', count)
+            print('video: ', self.video_name, '\tFrame: ', count)
 
         cap.release()
-        self.frames = np.array(self.frames)
-        np.save(os.path.join(self.pfm.local_files['{}_dir'.format(self.pid)], self.video_name), self.frames)
         # self.img_files.sort()
 
     def __getitem__(self, idx):
