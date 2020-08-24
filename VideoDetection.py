@@ -40,6 +40,8 @@ def calcIntervals(video):
         vid_dir_path = os.path.join(pfm.local_files['{}_dir'.format(args.pid)], video_name)
         if not os.path.exists(vid_dir_path):
             pfm.local_files.update({video_name: make_dir(vid_dir_path)})
+        else:
+            pfm.local_files.update({video_name: vid_dir_path})
 
     for x in range(len):
         if x % 18000 == 0:
@@ -98,7 +100,7 @@ print("Start Time (Full): ", ctime(time.time()))
 fm = FileManager()
 # Create project directory and download the specified files
 pfm = ProjectFileManager(args.pid, fm, args.download_images, args.download_video, args.video)
-print(pfm.local_files.keys)
+print(pfm.local_files.keys())
 print('downloaded video, created directories!')
 
 # # video_path = os.path.join('/Users/rhiyasharma/Documents/_McGrathLab/CD_work/videos', args.video)
