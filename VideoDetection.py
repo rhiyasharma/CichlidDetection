@@ -2,7 +2,7 @@ import os
 import cv2
 import time
 import argparse
-# import pandas as pd
+import pandas as pd
 from time import ctime
 from CichlidDetection.Classes.Detector import Detector
 from CichlidDetection.Utilities.utils import run, make_dir
@@ -100,7 +100,6 @@ print("Start Time (Full): ", ctime(time.time()))
 fm = FileManager()
 # Create project directory and download the specified files
 pfm = ProjectFileManager(args.pid, fm, args.download_images, args.download_video, args.video)
-print(pfm.local_files.keys())
 print('downloaded video, created directories!')
 
 # # video_path = os.path.join('/Users/rhiyasharma/Documents/_McGrathLab/CD_work/videos', args.video)
@@ -108,33 +107,41 @@ video_path = os.path.join(pfm.local_files['{}_dir'.format(args.pid)], args.video
 video_name = args.video.split('.')[0]
 
 # Create intervals list and iterate through them to crop video and feed it into the model
-print("Start Detect Time: ", ctime(time.time()))
+
 detect = Detector(pfm)
 interval_list = calcIntervals(video_path)
+print(pfm.local_files.keys())
 video_list=[]
 count = 0
 for i in range(len(interval_list)-1):
+    print('Starting video {}...'.format(i))
     start = interval_list[i]
     stop = interval_list[i+1]
     vid_location = clipVideos(video_path, video_name, start, stop, count)
     video_list.append(vid_location)
+    print('Attempting detection for video {}'.format(i))
+    print("Start Detect Time: ", ctime(time.time()))
     detect.frame_detect(args.pid, vid_location)
+    print("End Detect Time: ", ctime(time.time()))
 
 print('{} was successively split into {} parts'.format(video_name, len(video_list)))
+df_list = []
+for i in os.listdir(pfm.local_files['detection_dir']):
+    df = pd.read_csv(i)
+    df_list.append(df)
 
-print("End Detect Time: ", ctime(time.time()))
+final_csv = pd.concat(df_list, axis=0)
+csv_name = '{}_{}_detections.csv'.format(args.pid, video_name)
+final_csv.to_csv(os.path.join(pfm.local_files['detection_dir'], csv_name))
+print("Final csv: ", csv_name)
 
-
-# csv_file_name = '{}_{}_detections.csv'.format(args.pid, video_name)
-
-# print('Starting the video annotation process...')
-# video_ann = VideoAnnotation(args.pid, args.video, csv_file_name, pfm)
-# video_ann.annotate()
+print('Starting the video annotation process...')
+video_ann = VideoAnnotation(args.pid, video_path, args.video, csv_name, pfm)
+video_ann.annotate()
 
 print('Process complete!')
 
 print("Start Time (Full): ", s)
 print("End Time (Full): ", ctime(time.time()))
 
-# csv_file_name = '/Users/rhiyasharma/Documents/_McGrathLab/CD_work/csv/detections_new_Ordered.csv'
 # analysis = DetectionsAnalysis(csv_file_name, pfm)
