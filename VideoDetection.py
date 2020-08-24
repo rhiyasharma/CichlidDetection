@@ -74,7 +74,7 @@ def clipVideos(video, name, begin, end, frame_num):
             break
         else:
             result.write(frame)
-            if cv2.waitKey(1) & 0xFF == ord('q'):
+            if cv2.waitKey(1) & 0xFF == ord('s'):
                 break
         frame_num += 1
 
