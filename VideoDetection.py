@@ -64,7 +64,7 @@ def clipVideos(video, name, begin, end, frame_num):
     vid_name = name + '_{}.mp4'.format(begin)
 
     # Output video details
-    result = cv2.VideoWriter('{}'.format(vid_name), cv2.VideoWriter_fourcc(*"mp4v"), 30, size)
+    result = cv2.VideoWriter(os.path.join(pfm.local_files[name], '{}'.format(vid_name)), cv2.VideoWriter_fourcc(*"mp4v"), 30, size)
 
     for j in range(begin, end):
         cap.set(cv2.CAP_PROP_POS_FRAMES, int(j))
@@ -111,7 +111,6 @@ interval_list = calcIntervals(video_path)
 video_list=[]
 count = 0
 for i in range(len(interval_list)-1):
-    os.chdir(pfm.local_files[video_name])
     start = interval_list[i]
     stop = interval_list[i+1]
     vid_location = clipVideos(video_path, video_name, start, stop, count)
