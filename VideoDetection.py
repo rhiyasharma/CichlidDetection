@@ -98,6 +98,7 @@ print("Start Time (Full): ", ctime(time.time()))
 fm = FileManager()
 # Create project directory and download the specified files
 pfm = ProjectFileManager(args.pid, fm, args.download_images, args.download_video, args.video)
+print(pfm.local_files.keys)
 print('downloaded video, created directories!')
 
 # # video_path = os.path.join('/Users/rhiyasharma/Documents/_McGrathLab/CD_work/videos', args.video)
