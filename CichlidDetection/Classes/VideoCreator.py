@@ -37,7 +37,7 @@ class VideoAnnotation:
         frame_height = int(cap.get(4))
         size = (frame_width, frame_height)
 
-        result = cv2.VideoWriter(os.path.join(self.pfm.local_files['detection_dir'], self.ann_video_name), cv2.VideoWriter_fourcc(*"mp4v"), 5, size)
+        result = cv2.VideoWriter(os.path.join(self.detection_dir, self.ann_video_name), cv2.VideoWriter_fourcc(*"mp4v"), 5, size)
 
         count = 0
         for i in range(vid_len):
