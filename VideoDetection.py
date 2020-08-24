@@ -9,8 +9,6 @@ from CichlidDetection.Classes.FileManager import FileManager
 from CichlidDetection.Classes.FileManager import ProjectFileManager
 from CichlidDetection.Classes.VideoCreator import VideoAnnotation
 
-# from CichlidDetection.Classes.DetectionsAnalysis import DetectionsAnalysis
-
 # parse command line arguments
 parser = argparse.ArgumentParser(description='To Detect Cichlids in Videos')
 parser.add_argument('pid', type=str, metavar=' ', help='Project ID. Ex: MC6_5')
@@ -66,9 +64,9 @@ print("End Detect Time: ", ctime(time.time()))
 
 csv_file_name = '{}_{}_detections.csv'.format(args.pid, video_name)
 
-print('Starting the video annotation process...')
-video_ann = VideoAnnotation(args.pid, args.video, csv_file_name, pfm)
-video_ann.annotate()
+# print('Starting the video annotation process...')
+# video_ann = VideoAnnotation(args.pid, args.video, csv_file_name, pfm)
+# video_ann.annotate()
 
 print('Process complete!')
 
