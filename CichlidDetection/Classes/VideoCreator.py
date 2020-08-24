@@ -11,6 +11,7 @@ def convert_pos(x1, y1, x2, y2):
     x1, y1, x2, y2 = int(x1), int(y1), int(x2), int(y2)
     return [(x1, y1), (x2, y2)]
 
+
 class VideoAnnotation:
 
     def __init__(self, pid, video, csv_file, *args):
@@ -42,7 +43,7 @@ class VideoAnnotation:
         for i in range(vid_len):
             ret, frame = cap.read()
             if not ret:
-                print("VideoError: Couldn't read frame " + str(i) in self.video_name + ". ", file=sys.stderr)
+                print("VideoError: Couldn't read frame ", count)
                 break
             else:
                 label_preds = df.labels[i]

@@ -105,12 +105,11 @@ class DetectVideoDataSet:
     def __init__(self, transforms, video_file, *args):
 
         self.video_name = video_file.split('/')[-1].split('.')[0]
+        start = int(self.video_name.split('_')[-1])
         self.fm = FileManager()
         for i in args:
             self.pfm = i
         self.pid = self.pfm.pid
-        make_dir(os.path.join(self.pfm.local_files['{}_dir'.format(self.pid)], "Frames"))
-        self.img_dir = os.path.join(self.pfm.local_files['{}_dir'.format(self.pid)], "Frames")
         self.transforms = transforms
         self.img_files = []
 
@@ -121,26 +120,21 @@ class DetectVideoDataSet:
 
         self.frames = []
 
-        # self.frames = np.empty(shape=(self.len, self.height, self.width, 3), dtype='uint8')
-
-        count = 0
+        count = start
         for i in range(self.len):
             ret, frame = cap.read()
             if not ret:
                 print("Couldn't read frame " + str(i) in video_file + ". Using last good frame", file=sys.stderr)
-                # self.frames[count, :, :, :] = self.frames[count-1, :, :, :]
                 break
             else:
                 name = 'Frame_{}.jpg'.format(count)
                 self.img_files.append(name)
                 self.frames.append(frame)
-                # self.frames[count, :, :, :] = frame
 
             count += 1
             print('video: ', self.video_name, '\tFrame: ', count)
 
         cap.release()
-        # self.img_files.sort()
 
     def __getitem__(self, idx):
         # if torch.is_tensor(idx):
