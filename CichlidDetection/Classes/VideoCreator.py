@@ -14,13 +14,13 @@ def convert_pos(x1, y1, x2, y2):
 
 class VideoAnnotation:
 
-    def __init__(self, pid, video, csv_file, *args):
+    def __init__(self, pid, video_path, video, csv_file, *args):
 
         self.fm = FileManager()
         for i in args:
             self.pfm = i
         self.detection_dir = self.fm.local_files['detection_dir']
-        self.video = video
+        self.video = video_path
         self.video_name = video.split('.')[0]
         self.ann_video_name = 'annotated_' + video.split('.')[0]
         self.csv_file_path = os.path.join(self.detection_dir, csv_file)
@@ -37,7 +37,7 @@ class VideoAnnotation:
         frame_height = int(cap.get(4))
         size = (frame_width, frame_height)
 
-        result = cv2.VideoWriter(self.ann_video_name, cv2.VideoWriter_fourcc(*"mp4v"), 5, size)
+        result = cv2.VideoWriter(os.path.join(self.pfm.local_files['detection_dir'], self.ann_video_name), cv2.VideoWriter_fourcc(*"mp4v"), 5, size)
 
         count = 0
         for i in range(vid_len):
