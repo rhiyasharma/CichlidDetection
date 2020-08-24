@@ -59,7 +59,6 @@ def clipVideos(video, name, begin, end, frame_num):
     frame_width = int(cap.get(3))
     frame_height = int(cap.get(4))
     size = (frame_width, frame_height)
-    os.chdir(pfm.local_files[name])
 
     # Set video name, start & stop intervals
     vid_name = name + '_{}.mp4'.format(begin)
@@ -112,6 +111,7 @@ interval_list = calcIntervals(video_path)
 video_list=[]
 count = 0
 for i in range(len(interval_list)-1):
+    os.chdir(pfm.local_files[video_name])
     start = interval_list[i]
     stop = interval_list[i+1]
     vid_location = clipVideos(video_path, video_name, start, stop, count)
