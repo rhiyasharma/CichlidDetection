@@ -18,7 +18,7 @@ parser.add_argument('pid', type=str, metavar=' ', help='Project ID. Ex: MC6_5')
 parser.add_argument('video', type=str, metavar=' ', help='Run detection on specified video. Ex: 0005_vid.mp4')
 parser.add_argument('-i', '--download_images', action='store_true', help='Download full image directory')
 parser.add_argument('-v', '--download_video', action='store_true', help='Download video')
-parser.add_argument('-s', 'sync', action='store_true', help='Sync detections directory')
+parser.add_argument('-s', '--sync', action='store_true', help='Sync detections directory')
 args = parser.parse_args()
 
 """
