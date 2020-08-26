@@ -128,7 +128,8 @@ csv_list = os.listdir(pfm.local_files['detection_dir'])
 csv_list.sort(key=lambda x: int(''.join(filter(str.isdigit, x))))
 df_list = []
 for i in csv_list:
-    df = pd.read_csv(i)
+    csv_path = os.path.join(pfm.local_files['detection_dir'], i)
+    df = pd.read_csv(csv_path)
     df_list.append(df)
 
 final_csv = pd.concat(df_list, axis=0)
