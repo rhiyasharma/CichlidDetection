@@ -55,7 +55,7 @@ class VideoAnnotation:
                         color_lookup = {1: (255, 153, 255), 2: (255, 0, 0)}
                         cv2.rectangle(frame, (start[0], start[1]), (end[0], end[1]), color_lookup[label_preds[j]], 2)
                         result.write(frame)
-                        print('Completed Annotated Frame {}'.format(count))
+                        print('Completed Annotating Frame {}'.format(count))
                         if cv2.waitKey(1) & 0xFF == ord('q'):
                             break
                 else:

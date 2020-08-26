@@ -5,7 +5,7 @@ import argparse
 import pandas as pd
 from time import ctime
 from CichlidDetection.Classes.Detector import Detector
-from CichlidDetection.Utilities.utils import run, make_dir
+from CichlidDetection.Utilities.utils import make_dir
 from CichlidDetection.Classes.FileManager import FileManager
 from CichlidDetection.Classes.VideoCreator import VideoAnnotation
 from CichlidDetection.Classes.FileManager import ProjectFileManager
@@ -33,22 +33,22 @@ def calcIntervals(video):
     # Create a list of intervals for the model
     cap = cv2.VideoCapture(video)
     intervals = []
-    len = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+    length = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
 
     # limit for the number of frames that can be loaded at once: 18000
-    if len > 18000:
+    if length > 18000:
         vid_dir_path = os.path.join(pfm.local_files['{}_dir'.format(args.pid)], video_name)
         if not os.path.exists(vid_dir_path):
             pfm.local_files.update({video_name: make_dir(vid_dir_path)})
         else:
             pfm.local_files.update({video_name: vid_dir_path})
 
-    for x in range(len):
+    for x in range(length):
         if x % 18000 == 0:
             intervals.append(x)
 
-    if len % 18000 != 0:
-        intervals.append(len)
+    if length % 18000 != 0:
+        intervals.append(length)
 
     cap.release()
     return intervals
@@ -86,7 +86,7 @@ def clipVideos(video, name, begin, end, frame_num):
 
     print("Video: {} was successfully saved".format(vid_name))
     location = os.path.join(pfm.local_files[name], vid_name)
-    return location
+    return location, frame_num
 
 
 ########################################################## Program starts here ##########################################################
@@ -102,31 +102,32 @@ fm = FileManager()
 pfm = ProjectFileManager(args.pid, fm, args.download_images, args.download_video, args.video)
 print('downloaded video, created directories!')
 
-# # video_path = os.path.join('/Users/rhiyasharma/Documents/_McGrathLab/CD_work/videos', args.video)
 video_path = os.path.join(pfm.local_files['{}_dir'.format(args.pid)], args.video)
 video_name = args.video.split('.')[0]
 
 # Create intervals list and iterate through them to crop video and feed it into the model
 
-detect = Detector(pfm)
-interval_list = calcIntervals(video_path)
-print(pfm.local_files.keys())
-video_list=[]
-count = 0
-for i in range(len(interval_list)-1):
-    print('Starting video {}...'.format(i))
-    start = interval_list[i]
-    stop = interval_list[i+1]
-    vid_location = clipVideos(video_path, video_name, start, stop, count)
-    video_list.append(vid_location)
-    print('Attempting detection for video {}'.format(i))
-    print("Start Detect Time: ", ctime(time.time()))
-    detect.frame_detect(args.pid, vid_location)
-    print("End Detect Time: ", ctime(time.time()))
+# detect = Detector(pfm)
+# interval_list = calcIntervals(video_path)
+# video_list=[]
+# count = 0
+# for i in range(len(interval_list)-1):
+#     print('Starting video {}...'.format(i))
+#     start = interval_list[i]
+#     stop = interval_list[i+1]
+#     vid_location, num = clipVideos(video_path, video_name, start, stop, count)
+#     count = num
+#     video_list.append(vid_location)
+#     print('Attempting detection for video {}'.format(i))
+#     print("Start Detect Time: ", ctime(time.time()))
+#     detect.frame_detect(args.pid, vid_location)
+#     print("End Detect Time: ", ctime(time.time()))
 
-print('{} was successively split into {} parts'.format(video_name, len(video_list)))
+# print('{} was successively split into {} parts'.format(video_name, len(video_list)))
+csv_list = os.listdir(pfm.local_files['detection_dir'])
+csv_list.sort(key=lambda x: int(''.join(filter(str.isdigit, x))))
 df_list = []
-for i in os.listdir(pfm.local_files['detection_dir']):
+for i in csv_list:
     df = pd.read_csv(i)
     df_list.append(df)
 
@@ -143,5 +144,3 @@ print('Process complete!')
 
 print("Start Time (Full): ", s)
 print("End Time (Full): ", ctime(time.time()))
-
-# analysis = DetectionsAnalysis(csv_file_name, pfm)
