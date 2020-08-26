@@ -1,11 +1,13 @@
 import os, subprocess
 import cv2
 import time
+from os.path import join
 import argparse
 import pandas as pd
 from time import ctime
+from itertools import chain
 from CichlidDetection.Classes.Detector import Detector
-from CichlidDetection.Utilities.utils import make_dir
+from CichlidDetection.Utilities.utils import run, make_dir
 from CichlidDetection.Classes.FileManager import FileManager
 from CichlidDetection.Classes.VideoCreator import VideoAnnotation
 from CichlidDetection.Classes.FileManager import ProjectFileManager
@@ -16,6 +18,7 @@ parser.add_argument('pid', type=str, metavar=' ', help='Project ID. Ex: MC6_5')
 parser.add_argument('video', type=str, metavar=' ', help='Run detection on specified video. Ex: 0005_vid.mp4')
 parser.add_argument('-i', '--download_images', action='store_true', help='Download full image directory')
 parser.add_argument('-v', '--download_video', action='store_true', help='Download video')
+parser.add_argument('-s', 'sync', action='store_true', help='Sync detections directory')
 args = parser.parse_args()
 
 """
@@ -67,7 +70,8 @@ def clipVideos(video, name, begin, end, frame_num):
     vid_name = name + '_{}.mp4'.format(begin)
 
     # Output video details
-    result = cv2.VideoWriter(os.path.join(pfm.local_files[name], '{}'.format(vid_name)), cv2.VideoWriter_fourcc(*"mp4v"), 30, size)
+    result = cv2.VideoWriter(os.path.join(pfm.local_files[name], '{}'.format(vid_name)),
+                             cv2.VideoWriter_fourcc(*"mp4v"), 30, size)
 
     for j in range(begin, end):
         cap.set(cv2.CAP_PROP_POS_FRAMES, int(j))
@@ -89,9 +93,25 @@ def clipVideos(video, name, begin, end, frame_num):
     location = os.path.join(pfm.local_files[name], vid_name)
     return location, frame_num
 
-# def sync_detection():
-#     up = ['rclone', 'copy', '-u', '-c', self.local_files['detection_dir'], self.cloud_training_dir, '--exclude',
-#           '.*{/**,}']
+
+def sync_detection_dir(exclude=None, quiet=False):
+    """sync the detection directory bidirectionally, keeping the newer version of each file
+
+            Args:
+                exclude (list of str): files/directories to exclude. Accepts both explicit file/directory names and
+                    regular expressions. Expects a list, even if it's a list of length one. Default None.
+                quiet: if True, suppress the output of rclone copy. Default False
+            """
+    print('syncing training directory')
+    cloud_detection_dir = join(fm.cloud_master_dir, '___Tucker', 'CichlidDetection', 'detection')
+    down = ['rclone', 'copy', '-u', '-c', cloud_detection_dir, fm.local_files['detection_dir']]
+    up = ['rclone', 'copy', '-u', '-c', fm.local_files['detection_dir'], cloud_detection_dir, '--exclude',
+          '.*{/**,}']
+    if not quiet:
+        [com.insert(3, '-P') for com in [down, up]]
+    if exclude is not None:
+        [com.extend(list(chain.from_iterable(zip(['--exclude'] * len(exclude), exclude)))) for com in [down, up]]
+    [run(com) for com in [down, up]]
 
 
 ########################################################## Program starts here ##########################################################
@@ -150,12 +170,14 @@ for i in csv_list:
 print('Deleting {} clipped videos...'.format(args.video))
 subprocess.run(['rm', '-rf', pfm.local_files[video_name]])
 
-
 print('Starting the video annotation process...')
 video_ann = VideoAnnotation(args.pid, video_path, args.video, csv_name, pfm)
 video_ann.annotate()
 
 print('Process complete!')
+
+if args.sync:
+    sync_detection_dir()
 
 print("Start Time (Full): ", s)
 print("End Time (Full): ", ctime(time.time()))

@@ -38,7 +38,6 @@ class VideoAnnotation:
         size = (frame_width, frame_height)
 
         result = cv2.VideoWriter(os.path.join(self.detection_dir, self.ann_video_name), cv2.VideoWriter_fourcc(*"mp4v"), 5, size)
-        print('location of new ann video: ', os.path.join(self.detection_dir, self.ann_video_name))
 
         count = 0
         for i in range(vid_len):
@@ -56,12 +55,12 @@ class VideoAnnotation:
                         color_lookup = {1: (255, 153, 255), 2: (255, 0, 0)}
                         cv2.rectangle(frame, (start[0], start[1]), (end[0], end[1]), color_lookup[label_preds[j]], 2)
                         result.write(frame)
-                        # print('Completed Annotating Frame {}'.format(count))
+                        print('Completed Annotating Frame {}'.format(count))
                         if cv2.waitKey(1) & 0xFF == ord('q'):
                             break
                 else:
                     result.write(frame)
-                    # print('Completed Frame {}'.format(count))
+                    print('Completed Frame {}'.format(count))
                     if cv2.waitKey(1) & 0xFF == ord('q'):
                         break
 
@@ -72,4 +71,4 @@ class VideoAnnotation:
         cv2.destroyAllWindows()
 
         print("The detection video was successfully saved")
-        print("Location: ", os.path.join(self.detection_dir, self.ann_video_name))
+        print("Location of the video: ", os.path.join(self.detection_dir, self.ann_video_name))
