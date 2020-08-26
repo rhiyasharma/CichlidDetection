@@ -113,7 +113,7 @@ video_name = args.video.split('.')[0]
 # Create intervals list and iterate through them to crop video and feed it into the model
 
 # detect = Detector(pfm)
-# interval_list = calcIntervals(video_path)
+interval_list = calcIntervals(video_path)
 # video_list=[]
 # count = 0
 # for i in range(len(interval_list)-1):
