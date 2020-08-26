@@ -144,7 +144,7 @@ print("Final csv: ", csv_name)
 print('Deleting the other csv files...')
 for i in csv_list:
     csv_path = os.path.join(pfm.local_files['detection_dir'], i)
-    subprocess.run(['rm', i])
+    subprocess.run(['rm', csv_path])
 
 print('Deleting {} clipped videos...'.format(args.video))
 subprocess.run(['rm', '-rf', pfm.local_files[video_name]])
