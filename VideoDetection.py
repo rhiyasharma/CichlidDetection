@@ -1,4 +1,4 @@
-import os
+import os, subprocess
 import cv2
 import time
 import argparse
@@ -26,6 +26,7 @@ Args:
     download_images (bool): if True, download the full image directory for the specified project
     download_videos (bool): if True, download the all the mp4 files in Videos directory for the specified project
     video (str): specifies which video to download
+    sync (bool): if True, upload the final csv and animation video to the cloud
 """
 
 
@@ -88,6 +89,10 @@ def clipVideos(video, name, begin, end, frame_num):
     location = os.path.join(pfm.local_files[name], vid_name)
     return location, frame_num
 
+# def sync_detection():
+#     up = ['rclone', 'copy', '-u', '-c', self.local_files['detection_dir'], self.cloud_training_dir, '--exclude',
+#           '.*{/**,}']
+
 
 ########################################################## Program starts here ##########################################################
 
@@ -136,6 +141,14 @@ final_csv = pd.concat(df_list, axis=0)
 csv_name = '{}_{}_detections.csv'.format(args.pid, video_name)
 final_csv.to_csv(os.path.join(pfm.local_files['detection_dir'], csv_name))
 print("Final csv: ", csv_name)
+print('Deleting the other csv files...')
+for i in csv_list:
+    csv_path = os.path.join(pfm.local_files['detection_dir'], i)
+    subprocess.run(['rm', i])
+
+print('Deleting {} clipped videos...'.format(args.video))
+subprocess.run(['rm', '-rf', pfm.local_files[video_name]])
+
 
 print('Starting the video annotation process...')
 video_ann = VideoAnnotation(args.pid, video_path, args.video, csv_name, pfm)

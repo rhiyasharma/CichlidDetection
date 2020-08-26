@@ -71,3 +71,4 @@ class VideoAnnotation:
         cv2.destroyAllWindows()
 
         print("The detection video was successfully saved")
+        print("Location: ", os.path.join(self.detection_dir, self.ann_video_name))
