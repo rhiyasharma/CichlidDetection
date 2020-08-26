@@ -38,6 +38,7 @@ class VideoAnnotation:
         size = (frame_width, frame_height)
 
         result = cv2.VideoWriter(os.path.join(self.detection_dir, self.ann_video_name), cv2.VideoWriter_fourcc(*"mp4v"), 5, size)
+        print('location of new ann video: ', os.path.join(self.detection_dir, self.ann_video_name))
 
         count = 0
         for i in range(vid_len):
