@@ -10,7 +10,7 @@ from CichlidDetection.Classes.Detector import Detector
 from CichlidDetection.Utilities.utils import run, make_dir
 from CichlidDetection.Classes.FileManager import FileManager
 from CichlidDetection.Classes.VideoCreator import VideoAnnotation
-from CichlidDetection.Classes.DetectionsAnalysis import DetectionsAnalysis
+# from CichlidDetection.Classes.DetectionsAnalysis import DetectionsAnalysis
 from CichlidDetection.Classes.FileManager import ProjectFileManager
 
 # parse command line arguments
