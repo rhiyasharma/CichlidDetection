@@ -131,24 +131,29 @@ video_path = os.path.join(pfm.local_files['{}_dir'.format(args.pid)], args.video
 video_name = args.video.split('.')[0]
 
 # Create intervals list and iterate through them to crop video and feed it into the model
-
-detect = Detector(pfm)
-interval_list = calcIntervals(video_path)
-video_list=[]
-count = 0
-for i in range(len(interval_list)-1):
-    print('Starting video {}...'.format(i))
-    start = interval_list[i]
-    stop = interval_list[i+1]
-    vid_location, num = clipVideos(video_path, video_name, start, stop, count)
-    count = num
-    video_list.append(vid_location)
-    print('Attempting detection for video {}'.format(i))
+if 'sample' in video_name:
+    detect = Detector(pfm)
     print("Start Detect Time: ", ctime(time.time()))
-    detect.frame_detect(args.pid, vid_location)
+    detect.frame_detect(args.pid, video_path)
     print("End Detect Time: ", ctime(time.time()))
+else:
+    detect = Detector(pfm)
+    interval_list = calcIntervals(video_path)
+    video_list=[]
+    count = 0
+    for i in range(len(interval_list)-1):
+        print('Starting video {}...'.format(i))
+        start = interval_list[i]
+        stop = interval_list[i+1]
+        vid_location, num = clipVideos(video_path, video_name, start, stop, count)
+        count = num
+        video_list.append(vid_location)
+        print('Attempting detection for video {}'.format(i))
+        print("Start Detect Time: ", ctime(time.time()))
+        detect.frame_detect(args.pid, vid_location)
+        print("End Detect Time: ", ctime(time.time()))
 
-print('{} was successively split into {} parts'.format(video_name, len(video_list)))
+    print('{} was successively split into {} parts'.format(video_name, len(video_list)))
 # csv_list = os.listdir(pfm.local_files['detection_dir'])
 # csv_list.sort(key=lambda x: int(''.join(filter(str.isdigit, x))))
 # df_list = []
