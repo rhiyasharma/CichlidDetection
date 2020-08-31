@@ -10,6 +10,7 @@ from CichlidDetection.Classes.Detector import Detector
 from CichlidDetection.Utilities.utils import run, make_dir
 from CichlidDetection.Classes.FileManager import FileManager
 from CichlidDetection.Classes.VideoCreator import VideoAnnotation
+from CichlidDetection.Classes.DetectionsAnalysis import DetectionsAnalysis
 from CichlidDetection.Classes.FileManager import ProjectFileManager
 
 # parse command line arguments
@@ -133,7 +134,7 @@ video_name = args.video.split('.')[0]
 # Create intervals list and iterate through them to crop video and feed it into the model
 
 # detect = Detector(pfm)
-interval_list = calcIntervals(video_path)
+# interval_list = calcIntervals(video_path)
 # video_list=[]
 # count = 0
 # for i in range(len(interval_list)-1):
@@ -149,30 +150,32 @@ interval_list = calcIntervals(video_path)
 #     print("End Detect Time: ", ctime(time.time()))
 
 # print('{} was successively split into {} parts'.format(video_name, len(video_list)))
-csv_list = os.listdir(pfm.local_files['detection_dir'])
-csv_list.sort(key=lambda x: int(''.join(filter(str.isdigit, x))))
-df_list = []
-for i in csv_list:
-    csv_path = os.path.join(pfm.local_files['detection_dir'], i)
-    df = pd.read_csv(csv_path)
-    df_list.append(df)
+# csv_list = os.listdir(pfm.local_files['detection_dir'])
+# csv_list.sort(key=lambda x: int(''.join(filter(str.isdigit, x))))
+# df_list = []
+# for i in csv_list:
+#     csv_path = os.path.join(pfm.local_files['detection_dir'], i)
+#     df = pd.read_csv(csv_path, index=False)
+#     df_list.append(df)
 
-final_csv = pd.concat(df_list, axis=0)
+# final_csv = pd.concat(df_list, axis=0)
 csv_name = '{}_{}_detections.csv'.format(args.pid, video_name)
-final_csv.to_csv(os.path.join(pfm.local_files['detection_dir'], csv_name))
-print("Final csv: ", csv_name)
-print('Deleting the other csv files...')
-for i in csv_list:
-    if i != csv_name:
-        csv_path = os.path.join(pfm.local_files['detection_dir'], i)
-        subprocess.run(['rm', csv_path])
-
-print('Deleting {} clipped videos...'.format(args.video))
-subprocess.run(['rm', '-rf', pfm.local_files[video_name]])
+# final_csv.to_csv(os.path.join(pfm.local_files['detection_dir'], csv_name))
+# print("Final csv: ", csv_name)
+# print('Deleting the other csv files...')
+# for i in csv_list:
+#     if i != csv_name:
+#         csv_path = os.path.join(pfm.local_files['detection_dir'], i)
+#         subprocess.run(['rm', csv_path])
+#
+# print('Deleting {} clipped videos...'.format(args.video))
+# subprocess.run(['rm', '-rf', pfm.local_files[video_name]])
 
 print('Starting the video annotation process...')
 video_ann = VideoAnnotation(args.pid, video_path, args.video, csv_name, pfm)
 video_ann.annotate()
+
+# csv_analysis = DetectionsAnalysis(csv_name, pfm)
 
 print('Process complete!')
 

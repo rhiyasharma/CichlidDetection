@@ -22,14 +22,14 @@ class VideoAnnotation:
         self.detection_dir = self.fm.local_files['detection_dir']
         self.video = video_path
         self.video_name = video.split('.')[0]
-        self.ann_video_name = 'annotated_' + video.split('.')[0] + '.mp4'
+        self.ann_video_name = 'annotated_' + self.video_name + '_2.mp4'
         self.csv_file_path = os.path.join(self.detection_dir, csv_file)
 
     def annotate(self):
         """for a each frame, successively plot the predicted boxes and labels to create a video"""
         df = pd.read_csv(self.csv_file_path)
-        df[['boxes', 'labels']] = df[['boxes', 'labels']].applymap(lambda x: eval(x))
-        df['order'] = df.apply(lambda x: int(x.Framefile.split('.')[0].split('_')[1]), axis=1)
+        df[['boxes', 'labels', 'scores']] = df[['boxes', 'labels', 'scores']].applymap(lambda x: eval(x))
+        # df['order'] = df.apply(lambda x: int(x.Framefile.split('.')[0].split('_')[1]), axis=1)
 
         cap = cv2.VideoCapture(self.video)
         vid_len = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
@@ -37,7 +37,7 @@ class VideoAnnotation:
         frame_height = int(cap.get(4))
         size = (frame_width, frame_height)
 
-        result = cv2.VideoWriter(os.path.join(self.detection_dir, self.ann_video_name), cv2.VideoWriter_fourcc(*"mp4v"), 5, size)
+        result = cv2.VideoWriter(os.path.join(self.detection_dir, self.ann_video_name), cv2.VideoWriter_fourcc(*"mp4v"), 10, size)
 
         count = 0
         for i in range(vid_len):
@@ -49,15 +49,17 @@ class VideoAnnotation:
                 label_preds = df.labels[i]
                 box_preds = df.boxes[i]
                 box_preds = [convert_pos(*p) for p in box_preds]
+                score = df.scores[i]
                 if len(label_preds) > 0:
                     for j in range(len(label_preds)):
-                        start, end = box_preds[0][0], box_preds[0][1]
-                        color_lookup = {1: (255, 153, 255), 2: (255, 0, 0)}
-                        cv2.rectangle(frame, (start[0], start[1]), (end[0], end[1]), color_lookup[label_preds[j]], 2)
-                        result.write(frame)
-                        print('Completed Annotating Frame {}'.format(count))
-                        if cv2.waitKey(1) & 0xFF == ord('q'):
-                            break
+                        if score[j] > 0.5:
+                            start, end = box_preds[0][0], box_preds[0][1]
+                            color_lookup = {1: (255, 153, 255), 2: (255, 0, 0)}
+                            cv2.rectangle(frame, (start[0], start[1]), (end[0], end[1]), color_lookup[label_preds[j]], 2)
+                            result.write(frame)
+                            print('Completed Annotating Frame {}'.format(count))
+                            if cv2.waitKey(1) & 0xFF == ord('q'):
+                                break
                 else:
                     result.write(frame)
                     print('Completed Frame {}'.format(count))
