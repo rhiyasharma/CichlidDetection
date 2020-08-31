@@ -10,7 +10,6 @@ from CichlidDetection.Classes.Detector import Detector
 from CichlidDetection.Utilities.utils import run, make_dir
 from CichlidDetection.Classes.FileManager import FileManager
 from CichlidDetection.Classes.VideoCreator import VideoAnnotation
-# from CichlidDetection.Classes.DetectionsAnalysis import DetectionsAnalysis
 from CichlidDetection.Classes.FileManager import ProjectFileManager
 
 # parse command line arguments
@@ -133,42 +132,42 @@ video_name = args.video.split('.')[0]
 
 # Create intervals list and iterate through them to crop video and feed it into the model
 
-# detect = Detector(pfm)
-# interval_list = calcIntervals(video_path)
-# video_list=[]
-# count = 0
-# for i in range(len(interval_list)-1):
-#     print('Starting video {}...'.format(i))
-#     start = interval_list[i]
-#     stop = interval_list[i+1]
-#     vid_location, num = clipVideos(video_path, video_name, start, stop, count)
-#     count = num
-#     video_list.append(vid_location)
-#     print('Attempting detection for video {}'.format(i))
-#     print("Start Detect Time: ", ctime(time.time()))
-#     detect.frame_detect(args.pid, vid_location)
-#     print("End Detect Time: ", ctime(time.time()))
+detect = Detector(pfm)
+interval_list = calcIntervals(video_path)
+video_list=[]
+count = 0
+for i in range(len(interval_list)-1):
+    print('Starting video {}...'.format(i))
+    start = interval_list[i]
+    stop = interval_list[i+1]
+    vid_location, num = clipVideos(video_path, video_name, start, stop, count)
+    count = num
+    video_list.append(vid_location)
+    print('Attempting detection for video {}'.format(i))
+    print("Start Detect Time: ", ctime(time.time()))
+    detect.frame_detect(args.pid, vid_location)
+    print("End Detect Time: ", ctime(time.time()))
 
-# print('{} was successively split into {} parts'.format(video_name, len(video_list)))
+print('{} was successively split into {} parts'.format(video_name, len(video_list)))
 # csv_list = os.listdir(pfm.local_files['detection_dir'])
 # csv_list.sort(key=lambda x: int(''.join(filter(str.isdigit, x))))
 # df_list = []
 # for i in csv_list:
 #     csv_path = os.path.join(pfm.local_files['detection_dir'], i)
-#     df = pd.read_csv(csv_path, index=False)
+#     df = pd.read_csv(csv_path)
 #     df_list.append(df)
 
 # final_csv = pd.concat(df_list, axis=0)
 csv_name = '{}_{}_detections.csv'.format(args.pid, video_name)
-csv_path = os.path.join(pfm.local_files['detection_dir'], csv_name)
-# final_csv.to_csv(csv_path)
-# print("Final csv: ", csv_name)
+csv_location = os.path.join(pfm.local_files['detection_dir'], csv_name)
+# final_csv.to_csv(csv_location)
+print("Final csv: ", csv_name)
 # print('Deleting the other csv files...')
 # for i in csv_list:
 #     if i != csv_name:
 #         csv_path = os.path.join(pfm.local_files['detection_dir'], i)
 #         subprocess.run(['rm', csv_path])
-#
+
 # print('Deleting {} clipped videos...'.format(args.video))
 # subprocess.run(['rm', '-rf', pfm.local_files[video_name]])
 
