@@ -160,7 +160,8 @@ video_name = args.video.split('.')[0]
 
 # final_csv = pd.concat(df_list, axis=0)
 csv_name = '{}_{}_detections.csv'.format(args.pid, video_name)
-# final_csv.to_csv(os.path.join(pfm.local_files['detection_dir'], csv_name))
+csv_path = os.path.join(pfm.local_files['detection_dir'], csv_name)
+# final_csv.to_csv(csv_path)
 # print("Final csv: ", csv_name)
 # print('Deleting the other csv files...')
 # for i in csv_list:
