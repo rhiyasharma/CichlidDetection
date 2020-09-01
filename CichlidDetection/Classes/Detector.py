@@ -105,6 +105,6 @@ class Detector:
         elif 'vid' in name:
             df.to_csv(os.path.join(self.fm.local_files['detection_dir'], '{}_detections.csv'.format(name)))
         else:
-            df.to_csv(os.path.join(self.fm.local_files['detect_dir'], '{}_detections.csv'.format(name)))
+            df.to_csv(os.path.join(self.fm.local_files['detection_dir'], '{}_detections.csv'.format(name)))
 
         return '{}_detections.csv'.format(name)
