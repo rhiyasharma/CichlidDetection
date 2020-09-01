@@ -86,6 +86,7 @@ class Detector:
         cpu_device = torch.device("cpu")
         self.model.eval()
         results = {}
+        print(len(dataloader))
         for i, (images, targets) in enumerate(dataloader):
             images = list(img.to(self.device) for img in images)
             targets = [{k: v.to(self.device) for k, v in t.items()} for t in targets]
