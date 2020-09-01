@@ -139,7 +139,6 @@ class DetectVideoDataSet:
     def __getitem__(self, idx):
         # if torch.is_tensor(idx):
         #     idx = idx.tolist()
-        print(idx, '\t', len(self.frames))
         img = Image.fromarray(self.frames[idx], 'RGB')
         target = {'image_id': tensor(idx)}
         if self.transforms is not None:
