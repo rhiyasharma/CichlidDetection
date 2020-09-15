@@ -129,7 +129,7 @@ print('downloaded video, created directories!')
 
 video_path = os.path.join(pfm.local_files['{}_dir'.format(args.pid)], args.video)
 video_name = args.video.split('.')[0]
-
+'''
 # Create intervals list and iterate through them to crop video and feed it into the model
 if 'sample' in video_name:
     detect = Detector(pfm)
@@ -175,7 +175,8 @@ print("Final csv: ", csv_name)
 
 # print('Deleting {} clipped videos...'.format(args.video))
 # subprocess.run(['rm', '-rf', pfm.local_files[video_name]])
-
+'''
+csv_name = '{}_{}_detections.csv'.format(args.pid, video_name)
 print('Starting the video annotation process...')
 video_ann = VideoAnnotation(args.pid, video_path, args.video, csv_name, pfm)
 video_ann.annotate()
