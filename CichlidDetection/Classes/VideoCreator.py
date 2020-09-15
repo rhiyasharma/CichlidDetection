@@ -22,7 +22,7 @@ class VideoAnnotation:
         self.detection_dir = self.fm.local_files['detection_dir']
         self.video = video_path
         self.video_name = video.split('.')[0]
-        self.ann_video_name = 'annotated_' + self.video_name + '.mp4'
+        self.ann_video_name = 'annotated_' + pid + self.video_name + '.mp4'
         self.csv_file_path = os.path.join(self.detection_dir, csv_file)
 
     def annotate(self):
