@@ -37,6 +37,13 @@ class VideoAnnotation:
         frame_height = int(cap.get(4))
         size = (frame_width, frame_height)
 
+        # font details
+        font = cv2.FONT_HERSHEY_SIMPLEX
+        font_size = 0.5
+        font_color = (255, 255, 255)
+        font_thickness = 1
+        x, y = 1100, 150
+
         result = cv2.VideoWriter(os.path.join(self.detection_dir, self.ann_video_name), cv2.VideoWriter_fourcc(*"mp4v"), 10, size)
 
         count = 0
@@ -50,6 +57,8 @@ class VideoAnnotation:
                 box_preds = df.boxes[i]
                 box_preds = [convert_pos(*p) for p in box_preds]
                 score = df.scores[i]
+                font_text = 'Frame_{}.jpg'.format(count)
+                cv2.putText(frame, font_text, (x, y), font, font_size, font_color, font_thickness, cv2.LINE_AA)
                 if len(label_preds) > 0:
                     for j in range(len(label_preds)):
                         if score[j] > 0.5:
@@ -61,6 +70,8 @@ class VideoAnnotation:
                             if cv2.waitKey(1) & 0xFF == ord('q'):
                                 break
                 else:
+                    font_text = 'Frame_{}.jpg'.format(count)
+                    cv2.putText(frame, font_text, (x, y), font, font_size, font_color, font_thickness, cv2.LINE_AA)
                     result.write(frame)
                     print('Completed Frame {}'.format(count))
                     if cv2.waitKey(1) & 0xFF == ord('q'):
