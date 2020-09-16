@@ -61,14 +61,13 @@ class VideoAnnotation:
                 cv2.putText(frame, font_text, (x, y), font, font_size, font_color, font_thickness, cv2.LINE_AA)
                 if len(label_preds) > 0:
                     for j in range(len(label_preds)):
-                        if score[j] > 0.5:
-                            start, end = box_preds[0][0], box_preds[0][1]
-                            color_lookup = {1: (255, 153, 255), 2: (255, 0, 0)}
-                            cv2.rectangle(frame, (start[0], start[1]), (end[0], end[1]), color_lookup[label_preds[j]], 2)
-                            result.write(frame)
-                            print('Completed Annotating Frame {}'.format(count))
-                            if cv2.waitKey(1) & 0xFF == ord('q'):
-                                break
+                        start, end = box_preds[0][0], box_preds[0][1]
+                        color_lookup = {1: (255, 153, 255), 2: (255, 0, 0)}
+                        cv2.rectangle(frame, (start[0], start[1]), (end[0], end[1]), color_lookup[label_preds[j]], 2)
+                        result.write(frame)
+                        print('Completed Annotating Frame {}'.format(count))
+                        if cv2.waitKey(1) & 0xFF == ord('q'):
+                            break
                 else:
                     font_text = 'Frame_{}.jpg'.format(count)
                     cv2.putText(frame, font_text, (x, y), font, font_size, font_color, font_thickness, cv2.LINE_AA)
