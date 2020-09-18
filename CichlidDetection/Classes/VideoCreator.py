@@ -46,37 +46,38 @@ class VideoAnnotation:
 
         result = cv2.VideoWriter(os.path.join(self.detection_dir, self.ann_video_name), cv2.VideoWriter_fourcc(*"mp4v"), 10, size)
 
-        count = 0
+        # count = 0
         for i in range(vid_len):
             ret, frame = cap.read()
             if not ret:
-                print("VideoError: Couldn't read frame ", count)
+                print("VideoError: Couldn't read frame ", i)
                 break
             else:
                 label_preds = df.labels[i]
                 box_preds = df.boxes[i]
                 box_preds = [convert_pos(*p) for p in box_preds]
                 score = df.scores[i]
-                font_text = 'Frame_{}.jpg'.format(count)
+                font_text = 'Frame_{}.jpg'.format(i)
                 cv2.putText(frame, font_text, (x, y), font, font_size, font_color, font_thickness, cv2.LINE_AA)
                 if len(label_preds) > 0:
                     for j in range(len(label_preds)):
-                        start, end = box_preds[0][0], box_preds[0][1]
-                        color_lookup = {1: (255, 153, 255), 2: (255, 0, 0)}
-                        cv2.rectangle(frame, (start[0], start[1]), (end[0], end[1]), color_lookup[label_preds[j]], 2)
-                        result.write(frame)
-                        print('Completed Annotating Frame {}'.format(count))
-                        if cv2.waitKey(1) & 0xFF == ord('q'):
-                            break
+                        if score[j] > 0.5:
+                            start, end = box_preds[j][0], box_preds[j][1]
+                            color_lookup = {1: (255, 153, 255), 2: (255, 0, 0)}
+                            cv2.rectangle(frame, (start[0], start[1]), (end[0], end[1]), color_lookup[label_preds[j]], 2)
+                            result.write(frame)
+                            print('Completed Annotating Frame {}'.format(i))
+                            if cv2.waitKey(1) & 0xFF == ord('q'):
+                                break
                 else:
-                    font_text = 'Frame_{}.jpg'.format(count)
+                    font_text = 'Frame_{}.jpg'.format(i)
                     cv2.putText(frame, font_text, (x, y), font, font_size, font_color, font_thickness, cv2.LINE_AA)
                     result.write(frame)
-                    print('Completed Frame {}'.format(count))
+                    print('Completed Frame {}'.format(i))
                     if cv2.waitKey(1) & 0xFF == ord('q'):
                         break
 
-            count += 1
+            # count += 1
 
         cap.release()
         result.release()
