@@ -8,11 +8,22 @@ from CichlidDetection.Classes.FileManager import ProjectFileManager
 
 
 def convert_pos(x1, y1, x2, y2):
+    # convert coordinates to desired format for cv2
     x1, y1, x2, y2 = int(x1), int(y1), int(x2), int(y2)
     return [(x1, y1), (x2, y2)]
 
 
 class VideoAnnotation:
+    """ For each video successively plot the predicted boxes and labels to create a new annotated video
+
+    Args:
+            pid: Project ID
+            video_path: Path specifying the location of the ~10h video
+            video: Name of the video
+            csv_file: Name of the csv file containing all the predicted boxes and labels
+            *args: Project File Manager function
+
+    """
 
     def __init__(self, pid, video_path, video, csv_file, *args):
 
@@ -26,10 +37,9 @@ class VideoAnnotation:
         self.csv_file_path = os.path.join(self.detection_dir, csv_file)
 
     def annotate(self):
-        """for a each frame, successively plot the predicted boxes and labels to create a video"""
+
         df = pd.read_csv(self.csv_file_path)
         df[['boxes', 'labels', 'scores']] = df[['boxes', 'labels', 'scores']].applymap(lambda x: eval(x))
-        # df['order'] = df.apply(lambda x: int(x.Framefile.split('.')[0].split('_')[1]), axis=1)
 
         cap = cv2.VideoCapture(self.video)
         vid_len = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
@@ -37,13 +47,13 @@ class VideoAnnotation:
         frame_height = int(cap.get(4))
         size = (frame_width, frame_height)
 
-        # font details
+        # font details - add frame name to the video frames
         font = cv2.FONT_HERSHEY_SIMPLEX
         font_size = 0.5
         font_color = (255, 255, 255)
         font_thickness = 1
         x, y = 1100, 150
-
+        
         result = cv2.VideoWriter(os.path.join(self.detection_dir, self.ann_video_name), cv2.VideoWriter_fourcc(*"mp4v"), 10, size)
 
         # count = 0

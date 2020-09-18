@@ -1,11 +1,10 @@
-import os, subprocess
-import cv2
-import time
-from os.path import join
-import argparse
+# Example usage: python3 VideoDetection.py 'MC6_5' '0001_vid.mp4' -v -f -s
+
 import pandas as pd
 from time import ctime
+from os.path import join
 from itertools import chain
+import os, subprocess, cv2, time, argparse
 from CichlidDetection.Classes.Detector import Detector
 from CichlidDetection.Utilities.utils import run, make_dir
 from CichlidDetection.Classes.FileManager import FileManager
@@ -30,12 +29,23 @@ Args:
     download_images (bool): if True, download the full image directory for the specified project
     download_videos (bool): if True, download the all the mp4 files in Videos directory for the specified project
     video (str): specifies which video to download
-    sync (bool): if True, upload the final csv and animation video to the cloud
+    full (bool): if True, run all the processes - video trimming, detections, 
+    sync (bool): if True, upload the final csv and annotated video to the cloud
+
+
+    ~10h video files are too big to be processed on the server. Using calcIntervals() and clipVideos() to trim the 
+    video into manageable chunks 
+
 """
 
 
 def calcIntervals(video):
-    # Create a list of intervals for the model
+    """ Create a list of intervals for the video to be trimmed into
+
+    Args:
+            video (str): Path of the original video file
+    """
+
     cap = cv2.VideoCapture(video)
     intervals = []
     length = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
@@ -60,17 +70,23 @@ def calcIntervals(video):
 
 
 def clipVideos(video, name, begin, end, frame_num):
-    # Create short 10 min clips of the 6-10h long video
-    # Open video & get video details
+    """ Create short 10 min clips of the 6-10h long video
+
+        Args:
+                video (str): Path of the original video file
+                name (str): Name of the cropped video file
+                begin (int): Starting frame number of the cropped video
+                end (int): Final frame number of the cropped video
+                frame_num (int): Tracking the frame numbers
+        """
+
     cap = cv2.VideoCapture(video)
     frame_width = int(cap.get(3))
     frame_height = int(cap.get(4))
     size = (frame_width, frame_height)
-
-    # Set video name, start & stop intervals
     vid_name = name + '_{}.mp4'.format(begin)
 
-    # Output video details
+    # Trimmed video details
     result = cv2.VideoWriter(os.path.join(pfm.local_files[name], '{}'.format(vid_name)),
                              cv2.VideoWriter_fourcc(*"mp4v"), 30, size)
 
@@ -96,13 +112,14 @@ def clipVideos(video, name, begin, end, frame_num):
 
 
 def sync_detection_dir(exclude=None, quiet=False):
-    """sync the detection directory bidirectionally, keeping the newer version of each file
+    """ Sync the detection directory bidirectionally, keeping the newer version of each file
 
-            Args:
-                exclude (list of str): files/directories to exclude. Accepts both explicit file/directory names and
-                    regular expressions. Expects a list, even if it's a list of length one. Default None.
-                quiet: if True, suppress the output of rclone copy. Default False
-            """
+        Args:
+            exclude (list of str): files/directories to exclude. Accepts both explicit file/directory names and
+            regular expressions. Expects a list, even if it's a list of length one. Default None.
+            quiet: if True, suppress the output of rclone copy. Default False
+    """
+
     print('syncing training directory')
     cloud_detection_dir = join(fm.cloud_master_dir, '___Tucker', 'CichlidDetection', 'detection')
     down = ['rclone', 'copy', '-u', '-c', cloud_detection_dir, fm.local_files['detection_dir']]
@@ -119,17 +136,22 @@ def sync_detection_dir(exclude=None, quiet=False):
 s = ctime(time.time())
 print("Start Time (Full): ", ctime(time.time()))
 
-# Initialize functions
+# Initialize functions. Create project directory and download the specified files
 fm = FileManager()
-# Create project directory and download the specified files
 pfm = ProjectFileManager(args.pid, fm, args.download_images, args.download_video, args.video)
 print('downloaded video, created directories!')
 
+# Storing video path. Setting video and final csv file names.
 video_path = os.path.join(pfm.local_files['{}_dir'.format(args.pid)], args.video)
 video_name = args.video.split('.')[0]
+csv_name = '{}_{}_detections.csv'.format(args.pid, video_name)
 
 if args.full:
-    # Create intervals list and iterate through them to crop video and feed it into the model
+    """
+        1. Run all the processes - video trimming, detections, video annotation
+        2. Create intervals list and iterate through them to crop video and feed it into the model
+    """
+
     if 'sample' in video_name:
         detect = Detector(pfm)
         print("Start Detect Time: ", ctime(time.time()))
@@ -138,12 +160,12 @@ if args.full:
     else:
         detect = Detector(pfm)
         interval_list = calcIntervals(video_path)
-        video_list=[]
+        video_list = []
         count = 0
-        for i in range(len(interval_list)-1):
+        for i in range(len(interval_list) - 1):
             print('Starting video {}...'.format(i))
             start = interval_list[i]
-            stop = interval_list[i+1]
+            stop = interval_list[i + 1]
             vid_location, num = clipVideos(video_path, video_name, start, stop, count)
             count = num
             video_list.append(vid_location)
@@ -154,6 +176,7 @@ if args.full:
 
         print('{} was successively split into {} parts'.format(video_name, len(video_list)))
 
+    # Create a consolidated detections csv file
     csv_list = os.listdir(pfm.local_files['detection_dir'])
     csv_list.sort(key=lambda x: int(''.join(filter(str.isdigit, x))))
     df_list = []
@@ -163,21 +186,22 @@ if args.full:
         df_list.append(df)
 
     final_csv = pd.concat(df_list, axis=0)
-    csv_name = '{}_{}_detections.csv'.format(args.pid, video_name)
     csv_location = os.path.join(pfm.local_files['detection_dir'], csv_name)
     final_csv.to_csv(csv_location)
     print("Final csv: ", csv_name)
 
+    # Getting rid of unnecessary csv
     print('Deleting the other csv files...')
     for i in csv_list:
         if i != csv_name:
             csv_path = os.path.join(pfm.local_files['detection_dir'], i)
             subprocess.run(['rm', csv_path])
 
+    # Getting rid of unnecessary video files
     print('Deleting {} clipped videos...'.format(args.video))
     subprocess.run(['rm', '-rf', pfm.local_files[video_name]])
 
-csv_name = '{}_{}_detections.csv'.format(args.pid, video_name)
+# Annotating the queried video file using the predicted boxes and labels
 print('Starting the video annotation process...')
 video_ann = VideoAnnotation(args.pid, video_path, args.video, csv_name, pfm)
 video_ann.annotate()
