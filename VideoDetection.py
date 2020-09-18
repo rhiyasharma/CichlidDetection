@@ -18,6 +18,7 @@ parser.add_argument('video', type=str, metavar=' ', help='Run detection on speci
 parser.add_argument('-i', '--download_images', action='store_true', help='Download full image directory')
 parser.add_argument('-v', '--download_video', action='store_true', help='Download video')
 parser.add_argument('-f', '--full', action='store_true', help='Run complete program')
+parser.add_argument('-a', '--annotate', action='store_true', help='Annotate video')
 parser.add_argument('-s', '--sync', action='store_true', help='Sync detections directory')
 args = parser.parse_args()
 
@@ -121,7 +122,7 @@ def sync_detection_dir(exclude=None, quiet=False):
     """
 
     print('syncing training directory')
-    cloud_detection_dir = join(fm.cloud_master_dir, '___Tucker', 'CichlidDetection', 'detection')
+    cloud_detection_dir = join(fm.cloud_master_dir, '___Rhiya', 'CichlidDetection', 'detection')
     down = ['rclone', 'copy', '-u', '-c', cloud_detection_dir, fm.local_files['detection_dir']]
     up = ['rclone', 'copy', '-u', '-c', fm.local_files['detection_dir'], cloud_detection_dir, '--exclude',
           '.*{/**,}']
@@ -201,10 +202,11 @@ if args.full:
     print('Deleting {} clipped videos...'.format(args.video))
     subprocess.run(['rm', '-rf', pfm.local_files[video_name]])
 
-# Annotating the queried video file using the predicted boxes and labels
-print('Starting the video annotation process...')
-video_ann = VideoAnnotation(args.pid, video_path, args.video, csv_name, pfm)
-video_ann.annotate()
+if args.annotate:
+    # Annotating the queried video file using the predicted boxes and labels
+    print('Starting the video annotation process...')
+    video_ann = VideoAnnotation(args.pid, video_path, args.video, csv_name, pfm)
+    video_ann.annotate()
 
 print('Process complete!')
 
