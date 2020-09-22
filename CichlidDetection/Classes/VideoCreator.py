@@ -1,10 +1,10 @@
-import sys
 import os
 import cv2
-import pandas as pd
+# import pandas as pd
 from os.path import join
+from CichlidDetection.Classes.TrackingFish import Tracking
 from CichlidDetection.Classes.FileManager import FileManager
-from CichlidDetection.Classes.FileManager import ProjectFileManager
+# from CichlidDetection.Classes.FileManager import ProjectFileManager
 
 
 def convert_pos(x1, y1, x2, y2):
@@ -28,18 +28,19 @@ class VideoAnnotation:
     def __init__(self, pid, video_path, video, csv_file, *args):
 
         self.fm = FileManager()
+        self.track = Tracking()
         for i in args:
             self.pfm = i
         self.detection_dir = self.fm.local_files['detection_dir']
         self.video = video_path
         self.video_name = video.split('.')[0]
         self.ann_video_name = 'annotated_' + pid + '_' + self.video_name + '.mp4'
-        self.csv_file_path = os.path.join(self.detection_dir, csv_file)
+        self.csv_file_path = join(self.detection_dir, csv_file)
 
     def annotate(self):
 
-        df = pd.read_csv(self.csv_file_path)
-        df[['boxes', 'labels', 'scores']] = df[['boxes', 'labels', 'scores']].applymap(lambda x: eval(x))
+        df = self.track.compare_frame_iou(self.csv_file_path)
+        df = self.track.compare_row_iou(df)
 
         cap = cv2.VideoCapture(self.video)
         vid_len = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
@@ -53,8 +54,9 @@ class VideoAnnotation:
         font_color = (255, 255, 255)
         font_thickness = 1
         x, y = 1100, 150
-        
-        result = cv2.VideoWriter(os.path.join(self.detection_dir, self.ann_video_name), cv2.VideoWriter_fourcc(*"mp4v"), 10, size)
+
+        result = cv2.VideoWriter(os.path.join(self.detection_dir, self.ann_video_name), cv2.VideoWriter_fourcc(*"mp4v"),
+                                 10, size)
 
         # count = 0
         for i in range(vid_len):
@@ -63,22 +65,25 @@ class VideoAnnotation:
                 print("VideoError: Couldn't read frame ", i)
                 break
             else:
-                label_preds = df.labels[i]
-                box_preds = df.boxes[i]
+                box_preds = df.boxes_final[i]
                 box_preds = [convert_pos(*p) for p in box_preds]
-                score = df.scores[i]
+                label_preds = df.labels_final[i]
+                # n_preds = df.n_fish[i]
+                # score = df.scores_final[i]
+                color_lookup = {1: (255, 153, 255), 2: (255, 0, 0)}
                 font_text = 'Frame_{}.jpg'.format(i)
                 cv2.putText(frame, font_text, (x, y), font, font_size, font_color, font_thickness, cv2.LINE_AA)
-                if len(label_preds) > 0:
-                    for j in range(len(label_preds)):
-                        if score[j] > 0.5:
-                            start, end = box_preds[j][0], box_preds[j][1]
-                            color_lookup = {1: (255, 153, 255), 2: (255, 0, 0)}
-                            cv2.rectangle(frame, (start[0], start[1]), (end[0], end[1]), color_lookup[label_preds[j]], 2)
-                            result.write(frame)
-                            print('Completed Annotating Frame {}'.format(i))
-                            if cv2.waitKey(1) & 0xFF == ord('q'):
-                                break
+                # if len(label_preds) > 0:
+                for j in range(len(label_preds)):
+                    # if score[j] > 0.5:
+                    start, end = box_preds[j][0], box_preds[j][1]
+                    cv2.rectangle(frame, (start[0], start[1]), (end[0], end[1]), color_lookup[label_preds[j]], 2)
+                    cv2.putText(frame, 'fish {}'.format(j + 1), (end[0] + 2, end[1] - 5), font, font_size, (0, 0, 0), 1,
+                                cv2.LINE_AA)
+                    result.write(frame)
+                    print('Completed Annotating Frame {}'.format(i))
+                    if cv2.waitKey(1) & 0xFF == ord('q'):
+                        break
                 else:
                     font_text = 'Frame_{}.jpg'.format(i)
                     cv2.putText(frame, font_text, (x, y), font, font_size, font_color, font_thickness, cv2.LINE_AA)
