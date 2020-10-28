@@ -189,7 +189,7 @@ def track_id(combo, n_fish, iou_score):
         return f_id
     elif len(iou_score) > 0:
         for i in range(len(iou_score)):
-            if iou_score[i] > 0.3:
+            if iou_score[i] > 0.5:
                 same_fish.append(new_map[i])
 
     for i in range(len(same_fish)):
