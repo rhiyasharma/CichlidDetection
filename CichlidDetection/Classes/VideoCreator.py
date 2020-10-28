@@ -39,8 +39,8 @@ class VideoAnnotation:
 
     def annotate(self):
 
-        df = self.track.compare_frame_iou(self.csv_file_path)
-        df = self.track.compare_row_iou(df)
+        dd = self.track.diff_fish(self.csv_file_path)
+        df = self.track.track_fish_row(dd)
 
         cap = cv2.VideoCapture(self.video)
         vid_len = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
@@ -65,20 +65,28 @@ class VideoAnnotation:
                 print("VideoError: Couldn't read frame ", i)
                 break
             else:
-                box_preds = df.boxes_final[i]
+                box_preds = df.boxes[i]
                 box_preds = [convert_pos(*p) for p in box_preds]
-                label_preds = df.labels_final[i]
+                print('box:', box_preds)
+                label_preds = df.labels[i]
+                print('labels:',label_preds)
+                scores = df.scores[i]
+                n_fish = df.n_fish[i]
+                print('scores: ', scores)
+                print('num of fish: ', n_fish)
+                fish_ID = df.fish_ID[i]
+                print('ID:',fish_ID)
                 # n_preds = df.n_fish[i]
                 # score = df.scores_final[i]
                 color_lookup = {1: (255, 153, 255), 2: (255, 0, 0)}
                 font_text = 'Frame_{}.jpg'.format(i)
                 cv2.putText(frame, font_text, (x, y), font, font_size, font_color, font_thickness, cv2.LINE_AA)
                 # if len(label_preds) > 0:
-                for j in range(len(label_preds)):
+                for j in range(len(fish_ID)):
                     # if score[j] > 0.5:
                     start, end = box_preds[j][0], box_preds[j][1]
                     cv2.rectangle(frame, (start[0], start[1]), (end[0], end[1]), color_lookup[label_preds[j]], 2)
-                    cv2.putText(frame, 'fish {}'.format(j + 1), (end[0] + 2, end[1] - 5), font, font_size, (0, 0, 0), 1,
+                    cv2.putText(frame, 'fish {}'.format(fish_ID[j]), (end[0] + 2, end[1] - 5), font, font_size, (0, 0, 0), 1,
                                 cv2.LINE_AA)
                     result.write(frame)
                     print('Completed Annotating Frame {}'.format(i))
