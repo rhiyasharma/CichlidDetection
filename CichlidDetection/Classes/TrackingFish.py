@@ -180,6 +180,7 @@ def index_combos(box1, box2):
 def track_id(combo, n_fish, iou_score):
     new_map = combo
     same_fish = []
+    sorted_map=[]
     f_id = []
     if len(iou_score) == 0 and n_fish == 0:
         return f_id
@@ -188,8 +189,9 @@ def track_id(combo, n_fish, iou_score):
             f_id.append(i + 1)
         return f_id
     elif len(iou_score) > 0:
+        sorted_map = [x for _,x in sorted(zip(iou_score, new_map), reverse=True)]
         for i in range(len(iou_score)):
-            if iou_score[i] > 0.5:
+            if iou_score[i] > 0.5 and len(same_fish) < n_fish:
                 same_fish.append(new_map[i])
 
     for i in range(len(same_fish)):
@@ -197,6 +199,9 @@ def track_id(combo, n_fish, iou_score):
             f_id.append(i + 1)
         else:
             f_id.insert(0, i + 1)
+
+    if len(f_id) > len(n_fish):
+
 
     return f_id
 
