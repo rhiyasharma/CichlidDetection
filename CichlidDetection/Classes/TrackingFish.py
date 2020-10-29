@@ -110,7 +110,7 @@ def num_fish(comb, iou_score, map_index, scores):
     return len(set(edit_elements))
 
 
-def update_boxes(comb, iou_score, map_index, scores, boxes):
+def update_boxes(comb, iou_score, map_index, scores, boxes, frame):
     """ Update the actual list of box coordinates in a frame
 
     """
@@ -197,9 +197,11 @@ def track_id(combo, n_fish, iou_score):
 
     for i in range(len(same_fish)):
         if same_fish[i][0] == same_fish[i][1]:
-            f_id.append(i + 1)
+            if len(f_id) < n_fish:
+                f_id.append(i + 1)
         else:
-            f_id.insert(0, i + 1)
+            if len(f_id) < n_fish:
+                f_id.insert(0, i + 1)
 
     return f_id
 
@@ -226,7 +228,7 @@ class Tracking:
         df['iou'] = df.apply(lambda x: iou(x.boxes, x.Framefile), axis=1)
         df['n_fish'] = df.apply(lambda x: num_fish(x.sets, x.iou, x.map_index, x.scores), axis=1)
         df['boxes'] = df.apply(
-            lambda x: update_boxes(x.sets, x.iou, x.map_index, x.scores, x.boxes),
+            lambda x: update_boxes(x.sets, x.iou, x.map_index, x.scores, x.boxes, x.Framefile),
             axis=1)
         df['labels'] = df.apply(
             lambda x: update_labels(x.sets, x.iou, x.map_index, x.scores, x.labels), axis=1)
@@ -265,8 +267,7 @@ class Tracking:
 
 # fm = FileManager()
 # track = Tracking()
-# # dd = track.diff_fish('/Users/rhiyasharma/Downloads/Book1.csv')
-# dd = track.diff_fish(join(fm.local_files['detection_dir'], 'MC6_5_10_0001_vid_detections.csv'))
-#
+# dd = track.diff_fish('/Users/rhiyasharma/Downloads/MC6_5_0001_vid_detections.csv')
+# # dd = track.diff_fish(join(fm.local_files['detection_dir'], 'MC6_5_10_0001_vid_detections.csv'))
 # track.track_fish_row(dd)
 
