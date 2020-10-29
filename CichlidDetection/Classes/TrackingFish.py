@@ -182,6 +182,10 @@ def track_id(combo, n_fish, iou_score):
     same_fish = []
     sorted_map=[]
     f_id = []
+    num_fish = []
+    for i in range(len(new_map)):
+
+
     if len(iou_score) == 0 and n_fish == 0:
         return f_id
     elif len(iou_score) == 0 and n_fish != 0:
@@ -254,6 +258,7 @@ class Tracking:
         # df['nfish_track'] = df['nfish_track'].astype(int)
         df['sets'] = df.apply(lambda x: index_combos(x.boxes, x.box_tracking), axis=1)
         df['iou'] = df.apply(lambda x: iou_list(x.boxes, x.box_tracking, calc_iou_score=True), axis=1)
+        df['n_fish'] = df.apply(lambda x: len(x.boxes)) # updating the num of fish
         df['fish_ID'] = df.apply(lambda x: track_id(x.sets, x.n_fish, x.iou), axis=1)
         df.to_csv(join(self.fm.local_files['detection_dir'], 'updated_detections.csv'))
         df.drop(['box_tracking', 'sets', 'iou'], axis=1, inplace=True)
