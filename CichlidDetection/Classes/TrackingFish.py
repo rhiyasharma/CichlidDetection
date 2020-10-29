@@ -193,7 +193,7 @@ def track_id(combo, n_fish, iou_score):
         sorted_map = [x for _,x in sorted(zip(iou_score, new_map), reverse=True)]
         for i in range(len(iou_score)):
             if iou_score[i] > 0.5 and len(same_fish) < n_fish:
-                same_fish.append(new_map[i])
+                same_fish.append(sorted_map[i])
 
     for i in range(len(same_fish)):
         if same_fish[i][0] == same_fish[i][1]:
