@@ -182,9 +182,6 @@ def track_id(combo, n_fish, iou_score):
     same_fish = []
     sorted_map=[]
     f_id = []
-    num_fish = []
-    for i in range(len(new_map)):
-
 
     if len(iou_score) == 0 and n_fish == 0:
         return f_id
