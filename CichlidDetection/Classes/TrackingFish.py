@@ -200,9 +200,6 @@ def track_id(combo, n_fish, iou_score):
         else:
             f_id.insert(0, i + 1)
 
-    if len(f_id) > len(n_fish):
-
-
     return f_id
 
 
