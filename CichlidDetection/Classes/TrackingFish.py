@@ -73,7 +73,7 @@ def iou(box, frame):
 
 
 def update_lists(comb, iou_score, map_index, scores):
-    new_map = map_index
+    new_map = map_index.copy()
     same = []
     remove_el = []
     score_comparison = []
@@ -86,7 +86,8 @@ def update_lists(comb, iou_score, map_index, scores):
         new_map.remove(i)
 
     for i in range(len(comb)):
-        if iou_score[i] != [] and iou_score[i] > 0.4:
+        # if iou_score[i] != [] and iou_score[i] > 0.4:
+        if iou_score[i] > 0.4:
             same.append(comb[i])
 
     for i in range(len(same)):
@@ -206,6 +207,17 @@ def track_id(combo, n_fish, iou_score):
     return f_id
 
 
+def check(ids, scores):
+    if len(ids) <= len(scores):
+        return True
+    else:
+        new_id = []
+        for i in range(len(ids)):
+            if i <= len(scores):
+                new_id.append(ids)
+        return new_id
+
+
 class Tracking:
 
     def __init__(self, *args):
@@ -248,20 +260,15 @@ class Tracking:
 
         """
         df = dd
-        # df = pd.read_csv(join(self.fm.local_files['detection_dir'], 'updated_detections.csv'))
-        # df[['boxes', 'labels', 'scores']] = df[['boxes', 'labels', 'scores']].applymap(lambda x: eval(x))
         df['box_tracking'] = df['boxes'].shift(periods=1)
-        # df['nfish_track'] = df['n_fish'].shift(periods=1)
         df['box_tracking'] = [list() if x is np.NaN else x for x in df['box_tracking']]
-        # df.nfish_track.replace(np.NaN, 1.0, inplace=True)
-        # df['nfish_track'] = df['nfish_track'].astype(int)
         df['sets'] = df.apply(lambda x: index_combos(x.boxes, x.box_tracking), axis=1)
         df['iou'] = df.apply(lambda x: iou_list(x.boxes, x.box_tracking, calc_iou_score=True), axis=1)
         df['n_fish'] = df.apply(lambda x: len(x.boxes), axis=1) # updating the num of fish
         df['fish_ID'] = df.apply(lambda x: track_id(x.sets, x.n_fish, x.iou), axis=1)
+        df['confirm'] = df.apply(lambda x: check(x.fish_ID, x.scores), axis=1)
         df.to_csv(join(self.fm.local_files['detection_dir'], 'updated_detections.csv'))
         df.drop(['box_tracking', 'sets', 'iou'], axis=1, inplace=True)
-        # print(df)
         return df
 
 
@@ -269,5 +276,7 @@ class Tracking:
 # track = Tracking()
 # dd = track.diff_fish('/Users/rhiyasharma/Downloads/MC6_5_0001_vid_detections.csv')
 # # dd = track.diff_fish(join(fm.local_files['detection_dir'], 'MC6_5_10_0001_vid_detections.csv'))
-# track.track_fish_row(dd)
+# df = track.track_fish_row(dd)
+# print(df)
+# df.to_csv('/Users/rhiyasharma/Downloads/checking_detections.csv')
 
