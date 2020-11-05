@@ -63,7 +63,6 @@ def iou(box, frame):
 
     """
     iou = []
-    # box = [convert_pos(*p) for p in box]
     sets = list(itertools.combinations(box, 2))
     for i in range(len(sets)):
         val = calc_iou(sets[i])
@@ -86,7 +85,6 @@ def update_lists(comb, iou_score, map_index, scores):
         new_map.remove(i)
 
     for i in range(len(comb)):
-        # if iou_score[i] != [] and iou_score[i] > 0.4:
         if iou_score[i] > 0.4:
             same.append(comb[i])
 
@@ -221,8 +219,6 @@ def check(ids, scores):
 class Tracking:
 
     def __init__(self, *args):
-        # for i in args:
-        #     self.pfm = i
         self.fm = FileManager()
 
     def diff_fish(self, csv_path):
@@ -233,7 +229,6 @@ class Tracking:
 
         """
         df = pd.read_csv(csv_path)
-        count = 0
         df[['boxes', 'labels', 'scores']] = df[['boxes', 'labels', 'scores']].applymap(lambda x: eval(x))
         df['map_index'] = df.apply(lambda x: mapper(x.boxes), axis=1)
         df['sets'] = df.apply(lambda x: combos(x.boxes), axis=1)
@@ -268,15 +263,5 @@ class Tracking:
         df['fish_ID'] = df.apply(lambda x: track_id(x.sets, x.n_fish, x.iou), axis=1)
         df['confirm'] = df.apply(lambda x: check(x.fish_ID, x.scores), axis=1)
         df.to_csv(join(self.fm.local_files['detection_dir'], 'updated_detections.csv'))
-        df.drop(['box_tracking', 'sets', 'iou'], axis=1, inplace=True)
+        df.drop(['box_tracking', 'sets', 'iou', 'confirm'], axis=1, inplace=True)
         return df
-
-
-# fm = FileManager()
-# track = Tracking()
-# dd = track.diff_fish('/Users/rhiyasharma/Downloads/MC6_5_0001_vid_detections.csv')
-# # dd = track.diff_fish(join(fm.local_files['detection_dir'], 'MC6_5_10_0001_vid_detections.csv'))
-# df = track.track_fish_row(dd)
-# print(df)
-# df.to_csv('/Users/rhiyasharma/Downloads/checking_detections.csv')
-

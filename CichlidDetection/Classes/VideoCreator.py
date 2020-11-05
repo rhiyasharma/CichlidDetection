@@ -1,6 +1,5 @@
 import os
 import cv2
-# import pandas as pd
 from os.path import join
 from CichlidDetection.Classes.TrackingFish import Tracking
 from CichlidDetection.Classes.FileManager import FileManager
@@ -34,7 +33,7 @@ class VideoAnnotation:
         self.detection_dir = self.fm.local_files['detection_dir']
         self.video = video_path
         self.video_name = video.split('.')[0]
-        self.ann_video_name = 'annotated_' + pid + '_' + self.video_name + '.mp4'
+        self.ann_video_name = 'annotated_' + pid + '_' + self.video_name + '_p2.mp4'
         self.csv_file_path = join(self.detection_dir, csv_file)
 
     def annotate(self):
@@ -67,23 +66,14 @@ class VideoAnnotation:
             else:
                 box_preds = df.boxes[i]
                 box_preds = [convert_pos(*p) for p in box_preds]
-                print('box:', box_preds)
                 label_preds = df.labels[i]
-                print('labels:',label_preds)
                 scores = df.scores[i]
                 n_fish = df.n_fish[i]
-                print('scores: ', scores)
-                print('num of fish: ', n_fish)
                 fish_ID = df.fish_ID[i]
-                print('ID:',fish_ID)
-                # n_preds = df.n_fish[i]
-                # score = df.scores_final[i]
                 color_lookup = {1: (255, 153, 255), 2: (255, 0, 0)}
                 font_text = 'Frame_{}.jpg'.format(i)
                 cv2.putText(frame, font_text, (x, y), font, font_size, font_color, font_thickness, cv2.LINE_AA)
-                # if len(label_preds) > 0:
                 for j in range(len(fish_ID)):
-                    # if score[j] > 0.5:
                     start, end = box_preds[j][0], box_preds[j][1]
                     cv2.rectangle(frame, (start[0], start[1]), (end[0], end[1]), color_lookup[label_preds[j]], 2)
                     cv2.putText(frame, 'fish {}'.format(fish_ID[j]), (end[0] + 2, end[1] - 5), font, font_size, (0, 0, 0), 1,
@@ -100,7 +90,6 @@ class VideoAnnotation:
                     if cv2.waitKey(1) & 0xFF == ord('q'):
                         break
 
-            # count += 1
 
         cap.release()
         result.release()
