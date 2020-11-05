@@ -205,17 +205,6 @@ def track_id(combo, n_fish, iou_score):
     return f_id
 
 
-def check(ids, scores):
-    if len(ids) <= len(scores):
-        return True
-    else:
-        new_id = []
-        for i in range(len(ids)):
-            if i <= len(scores):
-                new_id.append(ids)
-        return new_id
-
-
 class Tracking:
 
     def __init__(self, *args):
@@ -261,7 +250,6 @@ class Tracking:
         df['iou'] = df.apply(lambda x: iou_list(x.boxes, x.box_tracking, calc_iou_score=True), axis=1)
         df['n_fish'] = df.apply(lambda x: len(x.boxes), axis=1) # updating the num of fish
         df['fish_ID'] = df.apply(lambda x: track_id(x.sets, x.n_fish, x.iou), axis=1)
-        df['confirm'] = df.apply(lambda x: check(x.fish_ID, x.scores), axis=1)
         df.to_csv(join(self.fm.local_files['detection_dir'], 'updated_detections.csv'))
-        df.drop(['box_tracking', 'sets', 'iou', 'confirm'], axis=1, inplace=True)
+        df.drop(['box_tracking', 'sets', 'iou'], axis=1, inplace=True)
         return df
