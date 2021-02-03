@@ -25,5 +25,5 @@ A pipeline that allows you to do the following:
 - download images or videos from different projects
 - trim the video files into smaller manageable chunks
 - run the images/videos through the machine learning model to produce predictions
-- concatenate all the predictions to one large file and produce the final output video where the cichlids are being tracked and classified as male/female
+- concatenate all the predictions into one large file and produce the final output video where the cichlids are being tracked and classified as male/female
 - upload final output files to the cloud 
