@@ -27,6 +27,3 @@ A pipeline that allows you to do the following:
 - run the images/videos through the machine learning model to produce predictions
 - produce the final output videos where the cichlids are being tracked 
 - upload final output files to the cloud 
-
-##### snippet
-![](https://github.com/rhiyasharma/CichlidDetection/blob/master/previewCichlidDetection.gif)
