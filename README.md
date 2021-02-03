@@ -20,7 +20,7 @@ imagemagick (https://imagemagick.org/script/download.php) run 'convert -version'
 
 Files
 -------------------------------------------
-##### VideoDetection.py 
+#### VideoDetection.py 
 A pipeline that allows you to do the following:
 - download images or videos from different projects
 - trim the video files into smaller manageable chunks
